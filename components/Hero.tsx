@@ -63,9 +63,9 @@ export default function Hero() {
 
       {/* Content Container */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl rtl:text-right ltr:text-left relative z-20">
+        <div className="max-w-3xl mx-auto px-4 sm:px-0 text-center md:text-left md:rtl:text-right md:ltr:text-left relative z-20">
           {/* Yellow Accent Bar */}
-          <div className="mb-6">
+          <div className="mb-6 flex justify-center md:justify-start">
             <div className="h-1.5 w-24 bg-primary rounded-full" />
           </div>
 
@@ -76,7 +76,7 @@ export default function Hero() {
           </h1>
 
           {/* Description */}
-          <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed max-w-2xl transition-all duration-500">
+          <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed max-w-2xl mx-auto md:mx-0 transition-all duration-500">
             {currentSlideData.description}{" "}
             <span className="text-primary font-semibold">
               {currentSlideData.highlight}
@@ -87,7 +87,7 @@ export default function Hero() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-12 transition-all duration-500">
+          <div className="flex flex-col sm:flex-row gap-4 mb-12 transition-all duration-500 items-center md:items-start">
             <Button size="lg" className="group text-base px-8 py-6">
               {currentSlideData.cta1}
               <ArrowRight className="ltr:ml-2 rtl:mr-2 rtl:rotate-180 w-5 h-5 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
@@ -109,14 +109,14 @@ export default function Hero() {
         className="absolute ltr:left-4 rtl:right-4 md:ltr:left-8 md:rtl:right-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors flex items-center justify-center group"
         aria-label="Previous slide"
       >
-        <ChevronLeft className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+        <ChevronLeft className="w-6 h-6 text-white group-hover:scale-110 transition-transform rtl:rotate-180" />
       </button>
       <button
         onClick={nextSlide}
         className="absolute ltr:right-4 rtl:left-4 md:ltr:right-8 md:rtl:left-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors flex items-center justify-center group"
         aria-label="Next slide"
       >
-        <ChevronRight className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+        <ChevronRight className="w-6 h-6 text-white group-hover:scale-110 transition-transform rtl:rotate-180" />
       </button>
 
       {/* Slide Indicators */}

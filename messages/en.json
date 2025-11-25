@@ -30,5 +30,59 @@
       }
     ],
     "scroll": "SCROLL DOWN"
+  },
+  "aboutSection": {
+    "eyebrow": "WHO WE ARE",
+    "title": {
+      "line1": "Leading",
+      "highlight": "Cybersecurity",
+      "line2": "Experts"
+    },
+    "paragraphs": [
+      "AWA Cyber is a premier cybersecurity firm dedicated to protecting businesses from evolving digital threats. With decades of combined experience, we've safeguarded hundreds of organizations across critical industries.",
+      "From penetration testing to security audits, our certified professionals blend strategic insights with industry-leading methodologies to identify vulnerabilities and strengthen your unique security posture."
+    ],
+    "stats": [
+      { "value": "500+", "label": "Projects" },
+      { "value": "10+", "label": "Years" },
+      { "value": "24/7", "label": "Support" },
+      { "value": "100%", "label": "Satisfied" }
+    ],
+    "cta": "Discover Our Story",
+    "image": "/images/cyber.jpg",
+    "imageAlt": "AWA Cyber experts collaborating inside a security operations center",
+    "badgeLabel": "Trusted by global enterprises",
+    "badgeValue": "99.7% Satisfaction"
+  },
+  "clientsSection": {
+    "eyebrow": "OUR CLIENTS",
+    "title": {
+      "line1": "Trusted By Industry-Leading",
+      "highlight": "Organizations"
+    },
+    "description": "We're proud to protect some of the world's most innovative companies with tailored cybersecurity programs.",
+    "brands": [
+      {
+        "name": "Enterprise Co.",
+        "tagline": "Global fintech leader",
+        "icon": "Building2"
+      },
+      {
+        "name": "SecureTech",
+        "tagline": "Critical infrastructure",
+        "icon": "ShieldCheck"
+      },
+      {
+        "name": "CloudXiq",
+        "tagline": "Multi-cloud platform",
+        "icon": "Cloud"
+      },
+      {
+        "name": "DataSolutions",
+        "tagline": "Healthcare analytics",
+        "icon": "Server"
+      },
+      { "name": "TechLogy", "tagline": "Autonomous systems", "icon": "Cpu" }
+    ]
   }
 }
