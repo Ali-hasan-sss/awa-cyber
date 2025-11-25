@@ -1,0 +1,34 @@
+{
+  "nav": {
+    "services": "Services",
+    "portfolio": "Portfolio",
+    "about": "About",
+    "contact": "Contact",
+    "quote": "Claim Your Free Quotation"
+  },
+  "hero": {
+    "slides": [
+      {
+        "accent": "Your Digital",
+        "title": "Fortress",
+        "description": "Enterprise-grade cybersecurity solutions that protect your business from evolving threats.",
+        "highlight": "24/7 monitoring",
+        "description2": "penetration testing, and security audits.",
+        "cta1": "Get Free Security Audit",
+        "cta2": "View Services",
+        "image": "/images/publicContain.jpg"
+      },
+      {
+        "accent": "Protect Your",
+        "title": "Business",
+        "description": "Advanced threat detection and real-time protection for your digital assets.",
+        "highlight": "real-time protection",
+        "description2": "Stay ahead of cyber threats with our expert team.",
+        "cta1": "Claim Your Free Quotation",
+        "cta2": "View Services",
+        "image": "/images/public.jpg"
+      }
+    ],
+    "scroll": "SCROLL DOWN"
+  }
+}
