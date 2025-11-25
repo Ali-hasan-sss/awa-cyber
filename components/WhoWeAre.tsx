@@ -70,7 +70,7 @@ export default function WhoWeAre() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-6 sm:gap-8 pt-4 border-t border-border text-center sm:text-left">
+            <div className="grid grid-cols-2 gap-6 sm:gap-8 pt-4 border-t border-border text-center sm:text-left rtl:sm:text-right">
               {stats.map((stat, idx) => (
                 <div key={idx} className="space-y-1">
                   <span className="block text-3xl font-bold text-foreground">

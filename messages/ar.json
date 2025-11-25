@@ -80,5 +80,229 @@
       },
       { "name": "TechLogy", "tagline": "أنظمة ذاتية القيادة", "icon": "Cpu" }
     ]
+  },
+  "servicesSection": {
+    "eyebrow": "ماذا نقدم",
+    "title": {
+      "line1": "حلول أمنية",
+      "highlight": "متكاملة"
+    },
+    "description": "نحمي أصولك الرقمية بخدمات أمن سيبراني بمستوى المؤسسات ومصممة لاحتياجات قطاعك.",
+    "cta": "عرض جميع الخدمات",
+    "cards": [
+      {
+        "title": "اختبار الاختراق",
+        "description": "اكتشف الثغرات قبل المهاجمين من خلال تقييمات اختراق شاملة وأخلاقية.",
+        "icon": "Target",
+        "linkLabel": "اعرف المزيد"
+      },
+      {
+        "title": "تدقيقات الأمان",
+        "description": "تقييم كامل لبنية الأمان لديك مع توصيات واضحة مرتبة حسب الأولوية للتحسين.",
+        "icon": "ShieldCheck",
+        "linkLabel": "اعرف المزيد"
+      },
+      {
+        "title": "أمن الويب",
+        "description": "احمِ تطبيقاتك الحيوية من ثغرات OWASP Top 10 باستخدام اختبارات متقدمة.",
+        "icon": "Globe",
+        "linkLabel": "اعرف المزيد"
+      },
+      {
+        "title": "أمن الشبكات",
+        "description": "أمّن شبكتك بالمراقبة المستمرة والجدران النارية وأنظمة كشف التسلل.",
+        "icon": "Wifi",
+        "linkLabel": "اعرف المزيد"
+      },
+      {
+        "title": "أمن السحابة",
+        "description": "حماية بيئات AWS وAzure وGCP وفق أفضل الممارسات والامتثال والمراقبة الدائمة.",
+        "icon": "Cloud",
+        "linkLabel": "اعرف المزيد"
+      },
+      {
+        "title": "تدريب الأمان",
+        "description": "قوّي فرقك ببرامج توعية وتدريبات عملية على الدفاع السيبراني.",
+        "icon": "GraduationCap",
+        "linkLabel": "اعرف المزيد"
+      }
+    ]
+  },
+  "projectsSection": {
+    "eyebrow": "أعمالنا",
+    "title": {
+      "line1": "أحدث مشاريع",
+      "highlight": "الأمن السيبراني"
+    },
+    "description": "اكتشف أحدث مشاريع الأمن السيبراني لدينا وكيف ساعدنا المؤسسات على تعزيز دفاعاتها الرقمية.",
+    "cta": "عرض كامل الأعمال",
+    "primaryProject": {
+      "badge": "أمن الويب",
+      "badgeIcon": "Globe",
+      "timeline": "اكتمل في الربع الرابع 2024",
+      "title": "تأمين منصة تجارة إلكترونية",
+      "summary": "تنفيذ اختبار اختراق شامل وتقوية أمنية لمنصة تجارة إلكترونية كبرى لحماية بيانات العملاء وأنظمة الدفع.",
+      "highlights": [
+        { "icon": "ShieldCheck", "text": "معالجة أكثر من 50 ثغرة" },
+        { "icon": "Target", "text": "تحقيق امتثال PCI DSS" },
+        { "icon": "Activity", "text": "تطبيق مراقبة على مدار الساعة" }
+      ],
+      "linkLabel": "عرض دراسة الحالة",
+      "image": "/images/skils.jpg",
+      "imageAlt": "خبراء أمن سيبراني يراجعون لوحات تحكم للتجارة الإلكترونية"
+    }
+  },
+  "whyChooseSection": {
+    "eyebrow": "لماذا تختارنا",
+    "title": {
+      "line1": "شريكك الموثوق في",
+      "highlight": "الأمن السيبراني"
+    },
+    "description": "نقدّم حلول أمن سيبراني متقدمة مدعومة بالخبرة والمنهجيات المثبتة والالتزام بالتميز.",
+    "cta": "تعرّف أكثر علينا",
+    "badge": {
+      "label": "معتمدون",
+      "value": "ISO 27001"
+    },
+    "experience": {
+      "value": "10+",
+      "label": "سنوات خبرة"
+    },
+    "features": [
+      {
+        "title": "خبراء معتمدون",
+        "description": "فريقنا يمتلك شهادات CEH وOSCP وCISSP وأفضل شهادات الصناعة.",
+        "icon": "Award"
+      },
+      {
+        "title": "سجل حافل بالنجاح",
+        "description": "أكثر من 500 مشروع ناجح في قطاعات متنوعة مع نسبة رضا 100٪.",
+        "icon": "ShieldCheck"
+      },
+      {
+        "title": "دعم 24/7",
+        "description": "مراقبة على مدار الساعة واستجابة سريعة للحوادث عند الحاجة.",
+        "icon": "Headphones"
+      },
+      {
+        "title": "حلول مخصّصة",
+        "description": "استراتيجيات مخصّصة تناسب احتياجات عملك ومخاطره.",
+        "icon": "Layers"
+      }
+    ],
+    "image": "/images/cyberhand.jpg",
+    "imageAlt": "خبير أمن سيبراني يمسك صورة قفل رقمية"
+  },
+  "testimonialsSection": {
+    "eyebrow": "شهادات العملاء",
+    "title": {
+      "line1": "ماذا يقول",
+      "highlight": "عملاؤنا"
+    },
+    "description": "لا تأخذ كلمتنا فقط - استمع إلى الشركات التي حمايناها",
+    "testimonials": [
+      {
+        "quote": "حولت AWA Cyber وضعنا الأمني بالكامل. كشفت اختبارات الاختراق لديهم عن ثغرات حرجة لم نكن نعرف بوجودها. فريق محترف للغاية",
+        "name": "جون ديفيس",
+        "role": "مدير تقنية المعلومات",
+        "company": "TechCorp"
+      },
+      {
+        "quote": "خدمة متميزة! ساعد تدقيق الأمن السحابي لديهم في تحقيق شهادة ISO 27001. الفريق مطلع ومتجاوب ويفهم حقاً أمن المؤسسات",
+        "name": "سارة مارتينيز",
+        "role": "مدير أمن المعلومات",
+        "company": "Cloudly inc"
+      },
+      {
+        "quote": "عملنا مع عدة شركات أمنية، لكن AWA Cyber تبرز. نهجهم الشامل وتقاريرهم التفصيلية أعطتنا رؤى قابلة للتطبيق لتحسين أمننا",
+        "name": "مايكل روبرتس",
+        "role": "الرئيس التنفيذي",
+        "company": "DataSecure"
+      },
+      {
+        "quote": "أفضل استثمار قمنا به هذا العام. منع المراقبة على مدار الساعة والاستجابة السريعة للحوادث لديهم خرقاً كبيراً. لا يمكننا التوصية بهم بما فيه الكفاية!",
+        "name": "إيميلي كيم",
+        "role": "نائب الرئيس للعمليات",
+        "company": "FinTech Pro"
+      },
+      {
+        "quote": "محترفون، دقيقون، وكفؤون للغاية. برنامج التدريب الأمني لديهم علم فريقنا بأفضل الممارسات. يستحق كل قرش!",
+        "name": "ديفيد لي",
+        "role": "مدير",
+        "company": "Enterprise Co"
+      },
+      {
+        "quote": "خبرة استثنائية في أمن الشبكات. نفذوا أنظمة IDS/IPS متقدمة تعمل بلا عيوب. فريق الدعم لديهم متاح دائماً عند الحاجة",
+        "name": "أماندا براون",
+        "role": "مدير تقنية المعلومات",
+        "company": "NSolutions"
+      }
+    ]
+  },
+  "technologiesSection": {
+    "eyebrow": "أدوات متقدمة",
+    "title": {
+      "line1": "تقنيات أمنية",
+      "highlight": "متطورة"
+    },
+    "description": "نستخدم أدوات وتقنيات رائدة في الصناعة لتقديم حلول أمنية شاملة.",
+    "toolsTitle": "أدوات الاختبار والاختراق",
+    "toolsSubtitle": "أدوات متقدمة لتقييمات أمنية شاملة",
+    "tools": [
+      {
+        "name": "Kali Linux",
+        "description": "أفضل نظام للاختبار",
+        "category": "حزمة اختبار",
+        "icon": "Command"
+      },
+      {
+        "name": "Metasploit",
+        "description": "إطار استغلال",
+        "category": "Exploit Framework",
+        "icon": "Terminal"
+      },
+      {
+        "name": "Burp Suite",
+        "description": "أمن الويب",
+        "category": "Web Security",
+        "icon": "Globe"
+      },
+      {
+        "name": "OWASP ZAP",
+        "description": "ماسح أمني",
+        "category": "Security Scanner",
+        "icon": "Shield"
+      },
+      {
+        "name": "Nmap",
+        "description": "ماسح الشبكات",
+        "category": "Network Scanner",
+        "icon": "Radar"
+      },
+      {
+        "name": "Wireshark",
+        "description": "تحليل الشبكات",
+        "category": "Network Analysis",
+        "icon": "Signal"
+      },
+      {
+        "name": "Nessus",
+        "description": "ثغرات",
+        "category": "Vulnerability",
+        "icon": "AlertTriangle"
+      },
+      {
+        "name": "Python",
+        "description": "برمجة نصية",
+        "category": "Scripting",
+        "icon": "Code"
+      }
+    ],
+    "stats": [
+      { "value": "500+", "label": "مشروع مكتمل" },
+      { "value": "10+", "label": "سنوات خبرة" },
+      { "value": "100%", "label": "رضا العملاء" },
+      { "value": "24/7", "label": "مراقبة أمنية" }
+    ]
   }
 }

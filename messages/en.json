@@ -84,5 +84,229 @@
       },
       { "name": "TechLogy", "tagline": "Autonomous systems", "icon": "Cpu" }
     ]
+  },
+  "servicesSection": {
+    "eyebrow": "WHAT WE DO",
+    "title": {
+      "line1": "Comprehensive Security",
+      "highlight": "Solutions"
+    },
+    "description": "Protecting your digital assets with enterprise-grade cybersecurity services tailored to your industry.",
+    "cta": "View All Services",
+    "cards": [
+      {
+        "title": "Penetration Testing",
+        "description": "Identify vulnerabilities before attackers do with comprehensive ethical hacking assessments.",
+        "icon": "Target",
+        "linkLabel": "Learn More"
+      },
+      {
+        "title": "Security Audits",
+        "description": "Complete evaluation of your security posture with prioritized recommendations for improvement.",
+        "icon": "ShieldCheck",
+        "linkLabel": "Learn More"
+      },
+      {
+        "title": "Web Security",
+        "description": "Protect critical web applications from OWASP Top 10 vulnerabilities using advanced testing.",
+        "icon": "Globe",
+        "linkLabel": "Learn More"
+      },
+      {
+        "title": "Network Security",
+        "description": "Secure your network with continuous monitoring, firewalls, and intrusion detection systems.",
+        "icon": "Wifi",
+        "linkLabel": "Learn More"
+      },
+      {
+        "title": "Cloud Security",
+        "description": "Safeguard AWS, Azure, or GCP environments with best practices, compliance, and 24/7 monitoring.",
+        "icon": "Cloud",
+        "linkLabel": "Learn More"
+      },
+      {
+        "title": "Security Training",
+        "description": "Empower teams with awareness programs and hands-on cyber defense simulations.",
+        "icon": "GraduationCap",
+        "linkLabel": "Learn More"
+      }
+    ]
+  },
+  "projectsSection": {
+    "eyebrow": "OUR WORK",
+    "title": {
+      "line1": "Latest Security",
+      "highlight": "Projects"
+    },
+    "description": "Explore our recent cybersecurity projects and see how we've helped organizations strengthen their defenses.",
+    "cta": "View Full Portfolio",
+    "primaryProject": {
+      "badge": "Web Security",
+      "badgeIcon": "Globe",
+      "timeline": "Completed Q4 2024",
+      "title": "E-Commerce Platform Security",
+      "summary": "Comprehensive penetration testing and security hardening for a major e-commerce platform, protecting customer data and payment systems.",
+      "highlights": [
+        { "icon": "ShieldCheck", "text": "50+ vulnerabilities fixed" },
+        { "icon": "Target", "text": "PCI DSS compliance achieved" },
+        { "icon": "Activity", "text": "24/7 monitoring implemented" }
+      ],
+      "linkLabel": "View Case Study",
+      "image": "/images/skils.jpg",
+      "imageAlt": "Security specialists reviewing e-commerce dashboards"
+    }
+  },
+  "whyChooseSection": {
+    "eyebrow": "WHY CHOOSE US",
+    "title": {
+      "line1": "Your Trusted",
+      "highlight": "Security Partner"
+    },
+    "description": "We deliver cutting-edge cybersecurity solutions backed by expertise, proven methodologies, and commitment to excellence.",
+    "cta": "Learn More About Us",
+    "badge": {
+      "label": "Certified",
+      "value": "ISO 27001"
+    },
+    "experience": {
+      "value": "10+",
+      "label": "Years Experience"
+    },
+    "features": [
+      {
+        "title": "Certified Experts",
+        "description": "Our team holds CEH, OSCP, CISSP, and other industry-leading certifications.",
+        "icon": "Award"
+      },
+      {
+        "title": "Proven Track Record",
+        "description": "500+ successful projects across diverse industries with 100% satisfaction rate.",
+        "icon": "ShieldCheck"
+      },
+      {
+        "title": "24/7 Support",
+        "description": "Round-the-clock monitoring and rapid incident response when you need it most.",
+        "icon": "Headphones"
+      },
+      {
+        "title": "Tailored Solutions",
+        "description": "Custom strategies designed for your specific business needs and risk profile.",
+        "icon": "Layers"
+      }
+    ],
+    "image": "/images/cyberhand.jpg",
+    "imageAlt": "Cybersecurity professional holding a digital lock hologram"
+  },
+  "testimonialsSection": {
+    "eyebrow": "TESTIMONIALS",
+    "title": {
+      "line1": "What Our",
+      "highlight": "Clients Say"
+    },
+    "description": "Don't just take our word for it - hear from the businesses we've protected",
+    "testimonials": [
+      {
+        "quote": "AWA Cyber transformed our security posture. Their penetration testing identified critical vulnerabilities we didn't know existed. Highly professional Team",
+        "name": "John Davis",
+        "role": "CTO",
+        "company": "TechCorp"
+      },
+      {
+        "quote": "Outstanding service! Their cloud security audit helped us achieve ISO 27001 certification. The team is knowledgeable, responsive, and truly understands enterprise security",
+        "name": "Sarah Martinez",
+        "role": "CISO",
+        "company": "Cloudly inc"
+      },
+      {
+        "quote": "We've worked with several security firms, but AWA Cyber stands out. Their comprehensive approach and detailed reporting gave us actionable insights to improve our security",
+        "name": "Michael Roberts",
+        "role": "CEO",
+        "company": "DataSecure"
+      },
+      {
+        "quote": "The best investment we made this year. Their 24/7 monitoring and rapid incident response prevented a major breach. Cannot recommend them enough!",
+        "name": "Emily Kim",
+        "role": "VP Operations",
+        "company": "FinTech Pro"
+      },
+      {
+        "quote": "Professional, thorough, and extremely competent. Their security training program educated our entire team on best practices. Worth every penny!",
+        "name": "David Lee",
+        "role": "Director",
+        "company": "Enterprise Co"
+      },
+      {
+        "quote": "Exceptional expertise in network security. They implemented advanced IDS/IPS that has been running flawlessly. Their support team is always available when needed.",
+        "name": "Amanda Brown",
+        "role": "CTO",
+        "company": "NSolutions"
+      }
+    ]
+  },
+  "technologiesSection": {
+    "eyebrow": "ADVANCED TOOLS",
+    "title": {
+      "line1": "Advanced",
+      "highlight": "Security Technologies"
+    },
+    "description": "We leverage industry-leading tools and technologies to deliver comprehensive security solutions.",
+    "toolsTitle": "Security Testing & Penetration Tools",
+    "toolsSubtitle": "Advanced tools for comprehensive security assessments",
+    "tools": [
+      {
+        "name": "Kali Linux",
+        "description": "Top testing OS",
+        "category": "Testing Suite",
+        "icon": "Command"
+      },
+      {
+        "name": "Metasploit",
+        "description": "Exploit framework",
+        "category": "Exploit Framework",
+        "icon": "Terminal"
+      },
+      {
+        "name": "Burp Suite",
+        "description": "Web security",
+        "category": "Web Security",
+        "icon": "Globe"
+      },
+      {
+        "name": "OWASP ZAP",
+        "description": "Security scanner",
+        "category": "Security Scanner",
+        "icon": "Shield"
+      },
+      {
+        "name": "Nmap",
+        "description": "Network scanner",
+        "category": "Network Scanner",
+        "icon": "Radar"
+      },
+      {
+        "name": "Wireshark",
+        "description": "Network analysis",
+        "category": "Network Analysis",
+        "icon": "Signal"
+      },
+      {
+        "name": "Nessus",
+        "description": "Vulnerability",
+        "category": "Vulnerability",
+        "icon": "AlertTriangle"
+      },
+      {
+        "name": "Python",
+        "description": "Scripting",
+        "category": "Scripting",
+        "icon": "Code"
+      }
+    ],
+    "stats": [
+      { "value": "500+", "label": "Projects Completed" },
+      { "value": "10+", "label": "Years Experience" },
+      { "value": "100%", "label": "Client Satisfaction" },
+      { "value": "24/7", "label": "Security Monitoring" }
+    ]
   }
 }
