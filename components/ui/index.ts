@@ -23,3 +23,6 @@ export type { InputProps } from "./input";
 
 export { Textarea } from "./textarea";
 export type { TextareaProps } from "./textarea";
+
+export { ConfirmDialog } from "./confirm-dialog";
+export type { ConfirmDialogProps } from "./confirm-dialog";

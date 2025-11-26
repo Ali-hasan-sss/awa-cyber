@@ -12,7 +12,7 @@ import {
   Phone,
   MessageCircle,
 } from "lucide-react";
-import Logo from "./ui/logo";
+import Logo from "../ui/logo";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 type FooterContent = {

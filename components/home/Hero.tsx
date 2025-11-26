@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -88,9 +89,11 @@ export default function Hero() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mb-12 transition-all duration-500 items-center md:items-start">
-            <Button size="lg" className="group text-base px-8 py-6">
-              {currentSlideData.cta1}
-              <ArrowRight className="ltr:ml-2 rtl:mr-2 rtl:rotate-180 w-5 h-5 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+            <Button size="lg" className="group text-base px-8 py-6" asChild>
+              <Link href="/quote">
+                {currentSlideData.cta1}
+                <ArrowRight className="ltr:ml-2 rtl:mr-2 rtl:rotate-180 w-5 h-5 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+              </Link>
             </Button>
             <Button
               variant="outline"

@@ -384,5 +384,18 @@
       "terms": "Terms of Service",
       "cookies": "Cookie Policy"
     }
+  },
+  "adminLogin": {
+    "badge": "Admin Panel",
+    "title": "Secure Admin Login",
+    "subtitle": "Administrators only. Enter your credentials to access the dashboard.",
+    "emailLabel": "Email Address",
+    "passwordLabel": "Password",
+    "emailPlaceholder": "admin@awacyber.com",
+    "passwordPlaceholder": "Enter your password",
+    "submit": "Sign In",
+    "backText": "Not an admin?",
+    "backLink": "Return to homepage",
+    "error": "Login failed, please verify your credentials."
   }
 }

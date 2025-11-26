@@ -1,5 +1,7 @@
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import "./globals.css";
+import PageTransition from "@/components/layout/PageTransition";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata = {
   title: "AWA CYBER - Your Digital Fortress",
@@ -14,7 +16,11 @@ export default function RootLayout({
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <body className="antialiased">
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <PageTransition>{children}</PageTransition>
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

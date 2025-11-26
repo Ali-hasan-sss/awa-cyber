@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Globe } from "lucide-react";
-import Logo from "./ui/logo";
+import Logo from "../ui/logo";
 
 export default function Navbar() {
   const { locale, setLocale, t } = useLanguage();
@@ -77,7 +77,9 @@ export default function Navbar() {
                 <Globe className="h-4 w-4" />
                 <span className="uppercase">{nextLocaleLabel}</span>
               </button>
-              <Button>{t("nav.quote")}</Button>
+              <Button asChild>
+                <Link href="/quote">{t("nav.quote")}</Link>
+              </Button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -171,8 +173,10 @@ export default function Navbar() {
                 </button>
 
                 {/* CTA Button */}
-                <Button className="w-full mt-4" onClick={closeMobileMenu}>
-                  {t("nav.quote")}
+                <Button className="w-full mt-4" asChild>
+                  <Link href="/quote" onClick={closeMobileMenu}>
+                    {t("nav.quote")}
+                  </Link>
                 </Button>
               </nav>
             </div>

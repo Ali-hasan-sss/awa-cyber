@@ -1,15 +1,15 @@
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import WhoWeAre from "@/components/WhoWeAre";
-import TrustedClients from "@/components/TrustedClients";
-import SecurityServices from "@/components/SecurityServices";
-import LatestProjects from "@/components/LatestProjects";
-import WhyChooseUs from "@/components/WhyChooseUs";
-import Testimonials from "@/components/Testimonials";
-import SecurityTechnologies from "@/components/SecurityTechnologies";
-import HowItWorks from "@/components/HowItWorks";
-import SecurityModal from "@/components/SecurityModal";
-import Footer from "@/components/Footer";
+import Navbar from "@/components/layout/Navbar";
+import Hero from "@/components/home/Hero";
+import WhoWeAre from "@/components/home/WhoWeAre";
+import TrustedClients from "@/components/home/TrustedClients";
+import SecurityServices from "@/components/home/SecurityServices";
+import LatestProjects from "@/components/home/LatestProjects";
+import WhyChooseUs from "@/components/home/WhyChooseUs";
+import Testimonials from "@/components/home/Testimonials";
+import SecurityTechnologies from "@/components/home/SecurityTechnologies";
+import HowItWorks from "@/components/home/HowItWorks";
+import SecurityModal from "@/components/home/SecurityModal";
+import Footer from "@/components/layout/Footer";
 
 export default function Home() {
   return (
