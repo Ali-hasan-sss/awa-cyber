@@ -63,7 +63,7 @@ export default function Hero() {
 
       {/* Content Container */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto px-4 sm:px-0 text-center md:text-left md:rtl:text-right md:ltr:text-left relative z-20">
+        <div className="max-w-3xl mx-auto md:mx-0 md:ltr:mr-auto md:rtl:ml-auto px-4 sm:px-0 text-center md:text-left md:rtl:text-right md:ltr:text-left relative z-20">
           {/* Yellow Accent Bar */}
           <div className="mb-6 flex justify-center md:justify-start">
             <div className="h-1.5 w-24 bg-primary rounded-full" />
@@ -133,14 +133,6 @@ export default function Hero() {
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
-      </div>
-
-      {/* Scroll Down Indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 animate-bounce">
-        <span className="text-white text-xs tracking-wider uppercase">
-          {t("hero.scroll")}
-        </span>
-        <ChevronDown className="w-5 h-5 text-white" />
       </div>
     </section>
   );

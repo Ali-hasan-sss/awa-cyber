@@ -308,5 +308,81 @@
       { "value": "100%", "label": "Client Satisfaction" },
       { "value": "24/7", "label": "Security Monitoring" }
     ]
+  },
+  "howItWorksSection": {
+    "eyebrow": "OUR PROCESS",
+    "title": {
+      "line1": "How",
+      "highlight": "AWA Cyber",
+      "line2": "Works"
+    },
+    "description": "A proven methodology that delivers comprehensive security solutions",
+    "steps": [
+      {
+        "number": "1",
+        "title": "Consultation",
+        "description": "We discuss your security needs, current infrastructure, and business goals to understand your unique requirements.",
+        "icon": "MessageCircle"
+      },
+      {
+        "number": "2",
+        "title": "Assessment",
+        "description": "Comprehensive analysis of your systems, networks, and applications to identify vulnerabilities and security gaps.",
+        "icon": "Search"
+      },
+      {
+        "number": "3",
+        "title": "Implementation",
+        "description": "Deploy security solutions, fix vulnerabilities, and implement best practices tailored to your environment.",
+        "icon": "Settings"
+      },
+      {
+        "number": "4",
+        "title": "Monitoring",
+        "description": "Continuous 24/7 monitoring, regular updates, and ongoing support to maintain your security posture.",
+        "icon": "Activity"
+      }
+    ],
+    "cta": "Start Your Security Journey"
+  },
+  "securityModal": {
+    "title": "Ready to Secure Your Business?",
+    "description": "Don't wait for a security breach to take action. Get a comprehensive security assessment and protect your business from cyber threats today.",
+    "features": ["Free Consultation", "No Commitment", "Expert Guidance"],
+    "buttons": {
+      "quote": "Get Your Free Quote",
+      "call": "Schedule a Call"
+    },
+    "privacy": "Your information is secure and confidential"
+  },
+  "footer": {
+    "tagline": "Protecting businesses from cyber threats with cutting-edge security solutions and expert guidance.",
+    "quickLinks": {
+      "title": "Quick Links",
+      "links": ["Home", "About Us", "Services", "Portfolio", "Contact"]
+    },
+    "services": {
+      "title": "Our Services",
+      "items": [
+        "Penetration Testing",
+        "Security Audits",
+        "Web App Security",
+        "Network Security",
+        "Cloud Security"
+      ]
+    },
+    "contact": {
+      "title": "Get In Touch",
+      "address": "123 Security Street, Cyber City, CC 12345",
+      "email": "info@awacyber.com",
+      "phone": "+1 (234) 567-890",
+      "whatsapp": "WhatsApp Us"
+    },
+    "copyright": "© 2025 AWA Cyber. All rights reserved.",
+    "policies": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "cookies": "Cookie Policy"
+    }
   }
 }

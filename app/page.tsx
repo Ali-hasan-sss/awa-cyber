@@ -7,6 +7,9 @@ import LatestProjects from "@/components/LatestProjects";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import Testimonials from "@/components/Testimonials";
 import SecurityTechnologies from "@/components/SecurityTechnologies";
+import HowItWorks from "@/components/HowItWorks";
+import SecurityModal from "@/components/SecurityModal";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
@@ -19,7 +22,10 @@ export default function Home() {
       <LatestProjects />
       <WhyChooseUs />
       <Testimonials />
+      <HowItWorks />
       <SecurityTechnologies />
+      <SecurityModal />
+      <Footer />
     </main>
   );
 }
