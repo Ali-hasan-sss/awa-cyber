@@ -20,7 +20,7 @@ export function AdminHeader({
   };
 
   return (
-    <header className="flex items-center justify-between border-b border-white/10 bg-white/[0.03] px-4 py-4 text-slate-100 shadow-[0_10px_40px_rgba(3,7,18,0.45)] backdrop-blur-2xl">
+    <header className="md:rounded-full flex items-center justify-between border-b border-white/10 bg-white/[0.03] px-4 py-4 text-slate-100 shadow-[0_10px_40px_rgba(3,7,18,0.45)] backdrop-blur-2xl">
       <div className="flex items-center gap-3">
         <button
           className="md:hidden rounded-full border border-white/10 bg-white/[0.04] p-2 text-white/80 transition hover:bg-white/10"

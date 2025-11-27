@@ -2,15 +2,18 @@
 
 import {
   Target,
-  ShieldCheck,
-  Globe,
-  Wifi,
-  Cloud,
   GraduationCap,
+  ShieldCheck,
   ArrowRight,
   type LucideIcon,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useEffect, useState } from "react";
+import { fetchPublicServices } from "@/lib/actions/serviceActions";
+import {
+  serviceIconComponents,
+  ServiceIconKey,
+} from "@/lib/serviceIconOptions";
 
 type ServiceCard = {
   title: string;
@@ -20,18 +23,51 @@ type ServiceCard = {
 };
 
 const iconMap: Record<string, LucideIcon> = {
+  ...serviceIconComponents,
   Target,
-  ShieldCheck,
-  Globe,
-  Wifi,
-  Cloud,
   GraduationCap,
 };
 
 export default function SecurityServices() {
-  const { messages } = useLanguage();
+  const { locale, messages } = useLanguage();
   const section = messages?.servicesSection ?? {};
-  const cards: ServiceCard[] = Array.isArray(section.cards)
+  const [remoteCards, setRemoteCards] = useState<ServiceCard[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    const lang = locale === "ar" ? "ar" : "en";
+    fetchPublicServices(lang)
+      .then((data) => {
+        if (cancelled) return;
+        const mapped: ServiceCard[] = Array.isArray(data)
+          ? data.map((service: any) => ({
+              title: service.title || "",
+              description: service.description || "",
+              icon: service.features?.[0]?.icon,
+            }))
+          : [];
+        setRemoteCards(mapped.length ? mapped : null);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRemoteCards(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [locale]);
+
+  const cards: ServiceCard[] = remoteCards
+    ? remoteCards
+    : Array.isArray(section.cards)
     ? section.cards
     : defaultCards;
 

@@ -6,6 +6,8 @@ import {
   useMemo,
   useState,
   ReactNode,
+  useCallback,
+  useRef,
 } from "react";
 import {
   CreateQuotationPayload,
@@ -13,6 +15,7 @@ import {
   fetchQuotationRequestsApi,
   FetchQuotationParams,
   QuotationStatus,
+  updateQuotationStatusApi,
 } from "@/lib/actions/quoteActions";
 
 export interface BudgetRange {
@@ -52,6 +55,10 @@ interface QuoteContextValue {
   pagination: PaginationInfo | null;
   fetchQuotationRequests: (params?: FetchQuotationParams) => Promise<void>;
   createQuotationRequest: (payload: CreateQuotationPayload) => Promise<void>;
+  updateQuotationRequestStatus: (
+    id: string,
+    status: QuotationStatus
+  ) => Promise<void>;
 }
 
 const QuoteContext = createContext<QuoteContextValue | undefined>(undefined);
@@ -61,39 +68,67 @@ export const QuoteProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [lastParams, setLastParams] = useState<FetchQuotationParams | undefined>();
+  const lastParamsRef = useRef<FetchQuotationParams | undefined>(undefined);
 
-  const fetchQuotationRequests = async (params?: FetchQuotationParams) => {
-    setLoading(true);
-    setError(null);
-    try {
-      if (params) {
-        setLastParams(params);
+  const fetchQuotationRequests = useCallback(
+    async (params?: FetchQuotationParams) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const nextParams = params ??
+          lastParamsRef.current ?? { page: 1, limit: 10 };
+        if (params) {
+          lastParamsRef.current = params;
+        } else if (!lastParamsRef.current) {
+          lastParamsRef.current = nextParams;
+        }
+        const data = await fetchQuotationRequestsApi(nextParams);
+        setRequests(data.requests);
+        setPagination(data.pagination);
+      } catch (err) {
+        setError(typeof err === "string" ? err : "Failed to fetch requests");
+      } finally {
+        setLoading(false);
       }
-      const effectiveParams = params ?? lastParams ?? { page: 1, limit: 10 };
-      const data = await fetchQuotationRequestsApi(effectiveParams);
-      setRequests(data.requests);
-      setPagination(data.pagination);
-    } catch (err) {
-      setError(typeof err === "string" ? err : "Failed to fetch requests");
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    []
+  );
 
-  const createQuotationRequest = async (payload: CreateQuotationPayload) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await createQuotationRequestApi(payload);
-      await fetchQuotationRequests(lastParams);
-    } catch (err) {
-      setError(typeof err === "string" ? err : "Failed to create request");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const createQuotationRequest = useCallback(
+    async (payload: CreateQuotationPayload) => {
+      setLoading(true);
+      setError(null);
+      try {
+        await createQuotationRequestApi(payload);
+        await fetchQuotationRequests(lastParamsRef.current);
+      } catch (err) {
+        setError(typeof err === "string" ? err : "Failed to create request");
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchQuotationRequests]
+  );
+
+  const updateQuotationRequestStatus = useCallback(
+    async (id: string, status: QuotationStatus) => {
+      setLoading(true);
+      setError(null);
+      try {
+        await updateQuotationStatusApi(id, status);
+        await fetchQuotationRequests(lastParamsRef.current);
+      } catch (err) {
+        setError(
+          typeof err === "string" ? err : "Failed to update request status"
+        );
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchQuotationRequests]
+  );
 
   const value = useMemo(
     () => ({
@@ -103,11 +138,22 @@ export const QuoteProvider = ({ children }: { children: ReactNode }) => {
       pagination,
       fetchQuotationRequests,
       createQuotationRequest,
+      updateQuotationRequestStatus,
     }),
-    [requests, loading, error, pagination]
+    [
+      requests,
+      loading,
+      error,
+      pagination,
+      fetchQuotationRequests,
+      createQuotationRequest,
+      updateQuotationRequestStatus,
+    ]
   );
 
-  return <QuoteContext.Provider value={value}>{children}</QuoteContext.Provider>;
+  return (
+    <QuoteContext.Provider value={value}>{children}</QuoteContext.Provider>
+  );
 };
 
 export const useQuotes = () => {
@@ -117,4 +163,3 @@ export const useQuotes = () => {
   }
   return ctx;
 };
-

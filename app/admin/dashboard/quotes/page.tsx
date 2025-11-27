@@ -1,11 +1,14 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useQuotes } from "@/contexts/QuoteContext";
+import { useQuotes, QuotationRequest } from "@/contexts/QuoteContext";
+import { QuotationStatus } from "@/lib/actions/quoteActions";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import {
   ClipboardList,
   Plus,
@@ -17,8 +20,11 @@ import {
   Building2,
   Mail,
   Phone,
-  FileText,
   Search,
+  UserPlus,
+  Eye,
+  X,
+  MoreVertical,
 } from "lucide-react";
 
 const glassPanel =
@@ -56,6 +62,13 @@ const statusOptions = [
   { value: "closed", label: { en: "Closed", ar: "مغلق" } },
 ];
 
+const statusLabels = {
+  pending: { en: "Pending", ar: "قيد الانتظار" },
+  in_review: { en: "In review", ar: "قيد المراجعة" },
+  quoted: { en: "Quoted", ar: "تم إرسال عرض" },
+  closed: { en: "Closed", ar: "مغلق" },
+} as const;
+
 const formatDate = (value?: string) => {
   if (!value) return "-";
   const date = new Date(value);
@@ -70,6 +83,7 @@ const formatDate = (value?: string) => {
 export default function QuotationsPage() {
   const { locale } = useLanguage();
   const isArabic = locale === "ar";
+  const router = useRouter();
   const {
     requests,
     loading,
@@ -77,19 +91,25 @@ export default function QuotationsPage() {
     pagination,
     fetchQuotationRequests,
     createQuotationRequest,
+    updateQuotationRequestStatus,
   } = useQuotes();
   const [form, setForm] = useState(initialForm);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<QuotationStatus | "">("");
+  const [selectedRequest, setSelectedRequest] =
+    useState<QuotationRequest | null>(null);
+  const [formModalOpen, setFormModalOpen] = useState(false);
+  const [statusMenuOpenId, setStatusMenuOpenId] = useState<string | null>(null);
+  const [statusMenuPosition, setStatusMenuPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   useEffect(() => {
     fetchQuotationRequests({ page: 1, limit: 10 });
   }, [fetchQuotationRequests]);
 
-  const handleChange = (
-    field: keyof typeof form,
-    value: string | number
-  ) => {
+  const handleChange = (field: keyof typeof form, value: string | number) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -114,7 +134,13 @@ export default function QuotationsPage() {
       additionalInfo: form.additionalInfo || undefined,
     });
     setForm(initialForm);
-    fetchQuotationRequests({ page: 1, limit: 10, search: searchQuery, status: statusFilter || undefined });
+    setFormModalOpen(false);
+    fetchQuotationRequests({
+      page: 1,
+      limit: 10,
+      search: searchQuery || undefined,
+      status: statusFilter ? statusFilter : undefined,
+    });
   };
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -123,7 +149,7 @@ export default function QuotationsPage() {
       page: 1,
       limit: 10,
       search: searchQuery || undefined,
-      status: statusFilter || undefined,
+      status: statusFilter ? statusFilter : undefined,
     });
   };
 
@@ -132,15 +158,12 @@ export default function QuotationsPage() {
       page,
       limit: pagination?.limit || 10,
       search: searchQuery || undefined,
-      status: statusFilter || undefined,
+      status: statusFilter ? statusFilter : undefined,
     });
   };
 
   const totalValue = useMemo(() => {
-    return requests.reduce(
-      (acc, item) => acc + (item.budget?.to || 0),
-      0
-    );
+    return requests.reduce((acc, item) => acc + (item.budget?.to || 0), 0);
   }, [requests]);
 
   const copy = {
@@ -159,6 +182,80 @@ export default function QuotationsPage() {
     serviceLabel: isArabic ? "الخدمة" : "Service",
   };
 
+  const statusActions = [
+    {
+      value: "in_review",
+      label: { en: "Mark In Review", ar: "تعيين قيد المراجعة" },
+    },
+    {
+      value: "quoted",
+      label: { en: "Mark Quoted", ar: "تم إرسال العرض" },
+    },
+    {
+      value: "closed",
+      label: { en: "Mark Closed", ar: "تعيين كملغى" },
+    },
+  ] as const;
+
+  useEffect(() => {
+    if (!statusMenuOpenId) return;
+    const handleDocumentClick = () => {
+      setStatusMenuOpenId(null);
+      setStatusMenuPosition(null);
+    };
+    document.addEventListener("click", handleDocumentClick);
+    return () => document.removeEventListener("click", handleDocumentClick);
+  }, [statusMenuOpenId]);
+
+  const handleStatusChange = async (
+    requestId: string,
+    status: QuotationStatus
+  ) => {
+    await updateQuotationRequestStatus(requestId, status);
+    setStatusMenuOpenId(null);
+    setStatusMenuPosition(null);
+  };
+
+  const openStatusMenu = (requestId: string, target: HTMLElement) => {
+    setStatusMenuOpenId((prev) => {
+      if (prev === requestId) {
+        setStatusMenuPosition(null);
+        return null;
+      }
+      const rect = target.getBoundingClientRect();
+      const menuWidth = 220;
+      const margin = 16;
+      let x =
+        locale === "ar"
+          ? rect.left + window.scrollX
+          : rect.right + window.scrollX - menuWidth;
+      const viewportWidth = window.innerWidth;
+      if (x + menuWidth > viewportWidth - margin) {
+        x = viewportWidth - margin - menuWidth;
+      }
+      if (x < margin) {
+        x = margin;
+      }
+      const y = rect.bottom + window.scrollY + 8;
+      setStatusMenuPosition({ x, y });
+      return requestId;
+    });
+  };
+
+  const handleViewDetails = (request: QuotationRequest) => {
+    setSelectedRequest(request);
+  };
+
+  const handlePrefillUser = (request: QuotationRequest) => {
+    const params = new URLSearchParams({
+      prefillName: request.fullName || "",
+      prefillEmail: request.email || "",
+      prefillPhone: request.phone || "",
+      prefillCompany: request.companyName || "",
+    });
+    router.push(`/admin/dashboard/users?${params.toString()}`);
+  };
+
   return (
     <div className="space-y-8 text-slate-100">
       <div className="space-y-2">
@@ -170,125 +267,24 @@ export default function QuotationsPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <form
-          onSubmit={handleSubmit}
-          className={`${glassPanel} space-y-5 p-6`}
-        >
-          <div className="flex items-center gap-2 text-white">
-            <Plus className="h-5 w-5 text-primary" />
-            <span className="text-sm font-semibold uppercase tracking-[0.4em] text-white/60">
+        <div className={`${glassPanel} flex flex-col gap-4 p-6`}>
+          <div>
+            <p className="text-xs uppercase tracking-[0.4em] text-white/60">
               {copy.formTitle}
-            </span>
+            </p>
+            <p className="text-sm text-slate-400">{copy.formHint}</p>
           </div>
-          <p className="text-sm text-slate-400">{copy.formHint}</p>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <Input
-              className={inputStyles}
-              placeholder={isArabic ? "الاسم الكامل" : "Full name"}
-              required
-              value={form.fullName}
-              onChange={(e) => handleChange("fullName", e.target.value)}
-            />
-            <Input
-              className={inputStyles}
-              placeholder="Email"
-              type="email"
-              required
-              value={form.email}
-              onChange={(e) => handleChange("email", e.target.value)}
-            />
-            <Input
-              className={inputStyles}
-              placeholder={isArabic ? "رقم الهاتف" : "Phone number"}
-              required
-              value={form.phone}
-              onChange={(e) => handleChange("phone", e.target.value)}
-            />
-            <Input
-              className={inputStyles}
-              placeholder={isArabic ? "اسم الشركة (اختياري)" : "Company (optional)"}
-              value={form.companyName}
-              onChange={(e) => handleChange("companyName", e.target.value)}
-            />
-            <Input
-              className={inputStyles}
-              placeholder={isArabic ? "معرف الخدمة أو الرمز" : "Service reference / ID"}
-              required
-              value={form.serviceId}
-              onChange={(e) => handleChange("serviceId", e.target.value)}
-            />
-            <Input
-              className={inputStyles}
-              placeholder={
-                isArabic ? "مدة التنفيذ المتوقعة" : "Expected duration (e.g. 6 weeks)"
-              }
-              required
-              value={form.expectedDuration}
-              onChange={(e) => handleChange("expectedDuration", e.target.value)}
-            />
-            <Input
-              className={inputStyles}
-              placeholder={isArabic ? "بداية الميزانية" : "Budget from"}
-              type="number"
-              min={0}
-              required
-              value={form.budgetFrom}
-              onChange={(e) => handleChange("budgetFrom", e.target.value)}
-            />
-            <Input
-              className={inputStyles}
-              placeholder={isArabic ? "نهاية الميزانية" : "Budget to"}
-              type="number"
-              min={0}
-              required
-              value={form.budgetTo}
-              onChange={(e) => handleChange("budgetTo", e.target.value)}
-            />
-            <Input
-              className={inputStyles}
-              type="date"
-              required
-              value={form.startDate}
-              onChange={(e) => handleChange("startDate", e.target.value)}
-            />
-            <Input
-              className={inputStyles}
-              type="date"
-              required
-              value={form.endDate}
-              onChange={(e) => handleChange("endDate", e.target.value)}
-            />
-          </div>
-          <Textarea
-            className={`${inputStyles} min-h-[120px]`}
-            placeholder={
-              isArabic ? "وصف المشروع" : "Project description & success criteria"
-            }
-            required
-            value={form.projectDescription}
-            onChange={(e) => handleChange("projectDescription", e.target.value)}
-          />
-          <Textarea
-            className={`${inputStyles} min-h-[100px]`}
-            placeholder={
-              isArabic
-                ? "معلومات إضافية (اختياري)"
-                : "Additional context (optional)"
-            }
-            value={form.additionalInfo}
-            onChange={(e) => handleChange("additionalInfo", e.target.value)}
-          />
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              disabled={loading}
-              className="rounded-full bg-gradient-to-r from-primary to-cyan-400 px-6 text-slate-950 shadow-lg"
-            >
-              {isArabic ? "حفظ الطلب" : "Log request"}
-            </Button>
-          </div>
-        </form>
+          <Button
+            type="button"
+            className="self-start rounded-full bg-primary px-6 py-3 text-black shadow-lg hover:bg-primary/90"
+            onClick={() => setFormModalOpen(true)}
+          >
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <Plus className="h-4 w-4" />
+              {isArabic ? "إضافة طلب" : "New request"}
+            </div>
+          </Button>
+        </div>
 
         <div className={`${glassPanel} space-y-4 p-6`}>
           <div className="flex items-center gap-3">
@@ -330,6 +326,160 @@ export default function QuotationsPage() {
         </div>
       </div>
 
+      {formModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8">
+          <form
+            onSubmit={handleSubmit}
+            className="relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[32px] border border-white/10 bg-gradient-to-br from-[#040812] via-[#050a18] to-[#01030a] p-8 text-white shadow-[0_40px_120px_rgba(0,0,0,0.7)] space-y-6"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-white/50">
+                  {copy.formTitle}
+                </p>
+                <p className="text-sm text-slate-400">{copy.formHint}</p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-white/70 hover:bg-white/10"
+                onClick={() => setFormModalOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <Input
+                className={inputStyles}
+                placeholder={isArabic ? "الاسم الكامل" : "Full name"}
+                required
+                value={form.fullName}
+                onChange={(e) => handleChange("fullName", e.target.value)}
+              />
+              <Input
+                className={inputStyles}
+                placeholder="Email"
+                type="email"
+                required
+                value={form.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+              />
+              <Input
+                className={inputStyles}
+                placeholder={isArabic ? "رقم الهاتف" : "Phone number"}
+                required
+                value={form.phone}
+                onChange={(e) => handleChange("phone", e.target.value)}
+              />
+              <Input
+                className={inputStyles}
+                placeholder={
+                  isArabic ? "اسم الشركة (اختياري)" : "Company (optional)"
+                }
+                value={form.companyName}
+                onChange={(e) => handleChange("companyName", e.target.value)}
+              />
+              <Input
+                className={inputStyles}
+                placeholder={
+                  isArabic ? "معرف الخدمة أو الرمز" : "Service reference / ID"
+                }
+                required
+                value={form.serviceId}
+                onChange={(e) => handleChange("serviceId", e.target.value)}
+              />
+              <Input
+                className={inputStyles}
+                placeholder={
+                  isArabic
+                    ? "مدة التنفيذ المتوقعة"
+                    : "Expected duration (e.g. 6 weeks)"
+                }
+                required
+                value={form.expectedDuration}
+                onChange={(e) =>
+                  handleChange("expectedDuration", e.target.value)
+                }
+              />
+              <Input
+                className={inputStyles}
+                placeholder={isArabic ? "بداية الميزانية" : "Budget from"}
+                type="number"
+                min={0}
+                required
+                value={form.budgetFrom}
+                onChange={(e) => handleChange("budgetFrom", e.target.value)}
+              />
+              <Input
+                className={inputStyles}
+                placeholder={isArabic ? "نهاية الميزانية" : "Budget to"}
+                type="number"
+                min={0}
+                required
+                value={form.budgetTo}
+                onChange={(e) => handleChange("budgetTo", e.target.value)}
+              />
+              <Input
+                className={inputStyles}
+                type="date"
+                required
+                value={form.startDate}
+                onChange={(e) => handleChange("startDate", e.target.value)}
+              />
+              <Input
+                className={inputStyles}
+                type="date"
+                required
+                value={form.endDate}
+                onChange={(e) => handleChange("endDate", e.target.value)}
+              />
+            </div>
+            <Textarea
+              className={`${inputStyles} min-h-[120px]`}
+              placeholder={
+                isArabic
+                  ? "وصف المشروع"
+                  : "Project description & success criteria"
+              }
+              required
+              value={form.projectDescription}
+              onChange={(e) =>
+                handleChange("projectDescription", e.target.value)
+              }
+            />
+            <Textarea
+              className={`${inputStyles} min-h-[100px]`}
+              placeholder={
+                isArabic
+                  ? "معلومات إضافية (اختياري)"
+                  : "Additional context (optional)"
+              }
+              value={form.additionalInfo}
+              onChange={(e) => handleChange("additionalInfo", e.target.value)}
+            />
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="ghost"
+                className="rounded-full border border-white/20 px-6 text-white/70 hover:bg-white/5"
+                onClick={() => setFormModalOpen(false)}
+              >
+                {isArabic ? "إلغاء" : "Cancel"}
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="rounded-full bg-gradient-to-r from-primary to-cyan-400 px-6 text-slate-950 shadow-lg"
+              >
+                {isArabic ? "حفظ الطلب" : "Log request"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
+
       <div className={`${glassPanel} space-y-4 p-6`}>
         <form
           onSubmit={handleSearch}
@@ -340,7 +490,9 @@ export default function QuotationsPage() {
             <Input
               className={`${inputStyles} ltr:pl-10 rtl:pr-10`}
               placeholder={
-                isArabic ? "ابحث بالاسم أو البريد..." : "Search by name or email..."
+                isArabic
+                  ? "ابحث بالاسم أو البريد..."
+                  : "Search by name or email..."
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -349,7 +501,9 @@ export default function QuotationsPage() {
           <select
             className={`${inputStyles} sm:w-48`}
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) =>
+              setStatusFilter(e.target.value as QuotationStatus | "")
+            }
           >
             {statusOptions.map((option) => (
               <option
@@ -357,7 +511,7 @@ export default function QuotationsPage() {
                 value={option.value}
                 className="bg-slate-900 text-slate-100"
               >
-                option.label[locale]
+                {option.label[locale]}
               </option>
             ))}
           </select>
@@ -397,6 +551,9 @@ export default function QuotationsPage() {
                 <th className="py-2 ltr:text-left rtl:text-right">
                   {isArabic ? "التواريخ" : "Dates"}
                 </th>
+                <th className="py-2 ltr:text-left rtl:text-right">
+                  {isArabic ? "الإجراءات" : "Actions"}
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-white/90">
@@ -418,23 +575,69 @@ export default function QuotationsPage() {
                     )}
                   </td>
                   <td className="py-3">
-                    {new Intl.NumberFormat().format(request.budget?.from || 0)} -{" "}
-                    {new Intl.NumberFormat().format(request.budget?.to || 0)}
+                    {new Intl.NumberFormat().format(request.budget?.from || 0)}{" "}
+                    - {new Intl.NumberFormat().format(request.budget?.to || 0)}
                   </td>
                   <td className="py-3">{request.expectedDuration}</td>
                   <td className="py-3">
                     <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs uppercase tracking-[0.35em] ${statusTokens[request.status]}`}
+                      className={`inline-flex rounded-full px-3 py-1 text-xs uppercase tracking-[0.35em] ${
+                        statusTokens[request.status]
+                      }`}
                     >
-                      {request.status}
+                      {statusLabels[request.status][locale]}
                     </span>
                   </td>
                   <td className="py-3">
                     <div className="text-xs text-white/80">
-                      {formatDate(request.startDate)} → {formatDate(request.endDate)}
+                      {formatDate(request.startDate)} →{" "}
+                      {formatDate(request.endDate)}
                     </div>
                     <div className="text-xs text-white/40">
                       {formatDate(request.createdAt)}
+                    </div>
+                  </td>
+                  <td className="py-3">
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full border-white/20 text-white/80 hover:bg-white/10"
+                        onClick={() => handleViewDetails(request)}
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        <span className="text-xs">
+                          {isArabic ? "تفاصيل" : "Details"}
+                        </span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full border-primary/40 text-primary hover:bg-primary/10"
+                        onClick={() => handlePrefillUser(request)}
+                      >
+                        <UserPlus className="h-3.5 w-3.5" />
+                        <span className="text-xs">
+                          {isArabic ? "إضافة مستخدم" : "Add user"}
+                        </span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full text-primary hover:bg-white/10"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          e.nativeEvent.stopImmediatePropagation();
+                          openStatusMenu(
+                            request._id,
+                            e.currentTarget as HTMLElement
+                          );
+                        }}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -445,22 +648,31 @@ export default function QuotationsPage() {
 
         <div className="space-y-4 md:hidden">
           {requests.map((request) => (
-            <div key={request._id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            <div
+              key={request._id}
+              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+            >
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
                   <p className="font-semibold text-white">{request.fullName}</p>
                   <p className="text-xs text-white/60">{request.email}</p>
                 </div>
                 <span
-                  className={`inline-flex rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.3em] ${statusTokens[request.status]}`}
+                  className={`inline-flex rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.3em] ${
+                    statusTokens[request.status]
+                  }`}
                 >
-                  {request.status}
+                  {statusLabels[request.status][locale]}
                 </span>
               </div>
               <div className="space-y-2 text-sm text-white/80">
                 <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-primary" />
+                  <Phone className="h-4 w-4 text-primary" />
                   <span>{request.phone}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-primary" />
+                  <span>{request.email}</span>
                 </div>
                 {request.companyName && (
                   <div className="flex items-center gap-2">
@@ -475,20 +687,61 @@ export default function QuotationsPage() {
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-primary" />
                   <span>
-                    {new Intl.NumberFormat().format(request.budget?.from || 0)} -{" "}
-                    {new Intl.NumberFormat().format(request.budget?.to || 0)}
+                    {new Intl.NumberFormat().format(request.budget?.from || 0)}{" "}
+                    - {new Intl.NumberFormat().format(request.budget?.to || 0)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-primary" />
                   <span>
-                    {formatDate(request.startDate)} → {formatDate(request.endDate)}
+                    {formatDate(request.startDate)} →{" "}
+                    {formatDate(request.endDate)}
                   </span>
                 </div>
                 <p className="text-xs text-white/60">
                   {request.projectDescription.slice(0, 140)}
                   {request.projectDescription.length > 140 && "..."}
                 </p>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full border-white/20 text-white/80 hover:bg-white/10"
+                    onClick={() => handleViewDetails(request)}
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    <span className="text-xs">
+                      {isArabic ? "تفاصيل" : "Details"}
+                    </span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full border-primary/40 text-primary hover:bg-primary/10"
+                    onClick={() => handlePrefillUser(request)}
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    <span className="text-xs">
+                      {isArabic ? "إضافة مستخدم" : "Add user"}
+                    </span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full text-primary hover:bg-white/10"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      e.nativeEvent.stopImmediatePropagation();
+                      openStatusMenu(
+                        request._id,
+                        e.currentTarget as HTMLElement
+                      );
+                    }}
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
@@ -496,9 +749,7 @@ export default function QuotationsPage() {
 
         {!loading && requests.length === 0 && (
           <div className="rounded-2xl border border-dashed border-white/20 p-6 text-center text-sm text-white/60">
-            {isArabic
-              ? "لا توجد طلبات حتى الآن."
-              : "No requests captured yet."}
+            {isArabic ? "لا توجد طلبات حتى الآن." : "No requests captured yet."}
           </div>
         )}
 
@@ -514,14 +765,20 @@ export default function QuotationsPage() {
               {isArabic ? (
                 <>
                   عرض {(pagination.page - 1) * pagination.limit + 1} -{" "}
-                  {Math.min(pagination.page * pagination.limit, pagination.total)} من{" "}
-                  {pagination.total}
+                  {Math.min(
+                    pagination.page * pagination.limit,
+                    pagination.total
+                  )}{" "}
+                  من {pagination.total}
                 </>
               ) : (
                 <>
                   Showing {(pagination.page - 1) * pagination.limit + 1} -{" "}
-                  {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
-                  {pagination.total}
+                  {Math.min(
+                    pagination.page * pagination.limit,
+                    pagination.total
+                  )}{" "}
+                  of {pagination.total}
                 </>
               )}
             </div>
@@ -550,7 +807,158 @@ export default function QuotationsPage() {
           </div>
         )}
       </div>
+
+      {selectedRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8">
+          <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[32px] border border-white/10 bg-gradient-to-br from-[#040813] via-[#050b19] to-[#01030a] p-6 text-white shadow-[0_35px_120px_rgba(0,0,0,0.8)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-white/50">
+                  {isArabic ? "تفاصيل الطلب" : "Quotation details"}
+                </p>
+                <h3 className="text-2xl font-bold text-white">
+                  {selectedRequest.fullName}
+                </h3>
+                <p className="text-sm text-white/60">
+                  {formatDate(selectedRequest.createdAt)}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full border-primary/40 text-primary hover:bg-primary/10"
+                  onClick={() => handlePrefillUser(selectedRequest)}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span className="text-xs">
+                    {isArabic ? "إنشاء مستخدم" : "Create user"}
+                  </span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white/70 hover:bg-white/10"
+                  onClick={() => setSelectedRequest(null)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-5 md:grid-cols-2">
+              <DetailsField
+                label={isArabic ? "البريد" : "Email"}
+                value={selectedRequest.email}
+              />
+              <DetailsField
+                label={isArabic ? "الهاتف" : "Phone"}
+                value={selectedRequest.phone}
+              />
+              {selectedRequest.companyName && (
+                <DetailsField
+                  label={isArabic ? "الشركة" : "Company"}
+                  value={selectedRequest.companyName}
+                />
+              )}
+              <DetailsField
+                label={copy.serviceLabel}
+                value={selectedRequest.serviceId}
+              />
+              <DetailsField
+                label={copy.budgetLabel}
+                value={`${new Intl.NumberFormat().format(
+                  selectedRequest.budget?.from || 0
+                )} - ${new Intl.NumberFormat().format(
+                  selectedRequest.budget?.to || 0
+                )}`}
+              />
+              <DetailsField
+                label={copy.timelineLabel}
+                value={`${formatDate(selectedRequest.startDate)} → ${formatDate(
+                  selectedRequest.endDate
+                )} • ${selectedRequest.expectedDuration}`}
+              />
+            </div>
+
+            <div className="mt-6 space-y-4">
+              <DetailsField
+                label={isArabic ? "وصف المشروع" : "Project description"}
+                value={selectedRequest.projectDescription}
+                fullWidth
+              />
+              {selectedRequest.additionalInfo && (
+                <DetailsField
+                  label={isArabic ? "معلومات إضافية" : "Additional info"}
+                  value={selectedRequest.additionalInfo}
+                  fullWidth
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {statusMenuOpenId &&
+        statusMenuPosition &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[70]"
+            onClick={() => {
+              setStatusMenuOpenId(null);
+              setStatusMenuPosition(null);
+            }}
+          >
+            <div
+              className="absolute z-[71] w-56 rounded-2xl border border-white/10 bg-[#050b19] p-2 shadow-2xl"
+              style={{
+                top: statusMenuPosition.y,
+                left: statusMenuPosition.x,
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {statusActions.map((action) => (
+                <button
+                  key={action.value}
+                  type="button"
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-white/70 hover:bg-white/10"
+                  onClick={() =>
+                    statusMenuOpenId &&
+                    handleStatusChange(
+                      statusMenuOpenId,
+                      action.value as QuotationStatus
+                    )
+                  }
+                >
+                  {action.label[locale]}
+                </button>
+              ))}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
 
+function DetailsField({
+  label,
+  value,
+  fullWidth,
+}: {
+  label: string;
+  value?: string;
+  fullWidth?: boolean;
+}) {
+  if (!value) return null;
+  return (
+    <div className={fullWidth ? "md:col-span-2" : undefined}>
+      <p className="text-xs uppercase tracking-[0.35em] text-white/40">
+        {label}
+      </p>
+      <p className="mt-1 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm text-white/90">
+        {value}
+      </p>
+    </div>
+  );
+}

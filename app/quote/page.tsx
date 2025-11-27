@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { createQuotationRequestApi } from "@/lib/actions/quoteActions";
 
 const contentMap = {
   en: {
@@ -131,7 +132,12 @@ const serviceOptions = [
   "Incident Response",
 ];
 
-const budgetOptions = ["$5k - $15k", "$15k - $30k", "$30k - $50k", "$50k+"];
+const budgetOptions = [
+  { value: "5-15", label: "$5k - $15k", from: 5000, to: 15000 },
+  { value: "15-30", label: "$15k - $30k", from: 15000, to: 30000 },
+  { value: "30-50", label: "$30k - $50k", from: 30000, to: 50000 },
+  { value: "50+", label: "$50k+", from: 50000, to: 100000 },
+];
 
 const durationOptions = ["2-4 Weeks", "1-2 Months", "3-4 Months", "Ongoing"];
 
@@ -156,10 +162,108 @@ export default function QuotePage() {
     () => contentMap[locale as "en" | "ar"] || contentMap.en,
     [locale]
   );
+  const [form, setForm] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    company: "",
+    serviceType: "",
+    projectDesc: "",
+    budgetRange: "",
+    duration: "",
+    startDate: "",
+    endDate: "",
+    notes: "",
+    referral: "",
+    consent: false,
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<
+    { type: "success" | "error"; message: string } | undefined
+  >();
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleChange = <K extends keyof typeof form>(
+    field: K,
+    value: (typeof form)[K]
+  ) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // This is just a demo form. Hook up to backend or service here.
+    setSubmitting(true);
+    setFeedback(undefined);
+    try {
+      if (!form.consent) {
+        throw new Error(
+          locale === "ar"
+            ? "يرجى الموافقة على الشروط قبل الإرسال."
+            : "Please accept the consent before submitting."
+        );
+      }
+      const budget = budgetOptions.find(
+        (option) => option.value === form.budgetRange
+      );
+      if (!budget) {
+        throw new Error(
+          locale === "ar"
+            ? "يرجى تحديد نطاق الميزانية."
+            : "Please select a budget range."
+        );
+      }
+      await createQuotationRequestApi({
+        fullName: form.fullName,
+        email: form.email,
+        phone: form.phone,
+        companyName: form.company || undefined,
+        serviceId: form.serviceType || "custom",
+        projectDescription: form.projectDesc,
+        budget: {
+          from: budget.from,
+          to: budget.to,
+        },
+        expectedDuration: form.duration || "unspecified",
+        startDate: form.startDate,
+        endDate: form.endDate,
+        additionalInfo: [form.notes, form.referral].filter(Boolean).join(" — "),
+      });
+      setFeedback({
+        type: "success",
+        message:
+          locale === "ar"
+            ? "تم استلام طلبك وسنتواصل معك قريباً."
+            : "Your request has been received. We'll be in touch shortly.",
+      });
+      setForm({
+        fullName: "",
+        email: "",
+        phone: "",
+        company: "",
+        serviceType: "",
+        projectDesc: "",
+        budgetRange: "",
+        duration: "",
+        startDate: "",
+        endDate: "",
+        notes: "",
+        referral: "",
+        consent: false,
+      });
+    } catch (error) {
+      setFeedback({
+        type: "error",
+        message:
+          typeof error === "string"
+            ? error
+            : error instanceof Error
+            ? error.message
+            : locale === "ar"
+            ? "تعذر إرسال الطلب، يرجى المحاولة لاحقاً."
+            : "Unable to submit your request. Please try again later.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -205,6 +309,8 @@ export default function QuotePage() {
                     placeholder={copy.placeholders.fullName}
                     required
                     className={inputClasses}
+                    value={form.fullName}
+                    onChange={(e) => handleChange("fullName", e.target.value)}
                   />
                 </Field>
                 <Field label={copy.labels.email}>
@@ -213,18 +319,24 @@ export default function QuotePage() {
                     placeholder={copy.placeholders.email}
                     required
                     className={inputClasses}
+                    value={form.email}
+                    onChange={(e) => handleChange("email", e.target.value)}
                   />
                 </Field>
                 <Field label={copy.labels.phone}>
                   <Input
                     placeholder={copy.placeholders.phone}
                     className={inputClasses}
+                    value={form.phone}
+                    onChange={(e) => handleChange("phone", e.target.value)}
                   />
                 </Field>
                 <Field label={copy.labels.company}>
                   <Input
                     placeholder={copy.placeholders.company}
                     className={inputClasses}
+                    value={form.company}
+                    onChange={(e) => handleChange("company", e.target.value)}
                   />
                 </Field>
               </div>
@@ -236,10 +348,14 @@ export default function QuotePage() {
             >
               <div className="grid gap-4">
                 <Field label={copy.labels.serviceType}>
-                  <select className={selectClasses} defaultValue="">
-                    <option value="" disabled>
-                      {copy.select.service}
-                    </option>
+                  <select
+                    className={selectClasses}
+                    value={form.serviceType}
+                    onChange={(e) =>
+                      handleChange("serviceType", e.target.value)
+                    }
+                  >
+                    <option value="">{copy.select.service}</option>
                     {serviceOptions.map((option) => (
                       <option
                         key={option}
@@ -256,6 +372,10 @@ export default function QuotePage() {
                     rows={4}
                     placeholder={copy.placeholders.projectDesc}
                     className={textareaClasses}
+                    value={form.projectDesc}
+                    onChange={(e) =>
+                      handleChange("projectDesc", e.target.value)
+                    }
                   />
                 </Field>
               </div>
@@ -267,26 +387,33 @@ export default function QuotePage() {
             >
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label={copy.labels.budgetRange}>
-                  <select className={selectClasses} defaultValue="">
-                    <option value="" disabled>
-                      {copy.select.budget}
-                    </option>
+                  <select
+                    className={selectClasses}
+                    value={form.budgetRange}
+                    onChange={(e) =>
+                      handleChange("budgetRange", e.target.value)
+                    }
+                    required
+                  >
+                    <option value="">{copy.select.budget}</option>
                     {budgetOptions.map((option) => (
                       <option
-                        key={option}
-                        value={option}
+                        key={option.value}
+                        value={option.value}
                         className="text-black"
                       >
-                        {option}
+                        {option.label}
                       </option>
                     ))}
                   </select>
                 </Field>
                 <Field label={copy.labels.duration}>
-                  <select className={selectClasses} defaultValue="">
-                    <option value="" disabled>
-                      {copy.select.duration}
-                    </option>
+                  <select
+                    className={selectClasses}
+                    value={form.duration}
+                    onChange={(e) => handleChange("duration", e.target.value)}
+                  >
+                    <option value="">{copy.select.duration}</option>
                     {durationOptions.map((option) => (
                       <option
                         key={option}
@@ -299,10 +426,22 @@ export default function QuotePage() {
                   </select>
                 </Field>
                 <Field label={copy.labels.startDate}>
-                  <Input type="date" className={inputClasses} />
+                  <Input
+                    type="date"
+                    className={inputClasses}
+                    value={form.startDate}
+                    onChange={(e) => handleChange("startDate", e.target.value)}
+                    required
+                  />
                 </Field>
                 <Field label={copy.labels.endDate}>
-                  <Input type="date" className={inputClasses} />
+                  <Input
+                    type="date"
+                    className={inputClasses}
+                    value={form.endDate}
+                    onChange={(e) => handleChange("endDate", e.target.value)}
+                    required
+                  />
                 </Field>
               </div>
             </Section>
@@ -317,14 +456,18 @@ export default function QuotePage() {
                     rows={4}
                     placeholder={copy.placeholders.notes}
                     className={textareaClasses}
+                    value={form.notes}
+                    onChange={(e) => handleChange("notes", e.target.value)}
                   />
                 </Field>
 
                 <Field label={copy.labels.referral}>
-                  <select className={selectClasses} defaultValue="">
-                    <option value="" disabled>
-                      {copy.select.referral}
-                    </option>
+                  <select
+                    className={selectClasses}
+                    value={form.referral}
+                    onChange={(e) => handleChange("referral", e.target.value)}
+                  >
+                    <option value="">{copy.select.referral}</option>
                     {referralOptions.map((option) => (
                       <option
                         key={option}
@@ -342,14 +485,37 @@ export default function QuotePage() {
                     type="checkbox"
                     className="mt-1 h-4 w-4 rounded border-white/20 bg-transparent text-primary focus:ring-primary"
                     required
+                    checked={form.consent}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        consent: e.target.checked,
+                      }))
+                    }
                   />
                   <span>{copy.labels.consent}</span>
                 </label>
               </div>
             </Section>
 
+            {feedback && (
+              <p
+                className={`text-sm ${
+                  feedback.type === "success"
+                    ? "text-emerald-300"
+                    : "text-red-300"
+                }`}
+              >
+                {feedback.message}
+              </p>
+            )}
+
             <div className="flex flex-col gap-2 text-center">
-              <Button className="rounded-full bg-primary text-black hover:bg-primary/90 px-8 py-6 text-sm font-semibold inline-flex items-center justify-center gap-2">
+              <Button
+                className="rounded-full bg-primary text-black hover:bg-primary/90 px-8 py-6 text-sm font-semibold inline-flex items-center justify-center gap-2"
+                type="submit"
+                disabled={submitting}
+              >
                 {copy.submit}
                 <ArrowRight className="h-4 w-4 rtl:rotate-180" />
               </Button>

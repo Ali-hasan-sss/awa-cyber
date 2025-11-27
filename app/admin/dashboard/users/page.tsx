@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useUsers } from "@/contexts/UserContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,8 @@ const pillClass =
 export default function UsersManagementPage() {
   const { locale } = useLanguage();
   const isArabic = locale === "ar";
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const copy = {
     title: isArabic ? "إدارة المستخدمين" : "User Management",
     subtitle: isArabic
@@ -239,6 +242,29 @@ export default function UsersManagementPage() {
       limit: 10,
     });
   }, []);
+
+  const [prefillApplied, setPrefillApplied] = useState(false);
+
+  useEffect(() => {
+    if (prefillApplied) return;
+    const prefillName = searchParams.get("prefillName");
+    const prefillEmail = searchParams.get("prefillEmail");
+    const prefillPhone = searchParams.get("prefillPhone");
+    const prefillCompany = searchParams.get("prefillCompany");
+    if (prefillName || prefillEmail || prefillPhone || prefillCompany) {
+      setForm((prev) => ({
+        ...prev,
+        name: prefillName || prev.name,
+        email: prefillEmail || prev.email,
+        phone: prefillPhone || prev.phone,
+        companyName: prefillCompany || prev.companyName,
+        role: "client",
+      }));
+      setPrefillApplied(true);
+      setEditingUserId(null);
+      router.replace("/admin/dashboard/users");
+    }
+  }, [searchParams, prefillApplied, router]);
 
   return (
     <div className="space-y-8 text-slate-100">
