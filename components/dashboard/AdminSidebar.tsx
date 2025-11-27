@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users, LayoutDashboard } from "lucide-react";
+import { Users, LayoutDashboard, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "../ui/logo";
 
@@ -16,6 +16,11 @@ const navItems = [
     href: "/admin/dashboard/users",
     icon: Users,
     label: { en: "Users", ar: "المستخدمون" },
+  },
+  {
+    href: "/admin/dashboard/quotes",
+    icon: ClipboardList,
+    label: { en: "Quotations", ar: "طلبات التسعير" },
   },
 ];
 
