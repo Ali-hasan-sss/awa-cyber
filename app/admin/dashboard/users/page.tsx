@@ -39,6 +39,17 @@ const initialForm: FormState = {
   role: "client",
 };
 
+const glassPanel =
+  "rounded-3xl border border-white/10 bg-white/[0.04] shadow-[0_25px_80px_rgba(2,6,23,0.55)] backdrop-blur-2xl";
+const glassCard =
+  "rounded-2xl border border-white/10 bg-white/[0.04] shadow-[0_15px_45px_rgba(2,6,23,0.45)] backdrop-blur-xl";
+const inputStyles =
+  "rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-cyan-400 focus:border-transparent focus:bg-white/[0.05] transition";
+const selectStyles =
+  "rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-slate-100 focus-visible:ring-1 focus-visible:ring-cyan-400 focus:border-transparent";
+const pillClass =
+  "inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs uppercase tracking-[0.35em] text-white/70";
+
 export default function UsersManagementPage() {
   const { locale } = useLanguage();
   const isArabic = locale === "ar";
@@ -230,24 +241,24 @@ export default function UsersManagementPage() {
   }, []);
 
   return (
-    <div className="space-y-8 text-slate-900">
+    <div className="space-y-8 text-slate-100">
       <div className="space-y-2">
-        <h1 className="flex items-center gap-3 text-3xl font-bold">
+        <h1 className="flex items-center gap-3 text-3xl font-bold text-white drop-shadow">
           <Users className="h-8 w-8 text-primary" />
           {copy.title}
         </h1>
-        <p className="text-slate-500">{copy.subtitle}</p>
+        <p className="text-slate-300">{copy.subtitle}</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <form
           id="user-form"
           onSubmit={editingUserId ? handleUpdate : handleCreate}
-          className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
+          className={`${glassPanel} space-y-5 p-6`}
         >
-          <div className="flex items-center gap-2 text-slate-500">
+          <div className="flex items-center gap-2 text-white">
             <Plus className="h-5 w-5 text-primary" />
-            <span className="font-semibold">
+            <span className="text-sm font-semibold tracking-wide text-white/80">
               {editingUserId ? copy.updateUser : copy.addUser}
             </span>
           </div>
@@ -257,6 +268,7 @@ export default function UsersManagementPage() {
               required
               value={form.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
+              className={inputStyles}
             />
             <Input
               placeholder="Email"
@@ -264,21 +276,24 @@ export default function UsersManagementPage() {
               required
               value={form.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
+              className={inputStyles}
             />
             <Input
               placeholder={isArabic ? "رقم الهاتف" : "Phone number"}
               required
               value={form.phone}
               onChange={(e) => handleInputChange("phone", e.target.value)}
+              className={inputStyles}
             />
             <Input
               placeholder={isArabic ? "اسم الشركة" : "Company name"}
               required
               value={form.companyName}
               onChange={(e) => handleInputChange("companyName", e.target.value)}
+              className={inputStyles}
             />
             <select
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"
+              className={selectStyles}
               value={form.role}
               onChange={(e) =>
                 handleInputChange("role", e.target.value as "admin" | "client")
@@ -288,7 +303,7 @@ export default function UsersManagementPage() {
                 <option
                   key={option.value}
                   value={option.value}
-                  className="text-black"
+                  className="bg-slate-950 text-slate-100"
                 >
                   {option.label[locale]}
                 </option>
@@ -301,7 +316,7 @@ export default function UsersManagementPage() {
                 type="button"
                 variant="outline"
                 onClick={handleCancelEdit}
-                className="rounded-full border-slate-200 text-slate-700 px-6"
+                className="rounded-full border-white/20 bg-white/5 px-6 text-white/80 hover:bg-white/10"
               >
                 {isArabic ? "إلغاء" : "Cancel"}
               </Button>
@@ -309,30 +324,32 @@ export default function UsersManagementPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="rounded-full bg-primary text-black px-6"
+              className="rounded-full bg-gradient-to-r from-primary to-cyan-400 px-6 text-slate-950 shadow-lg"
             >
               {editingUserId ? copy.updateUser : copy.addUser}
             </Button>
           </div>
         </form>
 
-        <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className={`${glassPanel} space-y-4 p-6`}>
           <div className="flex items-center gap-3">
             <RefreshCw className="h-5 w-5 text-primary" />
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-300">
               {isArabic
                 ? "تحديث مستمر لقائمة المستخدمين والتقارير اليومية."
                 : "Live overview of registered users and daily reports."}
             </p>
           </div>
           {codeInfo && (
-            <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm text-primary">
+            <div className="rounded-2xl border border-primary/40 bg-primary/10 p-4 text-sm text-primary shadow-inner backdrop-blur-xl">
               <p>
                 {isArabic ? "رمز الدخول للمستخدم" : "Login code for user"}{" "}
                 <strong>{codeInfo.userId}</strong>:
               </p>
-              <p className="text-2xl font-bold">{codeInfo.code}</p>
-              <p className="text-primary/70 text-xs mt-1">
+              <p className="text-3xl font-bold tracking-wider">
+                {codeInfo.code}
+              </p>
+              <p className="mt-1 text-xs text-primary/70">
                 {isArabic ? "تم نسخه إلى الحافظة." : "Copied to clipboard."}
               </p>
             </div>
@@ -341,13 +358,13 @@ export default function UsersManagementPage() {
       </div>
 
       {/* Search and Filter Section */}
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className={`${glassPanel} p-6`}>
         <form
           onSubmit={handleSearch}
-          className="flex flex-col sm:flex-row gap-3"
+          className="flex flex-col gap-3 sm:flex-row"
         >
           <div className="relative flex-1">
-            <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute top-1/2 h-4 w-4 -translate-y-1/2 text-white/40 ltr:left-3 rtl:right-3" />
             <Input
               type="text"
               placeholder={
@@ -357,25 +374,32 @@ export default function UsersManagementPage() {
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="ltr:pl-10 rtl:pr-10"
+              className={`${inputStyles} ltr:pl-10 rtl:pr-10`}
             />
           </div>
-          <Button type="submit" className="sm:w-auto w-full sm:px-6">
+          <Button
+            type="submit"
+            className="w-full rounded-full bg-gradient-to-r from-primary to-cyan-400 text-slate-950 shadow-lg sm:w-auto sm:px-6"
+          >
             <Search className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
             {isArabic ? "بحث" : "Search"}
           </Button>
           <select
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 sm:w-48"
+            className={`${selectStyles} sm:w-48`}
             value={roleFilter}
             onChange={(e) =>
               handleRoleFilterChange(e.target.value as "admin" | "client" | "")
             }
           >
-            <option value="">
+            <option value="" className="bg-slate-950 text-slate-100">
               {isArabic ? "جميع الصلاحيات" : "All Roles"}
             </option>
             {roleOptions.map((option) => (
-              <option key={option.value} value={option.value}>
+              <option
+                key={option.value}
+                value={option.value}
+                className="bg-slate-950 text-slate-100"
+              >
                 {option.label[locale]}
               </option>
             ))}
@@ -383,9 +407,9 @@ export default function UsersManagementPage() {
         </form>
       </div>
 
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className={`${glassPanel} p-6`}>
         {error && (
-          <p className="mb-4 text-sm text-red-500">
+          <p className="mb-4 text-sm text-red-400">
             {typeof error === "string" ? error : "Error"}
           </p>
         )}
@@ -393,7 +417,7 @@ export default function UsersManagementPage() {
         {/* Desktop Table View */}
         <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="ltr:text-left rtl:text-right text-slate-500">
+            <thead className="ltr:text-left rtl:text-right border-b border-white/10 text-[11px] uppercase tracking-[0.25em] text-white/70">
               <tr>
                 <th className="py-2 ltr:text-left rtl:text-right">#</th>
                 <th className="py-2 ltr:text-left rtl:text-right">
@@ -410,18 +434,18 @@ export default function UsersManagementPage() {
                   {isArabic ? "الدور" : "Role"}
                 </th>
                 <th className="py-2">
-                  <div className="flex items-center justify-start  ">
+                  <div className="flex items-center justify-start">
                     {isArabic ? "رمز الدخول" : "Login Code"}
                   </div>
                 </th>
                 <th className="py-2">
-                  <div className="flex items-center justify-start ">
+                  <div className="flex items-center justify-start">
                     {isArabic ? "الإجراءات" : "Actions"}
                   </div>
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
+            <tbody className="divide-y divide-white/5 text-white">
               {users.map((user, index) => {
                 // Get login code from user object (returned from API) or from recently generated codes
                 const userCode =
@@ -433,31 +457,31 @@ export default function UsersManagementPage() {
 
                 return (
                   <tr key={user._id}>
-                    <td className="py-3 ltr:text-left rtl:text-right text-slate-400">
+                    <td className="py-3 ltr:text-left rtl:text-right text-white/50">
                       {index + 1}
                     </td>
-                    <td className="py-3 ltr:text-left rtl:text-right font-semibold text-slate-900">
+                    <td className="py-3 ltr:text-left rtl:text-right font-semibold text-white">
                       {user.name}
                     </td>
-                    <td className="py-3 ltr:text-left rtl:text-right text-slate-500">
+                    <td className="py-3 ltr:text-left rtl:text-right text-white/80">
                       {user.email}
                     </td>
-                    <td className="py-3 ltr:text-left rtl:text-right text-slate-500">
+                    <td className="py-3 ltr:text-left rtl:text-right text-white/80">
                       {user.phone}
                     </td>
-                    <td className="py-3 ltr:text-left rtl:text-right text-slate-500">
+                    <td className="py-3 ltr:text-left rtl:text-right text-white/80">
                       {user.companyName}
                     </td>
                     <td className="py-3 ltr:text-left rtl:text-right">
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs uppercase tracking-wide text-slate-600">
+                      <span className={`${pillClass} bg-white/15`}>
                         {user.role}
                       </span>
                     </td>
                     <td className="py-3">
-                      <div className="flex items-center justify-start ltr:justify-start rtl:justify-end gap-2 ltr:flex-row rtl:flex-row-reverse">
+                      <div className="flex items-center gap-2 ltr:flex-row rtl:flex-row-reverse">
                         {userCode ? (
                           <>
-                            <code className="rounded-lg bg-secondary/70 px-2 py-1 text-xs font-mono text-primary font-semibold">
+                            <code className="rounded-lg bg-primary/10 px-2 py-1 font-mono text-xs font-semibold text-primary">
                               {userCode}
                             </code>
                             <button
@@ -466,29 +490,38 @@ export default function UsersManagementPage() {
                                   .writeText(userCode)
                                   .catch(() => {});
                               }}
-                              className="text-slate-400 hover:text-slate-600"
+                              className="text-white/40 transition hover:text-white"
                               title={isArabic ? "نسخ" : "Copy"}
                             >
                               <KeyRound className="h-3 w-3" />
                             </button>
                           </>
                         ) : user.hasLoginCode ? (
-                          <span className="text-xs text-slate-400">
+                          <span className="text-xs text-white/60">
                             {isArabic ? "تم التوليد" : "Generated"}
                           </span>
                         ) : (
-                          <span className="text-xs text-slate-300">
+                          <span className="text-xs text-white/40">
                             {isArabic ? "غير متوفر" : "Not set"}
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="py-3">
-                      <div className="flex flex-wrap items-center justify-start ltr:justify-start rtl:justify-end gap-2 ltr:flex-row rtl:flex-row-reverse">
+                      <div className="flex flex-wrap items-center gap-2 ltr:flex-row rtl:flex-row-reverse">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="border-slate-200 text-slate-700"
+                          className="rounded-full border-white/20 text-white/80 hover:bg-white/10"
+                          onClick={() => handleGenerateCode(user._id)}
+                          title={isArabic ? "توليد رمز" : "Generate code"}
+                        >
+                          <KeyRound className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-full border-white/20 text-white/80 hover:bg-white/10"
                           onClick={() => startEdit(user._id)}
                           title={isArabic ? "تعديل" : "Edit"}
                         >
@@ -497,7 +530,7 @@ export default function UsersManagementPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="border-red-200 text-red-500"
+                          className="rounded-full border-red-400/50 text-red-400 hover:bg-red-500/10"
                           onClick={() => handleDeleteClick(user._id, user.name)}
                           title={isArabic ? "حذف" : "Delete"}
                         >
@@ -524,29 +557,22 @@ export default function UsersManagementPage() {
                 : null);
 
             return (
-              <div
-                key={user._id}
-                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-              >
-                <div className="flex items-start justify-between mb-3">
+              <div key={user._id} className={`${glassCard} p-4`}>
+                <div className="mb-3 flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs text-slate-400">
+                    <div className="mb-1 flex items-center gap-2">
+                      <span className="text-xs text-white/50">
                         #{index + 1}
                       </span>
-                      <h3 className="font-semibold text-slate-900">
-                        {user.name}
-                      </h3>
+                      <h3 className="font-semibold text-white">{user.name}</h3>
                     </div>
-                    <span className="inline-block rounded-full bg-slate-100 px-3 py-1 text-xs uppercase tracking-wide text-slate-600 mt-2">
-                      {user.role}
-                    </span>
+                    <span className={`${pillClass} mt-2`}>{user.role}</span>
                   </div>
                   <div className="flex gap-2 ltr:flex-row rtl:flex-row-reverse">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-slate-200 text-slate-700"
+                      className="rounded-full border-white/20 text-white/80 hover:bg-white/10"
                       onClick={() => startEdit(user._id)}
                     >
                       <Pencil className="h-4 w-4" />
@@ -554,7 +580,7 @@ export default function UsersManagementPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-red-200 text-red-500"
+                      className="rounded-full border-red-400/50 text-red-400 hover:bg-red-500/10"
                       onClick={() => handleDeleteClick(user._id, user.name)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -562,7 +588,7 @@ export default function UsersManagementPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-primary/40 text-primary"
+                      className="rounded-full border-primary/40 text-primary hover:bg-primary/10"
                       onClick={() => handleGenerateCode(user._id)}
                     >
                       <KeyRound className="h-4 w-4" />
@@ -572,31 +598,31 @@ export default function UsersManagementPage() {
 
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-500 min-w-[80px] ltr:text-left rtl:text-right">
+                    <span className="min-w-[80px] text-white/70 ltr:text-left rtl:text-right">
                       Email:
                     </span>
-                    <span className="text-slate-700">{user.email}</span>
+                    <span className="text-white/90">{user.email}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-500 min-w-[80px] ltr:text-left rtl:text-right">
+                    <span className="min-w-[80px] text-white/70 ltr:text-left rtl:text-right">
                       {isArabic ? "الهاتف" : "Phone"}:
                     </span>
-                    <span className="text-slate-700">{user.phone}</span>
+                    <span className="text-white/90">{user.phone}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-500 min-w-[80px] ltr:text-left rtl:text-right">
+                    <span className="min-w-[80px] text-white/70 ltr:text-left rtl:text-right">
                       {isArabic ? "الشركة" : "Company"}:
                     </span>
-                    <span className="text-slate-700">{user.companyName}</span>
+                    <span className="text-white/90">{user.companyName}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-500 min-w-[80px] ltr:text-left rtl:text-right">
+                    <span className="min-w-[80px] text-white/70 ltr:text-left rtl:text-right">
                       {isArabic ? "رمز الدخول" : "Login Code"}:
                     </span>
                     <div className="flex-1">
                       {userCode ? (
                         <div className="flex items-center gap-2 ltr:flex-row rtl:flex-row-reverse">
-                          <code className="rounded-lg bg-primary/10 px-2 py-1 text-xs font-mono text-primary font-semibold">
+                          <code className="rounded-lg bg-primary/10 px-2 py-1 font-mono text-xs font-semibold text-primary">
                             {userCode}
                           </code>
                           <button
@@ -605,18 +631,18 @@ export default function UsersManagementPage() {
                                 .writeText(userCode)
                                 .catch(() => {});
                             }}
-                            className="text-slate-400 hover:text-slate-600"
+                            className="text-white/40 transition hover:text-white"
                             title={isArabic ? "نسخ" : "Copy"}
                           >
                             <KeyRound className="h-3 w-3" />
                           </button>
                         </div>
                       ) : user.hasLoginCode ? (
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-white/60">
                           {isArabic ? "تم التوليد" : "Generated"}
                         </span>
                       ) : (
-                        <span className="text-xs text-slate-300">
+                        <span className="text-xs text-white/40">
                           {isArabic ? "غير متوفر" : "Not set"}
                         </span>
                       )}
@@ -628,12 +654,12 @@ export default function UsersManagementPage() {
           })}
         </div>
 
-        {loading && <p className="mt-4 text-sm text-slate-500">Loading...</p>}
+        {loading && <p className="mt-4 text-sm text-white/70">Loading...</p>}
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
-          <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-4">
-            <div className="text-sm text-slate-500">
+          <div className="mt-6 flex flex-col gap-4 border-t border-white/10 pt-4 text-sm text-white/70 md:flex-row md:items-center md:justify-between">
+            <div>
               {isArabic ? (
                 <>
                   عرض {(pagination.page - 1) * pagination.limit + 1} -{" "}
@@ -660,7 +686,7 @@ export default function UsersManagementPage() {
                 size="sm"
                 onClick={() => handlePageChange(pagination.page - 1)}
                 disabled={pagination.page === 1 || loading}
-                className="ltr:flex-row rtl:flex-row-reverse"
+                className="ltr:flex-row rtl:flex-row-reverse rounded-full border-white/20 text-white/80 hover:bg-white/10"
               >
                 <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
                 <span className="hidden sm:inline">
@@ -694,8 +720,8 @@ export default function UsersManagementPage() {
                         disabled={loading}
                         className={
                           pagination.page === pageNum
-                            ? "bg-primary text-black"
-                            : ""
+                            ? "rounded-full bg-primary text-black"
+                            : "rounded-full border-white/20 text-white/80 hover:bg-white/10"
                         }
                       >
                         {pageNum}
@@ -710,7 +736,7 @@ export default function UsersManagementPage() {
                 size="sm"
                 onClick={() => handlePageChange(pagination.page + 1)}
                 disabled={pagination.page === pagination.totalPages || loading}
-                className="ltr:flex-row rtl:flex-row-reverse"
+                className="ltr:flex-row rtl:flex-row-reverse rounded-full border-white/20 text-white/80 hover:bg-white/10"
               >
                 <span className="hidden sm:inline">
                   {isArabic ? "التالي" : "Next"}

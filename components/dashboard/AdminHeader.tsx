@@ -20,33 +20,37 @@ export function AdminHeader({
   };
 
   return (
-    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm">
+    <header className="flex items-center justify-between border-b border-white/10 bg-white/[0.03] px-4 py-4 text-slate-100 shadow-[0_10px_40px_rgba(3,7,18,0.45)] backdrop-blur-2xl">
       <div className="flex items-center gap-3">
         <button
-          className="md:hidden rounded-full border border-slate-300 p-2 text-slate-700 hover:bg-slate-50"
+          className="md:hidden rounded-full border border-white/10 bg-white/[0.04] p-2 text-white/80 transition hover:bg-white/10"
           onClick={onToggleSidebar}
         >
           <Menu className="h-5 w-5" />
         </button>
-        <Link href="/" className="flex items-center md:hidden gap-3 group">
+        <Link href="/" className="flex items-center gap-3 md:hidden">
           <Logo />
+          <span className="text-sm font-semibold tracking-wide text-white/80">
+            AWA Cyber
+          </span>
         </Link>
       </div>
 
       <div className="flex items-center gap-3">
         <button
           onClick={toggleLocale}
-          className="rounded-full border border-slate-300 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700 hover:bg-slate-100"
+          className="rounded-full bg-gradient-to-r from-cyan-500/90 to-blue-600/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.4em] text-slate-950 shadow-lg transition hover:scale-[1.02]"
         >
           {locale === "en" ? "AR" : "EN"}
         </button>
-        <button className="rounded-full border border-slate-300 bg-slate-50 p-2 text-slate-700 hover:bg-slate-100">
+        <button className="relative rounded-full border border-white/10 bg-white/[0.05] p-2 text-white/80 transition hover:bg-white/10">
           <Bell className="h-5 w-5" />
+          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-rose-400 animate-pulse" />
         </button>
         {admin && (
           <Button
             variant="ghost"
-            className="hidden items-center gap-2 text-slate-700 hover:bg-slate-100 md:flex"
+            className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-white/80 shadow-inner transition hover:bg-white/10 md:flex"
             onClick={logout}
           >
             <LogOut className="h-4 w-4" />

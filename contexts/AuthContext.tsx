@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { loginAdminApi } from "@/lib/actions/authActions";
+import { loginAdminApi, loginWithCodeApi } from "@/lib/actions/authActions";
 import { setAuthToken, clearAuthToken } from "@/lib/apiClient";
 
 // Helper function to clear auth state
@@ -21,6 +21,12 @@ interface AuthState {
     email: string;
     role: string;
   } | null;
+  user: {
+    id: string;
+    name: string;
+    email?: string;
+    role: string;
+  } | null;
 }
 
 interface AuthContextValue extends AuthState {
@@ -28,6 +34,7 @@ interface AuthContextValue extends AuthState {
   initializing: boolean; // Indicates if we're still loading from localStorage
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
+  loginWithCode: (code: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -40,6 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<AuthState>({
     token: null,
     admin: null,
+    user: null,
   });
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true); // Start as true
@@ -83,7 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setError(null);
     try {
       const data = await loginAdminApi(email, password);
-      persistState({ token: data.token, admin: data.admin });
+      persistState({ token: data.token, admin: data.admin, user: null });
       router.push("/admin/dashboard/home");
     } catch (err) {
       setError(typeof err === "string" ? err : "فشل تسجيل الدخول");
@@ -93,15 +101,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const loginWithCode = async (code: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await loginWithCodeApi(code);
+      persistState({
+        token: data.token,
+        admin: null,
+        user: data.user,
+      });
+      // Redirect based on role
+      if (data.user.role === "admin") {
+        router.push("/admin/dashboard/home");
+      } else {
+        router.push("/portal");
+      }
+    } catch (err) {
+      setError(
+        typeof err === "string" ? err : "رمز الدخول غير صحيح أو غير موجود"
+      );
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
-    setState({ token: null, admin: null });
+    setState({ token: null, admin: null, user: null });
     clearAuthState();
     router.push("/");
   };
 
   return (
     <AuthContext.Provider
-      value={{ ...state, loading, initializing, error, login, logout }}
+      value={{
+        ...state,
+        loading,
+        initializing,
+        error,
+        login,
+        loginWithCode,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>
