@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users, LayoutDashboard, ClipboardList, Layers } from "lucide-react";
+import {
+  Users,
+  LayoutDashboard,
+  ClipboardList,
+  Layers,
+  Briefcase,
+  FileText,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "../ui/logo";
 
@@ -26,6 +33,16 @@ const navItems = [
     href: "/admin/dashboard/services",
     icon: Layers,
     label: { en: "Services", ar: "الخدمات" },
+  },
+  {
+    href: "/admin/dashboard/portfolios",
+    icon: Briefcase,
+    label: { en: "Portfolios", ar: "معرض الأعمال" },
+  },
+  {
+    href: "/admin/dashboard/projects",
+    icon: FileText,
+    label: { en: "Projects", ar: "المشاريع" },
   },
 ];
 

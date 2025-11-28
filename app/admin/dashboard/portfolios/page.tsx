@@ -1,24 +1,35 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useServices, AdminService } from "@/contexts/ServiceContext";
+import { usePortfolios, AdminPortfolio } from "@/contexts/PortfolioContext";
+import { useServices } from "@/contexts/ServiceContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import FileUpload from "@/components/ui/FileUpload";
-import { Layers, Plus, Pencil, Trash2, X, Eye } from "lucide-react";
+import {
+  Briefcase,
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  Eye,
+  Calendar,
+} from "lucide-react";
 import {
   serviceIconOptions,
   serviceIconComponents,
   ServiceIconKey,
 } from "@/lib/serviceIconOptions";
 
-type ServiceFormState = {
+type PortfolioFormState = {
   titleEn: string;
   titleAr: string;
   descriptionEn: string;
   descriptionAr: string;
+  serviceId: string;
+  completionDate: string;
   images: string[];
   features: Array<{
     icon: string;
@@ -29,11 +40,13 @@ type ServiceFormState = {
   }>;
 };
 
-const emptyForm: ServiceFormState = {
+const emptyForm: PortfolioFormState = {
   titleEn: "",
   titleAr: "",
   descriptionEn: "",
   descriptionAr: "",
+  serviceId: "",
+  completionDate: "",
   images: [],
   features: [],
 };
@@ -41,22 +54,23 @@ const emptyForm: ServiceFormState = {
 const inputStyles =
   "rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-cyan-400 focus:border-transparent focus:bg-white/[0.05] transition";
 
-export default function ServicesManagementPage() {
+export default function PortfoliosManagementPage() {
   const { locale } = useLanguage();
   const isArabic = locale === "ar";
   const {
-    services,
+    portfolios,
     loading,
     error,
-    fetchServices,
-    createService,
-    updateService,
-    deleteService,
-  } = useServices();
+    fetchPortfolios,
+    createPortfolio,
+    updatePortfolio,
+    deletePortfolio,
+  } = usePortfolios();
+  const { services, fetchServices } = useServices();
 
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<ServiceFormState>(emptyForm);
+  const [form, setForm] = useState<PortfolioFormState>(emptyForm);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [iconPickerIndex, setIconPickerIndex] = useState<
@@ -72,6 +86,7 @@ export default function ServicesManagementPage() {
     descriptionEn: string;
     descriptionAr: string;
   } | null>(null);
+  const [featureFormError, setFeatureFormError] = useState<string | null>(null);
   const [cardLocale, setCardLocale] = useState<"en" | "ar">(
     isArabic ? "ar" : "en"
   );
@@ -80,31 +95,34 @@ export default function ServicesManagementPage() {
   );
 
   useEffect(() => {
+    fetchPortfolios();
     fetchServices();
-  }, [fetchServices]);
+  }, [fetchPortfolios, fetchServices]);
 
   const copy = useMemo(
     () => ({
-      title: isArabic ? "إدارة الخدمات" : "Service Management",
+      title: isArabic ? "معرض الأعمال" : "Portfolio Management",
       subtitle: isArabic
-        ? "أنشئ الخدمات وعدّلها لتعرض للعملاء باللغتين."
-        : "Create and manage the services shown to your audience.",
-      addService: isArabic ? "إضافة خدمة" : "Add Service",
-      editService: isArabic ? "تعديل الخدمة" : "Edit Service",
-      images: isArabic ? "الصور" : "Images",
+        ? "أنشئ أعمالك وعدّلها لتظهر للعملاء بحسب لغتهم."
+        : "Create and maintain your portfolio works to show to clients per language.",
+      addPortfolio: isArabic ? "إضافة عمل" : "Add Portfolio",
+      editPortfolio: isArabic ? "تعديل العمل" : "Edit Portfolio",
+      images: isArabic ? "روابط الصور" : "Image URLs",
       features: isArabic ? "المزايا" : "Features",
       noFeatures: isArabic ? "لا توجد مزايا" : "No features yet",
       deleteConfirm: isArabic
-        ? "هل تريد حذف هذه الخدمة؟"
-        : "Delete this service?",
-      cardSectionTitle: isArabic ? "بطاقات الخدمات" : "Service cards",
-      cardSectionSubtitle: isArabic
-        ? "استعرض الخدمات واختر لغة العرض لكل بطاقة."
-        : "Browse your services and switch the display language.",
-      cardLanguageLabel: isArabic ? "لغة البطاقات" : "Card language",
-      noServicesCards: isArabic
-        ? "لا توجد خدمات للعرض حالياً."
-        : "There are no services to display yet.",
+        ? "هل تريد حذف هذا العمل؟"
+        : "Delete this portfolio?",
+      service: isArabic ? "الخدمة" : "Service",
+      completionDate: isArabic ? "تاريخ الإنجاز" : "Completion Date",
+      cardPreviewTitle: isArabic ? "عرض البطاقات" : "Card preview",
+      cardPreviewSubtitle: isArabic
+        ? "استعرض كيف سيظهر معرض الأعمال لكل لغة."
+        : "Preview how portfolio entries look in each language.",
+      previewLanguage: isArabic ? "لغة العرض" : "Preview language",
+      noPortfoliosCards: isArabic
+        ? "لا توجد أعمال للعرض."
+        : "No portfolio entries to display.",
       actionEdit: isArabic ? "تعديل" : "Edit",
       actionDelete: isArabic ? "حذف" : "Delete",
     }),
@@ -121,20 +139,31 @@ export default function ServicesManagementPage() {
     setDraftFeature(null);
     setActiveFeatureIndex(null);
     setIconPickerIndex(null);
+    setFeatureFormError(null);
   };
 
-  const openModal = (service?: AdminService) => {
-    if (service) {
-      setEditingId(service._id);
+  const openModal = (portfolio?: AdminPortfolio) => {
+    if (portfolio) {
+      setEditingId(portfolio._id);
+      const completionDate = portfolio.completionDate
+        ? new Date(portfolio.completionDate).toISOString().split("T")[0]
+        : "";
       setForm({
-        titleEn: service.title.en,
-        titleAr: service.title.ar,
-        descriptionEn: service.description?.en ?? "",
-        descriptionAr: service.description?.ar ?? "",
+        titleEn: portfolio.title.en,
+        titleAr: portfolio.title.ar,
+        descriptionEn: portfolio.description?.en ?? "",
+        descriptionAr: portfolio.description?.ar ?? "",
+        serviceId:
+          typeof portfolio.serviceId === "string"
+            ? portfolio.serviceId
+            : (portfolio.serviceId as any)?._id || "",
+        completionDate,
         images:
-          service.images && service.images.length > 0 ? service.images : [],
+          portfolio.images && portfolio.images.length > 0
+            ? portfolio.images
+            : [],
         features:
-          service.features?.map((feature) => ({
+          portfolio.features?.map((feature) => ({
             icon: feature.icon,
             nameEn: feature.name.en,
             nameAr: feature.name.ar,
@@ -143,7 +172,7 @@ export default function ServicesManagementPage() {
           })) ?? [],
       });
       setActiveFeatureIndex(
-        service.features && service.features.length ? 0 : null
+        portfolio.features && portfolio.features.length ? 0 : null
       );
       setIconPickerIndex(null);
     } else {
@@ -158,8 +187,8 @@ export default function ServicesManagementPage() {
   };
 
   const updateFormField = (
-    field: keyof ServiceFormState,
-    value: string | string[] | ServiceFormState["features"]
+    field: keyof PortfolioFormState,
+    value: string | string[] | PortfolioFormState["features"]
   ) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -172,18 +201,18 @@ export default function ServicesManagementPage() {
   };
 
   const handleCarouselNav = (
-    serviceId: string,
+    portfolioId: string,
     direction: "next" | "prev",
     imagesLength: number
   ) => {
     if (imagesLength <= 1) return;
     setCarouselIndex((prev) => {
-      const currentIndex = prev[serviceId] ?? 0;
+      const currentIndex = prev[portfolioId] ?? 0;
       const nextIndex =
         direction === "next"
           ? (currentIndex + 1) % imagesLength
           : (currentIndex - 1 + imagesLength) % imagesLength;
-      return { ...prev, [serviceId]: nextIndex };
+      return { ...prev, [portfolioId]: nextIndex };
     });
   };
 
@@ -200,11 +229,9 @@ export default function ServicesManagementPage() {
   };
 
   const addFeature = () => {
-    // Close any active feature form first
     if (activeFeatureIndex !== null) {
       setActiveFeatureIndex(null);
     }
-    // Open draft feature form
     setDraftFeature({
       icon: "",
       nameEn: "",
@@ -213,37 +240,46 @@ export default function ServicesManagementPage() {
       descriptionAr: "",
     });
     setIconPickerIndex(null);
+    setFeatureFormError(null);
   };
 
   const saveDraftFeature = () => {
     if (!draftFeature) return;
-
-    // Check if at least one field is filled
-    const hasContent =
-      draftFeature.icon ||
-      draftFeature.nameEn ||
-      draftFeature.nameAr ||
-      draftFeature.descriptionEn ||
-      draftFeature.descriptionAr;
-
-    if (!hasContent) {
-      return; // Don't save empty feature
+    const missingFields: string[] = [];
+    if (!draftFeature.icon.trim()) {
+      missingFields.push(isArabic ? "الأيقونة مطلوبة" : "Icon is required");
+    }
+    if (!draftFeature.nameEn.trim()) {
+      missingFields.push(
+        isArabic
+          ? "اسم الميزة بالإنجليزية مطلوب"
+          : "Feature name (EN) is required"
+      );
+    }
+    if (!draftFeature.nameAr.trim()) {
+      missingFields.push(
+        isArabic ? "اسم الميزة بالعربية مطلوب" : "Feature name (AR) is required"
+      );
+    }
+    if (missingFields.length > 0) {
+      setFeatureFormError(missingFields[0]);
+      return;
     }
 
-    // Add the draft feature to the form
     setForm((prev) => ({
       ...prev,
       features: [...prev.features, draftFeature],
     }));
 
-    // Close draft form
     setDraftFeature(null);
     setIconPickerIndex(null);
+    setFeatureFormError(null);
   };
 
   const cancelDraftFeature = () => {
     setDraftFeature(null);
     setIconPickerIndex(null);
+    setFeatureFormError(null);
   };
 
   const updateDraftFeature = (
@@ -252,6 +288,9 @@ export default function ServicesManagementPage() {
   ) => {
     if (!draftFeature) return;
     setDraftFeature({ ...draftFeature, [field]: value });
+    if (featureFormError) {
+      setFeatureFormError(null);
+    }
   };
 
   const removeFeature = (index: number) => {
@@ -280,6 +319,14 @@ export default function ServicesManagementPage() {
       );
       return;
     }
+    if (!form.serviceId) {
+      setFormError(isArabic ? "اختر الخدمة." : "Select a service.");
+      return;
+    }
+    if (!form.completionDate) {
+      setFormError(isArabic ? "أدخل تاريخ الإنجاز." : "Enter completion date.");
+      return;
+    }
     const payload = {
       title: { en: form.titleEn.trim(), ar: form.titleAr.trim() },
       description:
@@ -289,6 +336,8 @@ export default function ServicesManagementPage() {
               ar: form.descriptionAr.trim(),
             }
           : undefined,
+      serviceId: form.serviceId.trim(),
+      completionDate: form.completionDate,
       images: cleanImages,
       features:
         form.features.length > 0
@@ -319,9 +368,9 @@ export default function ServicesManagementPage() {
     setSubmitting(true);
     try {
       if (editingId) {
-        await updateService(editingId, payload);
+        await updatePortfolio(editingId, payload);
       } else {
-        await createService(payload);
+        await createPortfolio(payload);
       }
       closeModal();
     } catch {
@@ -331,24 +380,41 @@ export default function ServicesManagementPage() {
     }
   };
 
-  const handleDelete = async (serviceId: string) => {
+  const handleDelete = async (portfolioId: string) => {
     if (
       !confirm(
         isArabic
-          ? "هل أنت متأكد من حذف هذه الخدمة؟"
-          : "Are you sure you want to delete this service?"
+          ? "هل أنت متأكد من حذف هذا العمل؟"
+          : "Are you sure you want to delete this portfolio?"
       )
     ) {
       return;
     }
-    await deleteService(serviceId);
+    await deletePortfolio(portfolioId);
+  };
+
+  const getServiceName = (
+    serviceId:
+      | string
+      | { _id: string; title: { en: string; ar: string } }
+      | undefined
+  ): string => {
+    if (!serviceId) return "-";
+    // If serviceId is an object (populated service), use it directly
+    if (typeof serviceId === "object" && "title" in serviceId) {
+      return isArabic ? serviceId.title.ar : serviceId.title.en;
+    }
+    // If serviceId is a string, find the service
+    const service = services.find((s) => s._id === serviceId);
+    if (!service) return String(serviceId);
+    return isArabic ? service.title.ar : service.title.en;
   };
 
   return (
     <div className="space-y-8 text-slate-100">
       <header className="space-y-2">
         <h1 className="flex items-center gap-3 text-3xl font-bold text-white drop-shadow">
-          <Layers className="h-9 w-9 text-primary" />
+          <Briefcase className="h-9 w-9 text-primary" />
           {copy.title}
         </h1>
         <p className="text-slate-300">{copy.subtitle}</p>
@@ -361,7 +427,7 @@ export default function ServicesManagementPage() {
         >
           <div className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            {copy.addService}
+            {copy.addPortfolio}
           </div>
         </Button>
         {error && (
@@ -372,16 +438,22 @@ export default function ServicesManagementPage() {
       </div>
 
       <div className="space-y-4">
+        {loading && (
+          <p className="text-sm text-white/60">
+            {isArabic ? "جاري التحميل..." : "Loading portfolios..."}
+          </p>
+        )}
+
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xl font-semibold text-white">
-              {copy.cardSectionTitle}
+              {copy.cardPreviewTitle}
             </p>
-            <p className="text-sm text-white/60">{copy.cardSectionSubtitle}</p>
+            <p className="text-sm text-white/60">{copy.cardPreviewSubtitle}</p>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-white/70">
-              {copy.cardLanguageLabel}
+              {copy.previewLanguage}
             </span>
             <div className="inline-flex rounded-full border border-white/15 bg-white/[0.04] p-1">
               {(["en", "ar"] as const).map((lang) => (
@@ -402,35 +474,39 @@ export default function ServicesManagementPage() {
           </div>
         </div>
 
-        {loading && (
-          <p className="text-sm text-white/60">
-            {isArabic ? "جاري التحميل..." : "Loading services..."}
-          </p>
-        )}
-
-        {!loading && services.length === 0 ? (
+        {!loading && (!Array.isArray(portfolios) || portfolios.length === 0) ? (
           <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white/70">
-            {copy.noServicesCards}
+            {copy.noPortfoliosCards}
           </p>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {services.map((service) => {
-              const currentIndex = carouselIndex[service._id] ?? 0;
+            {portfolios.map((portfolio) => {
+              const currentIndex = carouselIndex[portfolio._id] ?? 0;
               const activeImage =
-                service.images && service.images.length > 0
-                  ? service.images[
-                      Math.min(currentIndex, service.images.length - 1)
+                portfolio.images && portfolio.images.length > 0
+                  ? portfolio.images[
+                      Math.min(currentIndex, portfolio.images.length - 1)
                     ]
                   : null;
-              const localizedTitle = service.title[cardLocale] || "";
+              const localizedTitle =
+                typeof portfolio.title === "string"
+                  ? portfolio.title
+                  : portfolio.title[cardLocale] || portfolio.title.en;
               const localizedDescription =
-                service.description?.[cardLocale] ||
-                (cardLocale === "ar"
-                  ? "لا يوجد وصف لهذه الخدمة."
-                  : "No description available.");
+                typeof portfolio.description === "string"
+                  ? portfolio.description
+                  : portfolio.description?.[cardLocale] ||
+                    (cardLocale === "ar"
+                      ? "لا يوجد وصف لهذا العمل."
+                      : "No description available.");
+              const serviceLabel = getServiceName(
+                typeof portfolio.service === "object" && portfolio.service
+                  ? portfolio.service
+                  : portfolio.serviceId
+              );
               return (
                 <div
-                  key={`service-card-${service._id}`}
+                  key={`portfolio-card-${portfolio._id}`}
                   className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
                 >
                   <div className="relative mb-4">
@@ -441,16 +517,16 @@ export default function ServicesManagementPage() {
                           alt={localizedTitle}
                           className="h-full w-full object-cover"
                         />
-                        {service.images.length > 1 && (
+                        {portfolio.images.length > 1 && (
                           <>
                             <button
                               type="button"
                               className="absolute top-1/2 left-3 -translate-y-1/2 rounded-full bg-black/40 p-2 text-white hover:bg-black/60"
                               onClick={() =>
                                 handleCarouselNav(
-                                  service._id,
+                                  portfolio._id,
                                   "prev",
-                                  service.images.length
+                                  portfolio.images.length
                                 )
                               }
                             >
@@ -461,9 +537,9 @@ export default function ServicesManagementPage() {
                               className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-black/40 p-2 text-white hover:bg-black/60"
                               onClick={() =>
                                 handleCarouselNav(
-                                  service._id,
+                                  portfolio._id,
                                   "next",
-                                  service.images.length
+                                  portfolio.images.length
                                 )
                               }
                             >
@@ -471,9 +547,9 @@ export default function ServicesManagementPage() {
                             </button>
                           </>
                         )}
-                        {service.images.length > 1 && (
+                        {portfolio.images.length > 1 && (
                           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/40 px-3 py-1 text-xs text-white/80">
-                            {currentIndex + 1}/{service.images.length}
+                            {currentIndex + 1}/{portfolio.images.length}
                           </div>
                         )}
                       </div>
@@ -485,16 +561,29 @@ export default function ServicesManagementPage() {
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-3">
-                      <h3 className="text-lg font-semibold text-white flex-1">
-                        {localizedTitle}
-                      </h3>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between text-xs text-white/60 mb-2">
+                          <span className="inline-flex items-center gap-2 text-white/70">
+                            <Calendar className="h-3.5 w-3.5 text-primary" />
+                            {portfolio.completionDate
+                              ? new Date(
+                                  portfolio.completionDate
+                                ).toLocaleDateString()
+                              : "-"}
+                          </span>
+                          <span>{serviceLabel}</span>
+                        </div>
+                        <h3 className="text-lg font-semibold text-white">
+                          {localizedTitle}
+                        </h3>
+                      </div>
                       <div className="flex items-center gap-2">
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 rounded-full bg-primary/20 text-primary hover:bg-primary/30"
-                          onClick={() => openModal(service)}
+                          onClick={() => openModal(portfolio)}
                           title={copy.actionEdit}
                         >
                           <Pencil className="h-4 w-4" />
@@ -504,7 +593,7 @@ export default function ServicesManagementPage() {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                          onClick={() => handleDelete(service._id)}
+                          onClick={() => handleDelete(portfolio._id)}
                           title={copy.actionDelete}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -514,25 +603,27 @@ export default function ServicesManagementPage() {
                     <p className="text-sm text-white/70 line-clamp-3">
                       {localizedDescription}
                     </p>
-                    {service.features && service.features.length > 0 && (
+                    {portfolio.features && portfolio.features.length > 0 && (
                       <div className="space-y-2">
                         <p className="text-xs uppercase tracking-[0.35em] text-white/40">
                           {copy.features}
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {service.features.slice(0, 4).map((feature, idx) => (
-                            <span
-                              key={`${service._id}-feat-${idx}`}
-                              className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/80"
-                            >
-                              {feature.name[cardLocale] ||
-                                feature.name.en ||
-                                feature.name.ar}
-                            </span>
-                          ))}
-                          {service.features.length > 4 && (
+                          {portfolio.features
+                            .slice(0, 4)
+                            .map((feature, idx) => (
+                              <span
+                                key={`${portfolio._id}-feature-${idx}`}
+                                className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/80"
+                              >
+                                {feature.name[cardLocale] ||
+                                  feature.name.en ||
+                                  feature.name.ar}
+                              </span>
+                            ))}
+                          {portfolio.features.length > 4 && (
                             <span className="text-xs text-white/60">
-                              +{service.features.length - 4}{" "}
+                              +{portfolio.features.length - 4}{" "}
                               {isArabic ? "أخرى" : "more"}
                             </span>
                           )}
@@ -556,12 +647,12 @@ export default function ServicesManagementPage() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-white/50">
-                  {editingId ? copy.editService : copy.addService}
+                  {editingId ? copy.editPortfolio : copy.addPortfolio}
                 </p>
                 <p className="text-sm text-slate-400">
                   {isArabic
                     ? "أدخل التفاصيل لكل من اللغتين."
-                    : "Provide bilingual content for this service."}
+                    : "Provide bilingual content for this portfolio."}
                 </p>
               </div>
               <Button
@@ -616,6 +707,44 @@ export default function ServicesManagementPage() {
                   updateFormField("descriptionAr", e.target.value)
                 }
               />
+              <div>
+                <label className="mb-2 block text-sm text-white/80">
+                  {copy.service}
+                </label>
+                <select
+                  className={inputStyles}
+                  value={form.serviceId}
+                  onChange={(e) => updateFormField("serviceId", e.target.value)}
+                  required
+                >
+                  <option value="" className="bg-slate-900 text-white">
+                    {isArabic ? "اختر الخدمة" : "Select service"}
+                  </option>
+                  {services.map((service) => (
+                    <option
+                      key={service._id}
+                      value={service._id}
+                      className="bg-slate-900 text-white"
+                    >
+                      {isArabic ? service.title.ar : service.title.en}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-2 block text-sm text-white/80">
+                  {copy.completionDate}
+                </label>
+                <Input
+                  type="date"
+                  className={inputStyles}
+                  value={form.completionDate}
+                  onChange={(e) =>
+                    updateFormField("completionDate", e.target.value)
+                  }
+                  required
+                />
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -705,7 +834,7 @@ export default function ServicesManagementPage() {
                   <span>{isArabic ? "إضافة ميزة" : "Add feature"}</span>
                 </Button>
               </div>
-              {form.features.length === 0 && (
+              {form.features.length === 0 && !draftFeature && (
                 <p className="text-sm text-white/50">{copy.noFeatures}</p>
               )}
               {form.features.length > 0 && (
@@ -731,7 +860,7 @@ export default function ServicesManagementPage() {
                         {IconPreview ? (
                           <IconPreview className="h-4 w-4" />
                         ) : (
-                          <Layers className="h-4 w-4" />
+                          <Briefcase className="h-4 w-4" />
                         )}
                         <span>
                           {feature.nameEn ||
@@ -770,6 +899,11 @@ export default function ServicesManagementPage() {
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
+                  {featureFormError && (
+                    <p className="rounded-2xl border border-red-400/40 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                      {featureFormError}
+                    </p>
+                  )}
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2 text-white">
                       {(() => {
@@ -783,7 +917,7 @@ export default function ServicesManagementPage() {
                             <IconPreview className="h-5 w-5 text-primary" />
                           );
                         }
-                        return <Layers className="h-5 w-5 text-white/40" />;
+                        return <Briefcase className="h-5 w-5 text-white/40" />;
                       })()}
                       <span className="text-sm text-white/70">
                         {draftFeature.icon ||
@@ -929,7 +1063,7 @@ export default function ServicesManagementPage() {
                                   );
                                 }
                                 return (
-                                  <Layers className="h-5 w-5 text-white/40" />
+                                  <Briefcase className="h-5 w-5 text-white/40" />
                                 );
                               })()}
                               <span className="text-sm text-white/70">
@@ -1077,8 +1211,8 @@ export default function ServicesManagementPage() {
                     ? "جارٍ الحفظ..."
                     : "Saving..."
                   : isArabic
-                  ? "حفظ الخدمة"
-                  : "Save service"}
+                  ? "حفظ العمل"
+                  : "Save portfolio"}
               </Button>
             </div>
           </form>

@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuotes, QuotationRequest } from "@/contexts/QuoteContext";
+import { useServices } from "@/contexts/ServiceContext";
 import { QuotationStatus } from "@/lib/actions/quoteActions";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -93,7 +94,9 @@ export default function QuotationsPage() {
     createQuotationRequest,
     updateQuotationRequestStatus,
   } = useQuotes();
+  const { services, fetchServices } = useServices();
   const [form, setForm] = useState(initialForm);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<QuotationStatus | "">("");
   const [selectedRequest, setSelectedRequest] =
@@ -107,40 +110,208 @@ export default function QuotationsPage() {
 
   useEffect(() => {
     fetchQuotationRequests({ page: 1, limit: 10 });
-  }, [fetchQuotationRequests]);
+    fetchServices();
+  }, [fetchQuotationRequests, fetchServices]);
+
+  const getServiceName = (serviceId: string): string => {
+    const service = services.find((s) => s._id === serviceId);
+    if (!service) return serviceId; // Fallback to ID if service not found
+    return isArabic ? service.title.ar : service.title.en;
+  };
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    // fullName: min 3 characters
+    if (!form.fullName.trim()) {
+      errors.fullName = isArabic
+        ? "الاسم الكامل مطلوب"
+        : "Full name is required";
+    } else if (form.fullName.trim().length < 3) {
+      errors.fullName = isArabic
+        ? "الاسم يجب أن يكون 3 أحرف على الأقل"
+        : "Full name must be at least 3 characters";
+    }
+
+    // email: valid email
+    if (!form.email.trim()) {
+      errors.email = isArabic ? "البريد الإلكتروني مطلوب" : "Email is required";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(form.email.trim())) {
+        errors.email = isArabic
+          ? "البريد الإلكتروني غير صحيح"
+          : "Invalid email address";
+      }
+    }
+
+    // phone: min 6 characters
+    if (!form.phone.trim()) {
+      errors.phone = isArabic ? "رقم الهاتف مطلوب" : "Phone number is required";
+    } else if (form.phone.trim().length < 6) {
+      errors.phone = isArabic
+        ? "رقم الهاتف يجب أن يكون 6 أحرف على الأقل"
+        : "Phone number must be at least 6 characters";
+    }
+
+    // companyName: min 2 characters if provided (optional)
+    if (
+      form.companyName &&
+      form.companyName.trim().length > 0 &&
+      form.companyName.trim().length < 2
+    ) {
+      errors.companyName = isArabic
+        ? "اسم الشركة يجب أن يكون حرفين على الأقل"
+        : "Company name must be at least 2 characters";
+    }
+
+    // serviceId: min 1 character (required)
+    if (!form.serviceId.trim()) {
+      errors.serviceId = isArabic ? "الخدمة مطلوبة" : "Service is required";
+    }
+
+    // projectDescription: min 10 characters
+    if (!form.projectDescription.trim()) {
+      errors.projectDescription = isArabic
+        ? "وصف المشروع مطلوب"
+        : "Project description is required";
+    } else if (form.projectDescription.trim().length < 10) {
+      errors.projectDescription = isArabic
+        ? "وصف المشروع يجب أن يكون 10 أحرف على الأقل"
+        : "Project description must be at least 10 characters";
+    }
+
+    // budget: from and to must be non-negative, and to >= from
+    if (!form.budgetFrom || !form.budgetTo) {
+      if (!form.budgetFrom) {
+        errors.budgetFrom = isArabic
+          ? "بداية الميزانية مطلوبة"
+          : "Budget from is required";
+      }
+      if (!form.budgetTo) {
+        errors.budgetTo = isArabic
+          ? "نهاية الميزانية مطلوبة"
+          : "Budget to is required";
+      }
+    } else {
+      const from = Number(form.budgetFrom);
+      const to = Number(form.budgetTo);
+      if (from < 0) {
+        errors.budgetFrom = isArabic
+          ? "الميزانية يجب أن تكون أكبر من أو تساوي صفر"
+          : "Budget must be non-negative";
+      }
+      if (to < 0) {
+        errors.budgetTo = isArabic
+          ? "الميزانية يجب أن تكون أكبر من أو تساوي صفر"
+          : "Budget must be non-negative";
+      }
+      if (to < from) {
+        errors.budgetTo = isArabic
+          ? "نهاية الميزانية يجب أن تكون أكبر من أو تساوي البداية"
+          : "Budget 'to' must be greater than or equal to 'from'";
+      }
+    }
+
+    // expectedDuration: min 2 characters
+    if (!form.expectedDuration.trim()) {
+      errors.expectedDuration = isArabic
+        ? "مدة التنفيذ المتوقعة مطلوبة"
+        : "Expected duration is required";
+    } else if (form.expectedDuration.trim().length < 2) {
+      errors.expectedDuration = isArabic
+        ? "مدة التنفيذ يجب أن تكون حرفين على الأقل"
+        : "Expected duration must be at least 2 characters";
+    }
+
+    // startDate: valid date
+    if (!form.startDate) {
+      errors.startDate = isArabic
+        ? "تاريخ البدء مطلوب"
+        : "Start date is required";
+    } else {
+      const startDate = new Date(form.startDate);
+      if (Number.isNaN(startDate.getTime())) {
+        errors.startDate = isArabic
+          ? "تاريخ البدء غير صحيح"
+          : "Invalid start date";
+      }
+    }
+
+    // endDate: valid date, must be after startDate
+    if (!form.endDate) {
+      errors.endDate = isArabic
+        ? "تاريخ الانتهاء مطلوب"
+        : "End date is required";
+    } else {
+      const endDate = new Date(form.endDate);
+      if (Number.isNaN(endDate.getTime())) {
+        errors.endDate = isArabic
+          ? "تاريخ الانتهاء غير صحيح"
+          : "Invalid end date";
+      } else if (form.startDate) {
+        const startDate = new Date(form.startDate);
+        if (endDate.getTime() < startDate.getTime()) {
+          errors.endDate = isArabic
+            ? "تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء"
+            : "End date must be after start date";
+        }
+      }
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleChange = (field: keyof typeof form, value: string | number) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (formErrors[field]) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!form.budgetFrom || !form.budgetTo) return;
 
-    await createQuotationRequest({
-      fullName: form.fullName,
-      email: form.email,
-      phone: form.phone,
-      companyName: form.companyName || undefined,
-      serviceId: form.serviceId,
-      projectDescription: form.projectDescription,
-      budget: {
-        from: Number(form.budgetFrom),
-        to: Number(form.budgetTo),
-      },
-      expectedDuration: form.expectedDuration,
-      startDate: form.startDate,
-      endDate: form.endDate,
-      additionalInfo: form.additionalInfo || undefined,
-    });
-    setForm(initialForm);
-    setFormModalOpen(false);
-    fetchQuotationRequests({
-      page: 1,
-      limit: 10,
-      search: searchQuery || undefined,
-      status: statusFilter ? statusFilter : undefined,
-    });
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      await createQuotationRequest({
+        fullName: form.fullName.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        companyName: form.companyName?.trim() || undefined,
+        serviceId: form.serviceId.trim(),
+        projectDescription: form.projectDescription.trim(),
+        budget: {
+          from: Number(form.budgetFrom),
+          to: Number(form.budgetTo),
+        },
+        expectedDuration: form.expectedDuration.trim(),
+        startDate: form.startDate,
+        endDate: form.endDate,
+        additionalInfo: form.additionalInfo?.trim() || undefined,
+      });
+      setForm(initialForm);
+      setFormErrors({});
+      setFormModalOpen(false);
+      fetchQuotationRequests({
+        page: 1,
+        limit: 10,
+        search: searchQuery || undefined,
+        status: statusFilter ? statusFilter : undefined,
+      });
+    } catch (error: any) {
+      // Error handled by context
+      console.error("Failed to create quotation request:", error);
+    }
   };
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -344,121 +515,251 @@ export default function QuotationsPage() {
                 variant="ghost"
                 size="icon"
                 className="text-white/70 hover:bg-white/10"
-                onClick={() => setFormModalOpen(false)}
+                onClick={() => {
+                  setFormModalOpen(false);
+                  setForm(initialForm);
+                  setFormErrors({});
+                }}
               >
                 <X className="h-5 w-5" />
               </Button>
             </div>
 
+            {Object.keys(formErrors).length > 0 && (
+              <div className="rounded-2xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                <p className="font-semibold mb-2">
+                  {isArabic
+                    ? "يرجى تصحيح الأخطاء التالية:"
+                    : "Please fix the following errors:"}
+                </p>
+                <ul className="list-disc list-inside space-y-1">
+                  {Object.values(formErrors).map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="grid gap-4 md:grid-cols-2">
-              <Input
-                className={inputStyles}
-                placeholder={isArabic ? "الاسم الكامل" : "Full name"}
-                required
-                value={form.fullName}
-                onChange={(e) => handleChange("fullName", e.target.value)}
-              />
-              <Input
-                className={inputStyles}
-                placeholder="Email"
-                type="email"
-                required
-                value={form.email}
-                onChange={(e) => handleChange("email", e.target.value)}
-              />
-              <Input
-                className={inputStyles}
-                placeholder={isArabic ? "رقم الهاتف" : "Phone number"}
-                required
-                value={form.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-              />
-              <Input
-                className={inputStyles}
-                placeholder={
-                  isArabic ? "اسم الشركة (اختياري)" : "Company (optional)"
-                }
-                value={form.companyName}
-                onChange={(e) => handleChange("companyName", e.target.value)}
-              />
-              <Input
-                className={inputStyles}
-                placeholder={
-                  isArabic ? "معرف الخدمة أو الرمز" : "Service reference / ID"
-                }
-                required
-                value={form.serviceId}
-                onChange={(e) => handleChange("serviceId", e.target.value)}
-              />
-              <Input
-                className={inputStyles}
+              <div>
+                <Input
+                  className={`${inputStyles} ${
+                    formErrors.fullName ? "border-red-400/60" : ""
+                  }`}
+                  placeholder={isArabic ? "الاسم الكامل" : "Full name"}
+                  required
+                  value={form.fullName}
+                  onChange={(e) => handleChange("fullName", e.target.value)}
+                />
+                {formErrors.fullName && (
+                  <p className="mt-1 text-xs text-red-300">
+                    {formErrors.fullName}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Input
+                  className={`${inputStyles} ${
+                    formErrors.email ? "border-red-400/60" : ""
+                  }`}
+                  placeholder="Email"
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={(e) => handleChange("email", e.target.value)}
+                />
+                {formErrors.email && (
+                  <p className="mt-1 text-xs text-red-300">
+                    {formErrors.email}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Input
+                  className={`${inputStyles} ${
+                    formErrors.phone ? "border-red-400/60" : ""
+                  }`}
+                  placeholder={isArabic ? "رقم الهاتف" : "Phone number"}
+                  required
+                  value={form.phone}
+                  onChange={(e) => handleChange("phone", e.target.value)}
+                />
+                {formErrors.phone && (
+                  <p className="mt-1 text-xs text-red-300">
+                    {formErrors.phone}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Input
+                  className={`${inputStyles} ${
+                    formErrors.companyName ? "border-red-400/60" : ""
+                  }`}
+                  placeholder={
+                    isArabic ? "اسم الشركة (اختياري)" : "Company (optional)"
+                  }
+                  value={form.companyName}
+                  onChange={(e) => handleChange("companyName", e.target.value)}
+                />
+                {formErrors.companyName && (
+                  <p className="mt-1 text-xs text-red-300">
+                    {formErrors.companyName}
+                  </p>
+                )}
+              </div>
+              <div>
+                <select
+                  className={`${inputStyles} ${
+                    formErrors.serviceId ? "border-red-400/60" : ""
+                  }`}
+                  required
+                  value={form.serviceId}
+                  onChange={(e) => handleChange("serviceId", e.target.value)}
+                >
+                  <option value="" className="bg-slate-900 text-white">
+                    {isArabic ? "اختر الخدمة" : "Select service"}
+                  </option>
+                  {services.map((service) => (
+                    <option
+                      key={service._id}
+                      value={service._id}
+                      className="bg-slate-900 text-white"
+                    >
+                      {isArabic ? service.title.ar : service.title.en}
+                    </option>
+                  ))}
+                </select>
+                {formErrors.serviceId && (
+                  <p className="mt-1 text-xs text-red-300">
+                    {formErrors.serviceId}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Input
+                  className={`${inputStyles} ${
+                    formErrors.expectedDuration ? "border-red-400/60" : ""
+                  }`}
+                  placeholder={
+                    isArabic
+                      ? "مدة التنفيذ المتوقعة"
+                      : "Expected duration (e.g. 6 weeks)"
+                  }
+                  required
+                  value={form.expectedDuration}
+                  onChange={(e) =>
+                    handleChange("expectedDuration", e.target.value)
+                  }
+                />
+                {formErrors.expectedDuration && (
+                  <p className="mt-1 text-xs text-red-300">
+                    {formErrors.expectedDuration}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Input
+                  className={`${inputStyles} ${
+                    formErrors.budgetFrom ? "border-red-400/60" : ""
+                  }`}
+                  placeholder={isArabic ? "بداية الميزانية" : "Budget from"}
+                  type="number"
+                  min={0}
+                  required
+                  value={form.budgetFrom}
+                  onChange={(e) => handleChange("budgetFrom", e.target.value)}
+                />
+                {formErrors.budgetFrom && (
+                  <p className="mt-1 text-xs text-red-300">
+                    {formErrors.budgetFrom}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Input
+                  className={`${inputStyles} ${
+                    formErrors.budgetTo ? "border-red-400/60" : ""
+                  }`}
+                  placeholder={isArabic ? "نهاية الميزانية" : "Budget to"}
+                  type="number"
+                  min={0}
+                  required
+                  value={form.budgetTo}
+                  onChange={(e) => handleChange("budgetTo", e.target.value)}
+                />
+                {formErrors.budgetTo && (
+                  <p className="mt-1 text-xs text-red-300">
+                    {formErrors.budgetTo}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Input
+                  className={`${inputStyles} ${
+                    formErrors.startDate ? "border-red-400/60" : ""
+                  }`}
+                  type="date"
+                  required
+                  value={form.startDate}
+                  onChange={(e) => handleChange("startDate", e.target.value)}
+                />
+                {formErrors.startDate && (
+                  <p className="mt-1 text-xs text-red-300">
+                    {formErrors.startDate}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Input
+                  className={`${inputStyles} ${
+                    formErrors.endDate ? "border-red-400/60" : ""
+                  }`}
+                  type="date"
+                  required
+                  value={form.endDate}
+                  onChange={(e) => handleChange("endDate", e.target.value)}
+                />
+                {formErrors.endDate && (
+                  <p className="mt-1 text-xs text-red-300">
+                    {formErrors.endDate}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div>
+              <Textarea
+                className={`${inputStyles} min-h-[120px] ${
+                  formErrors.projectDescription ? "border-red-400/60" : ""
+                }`}
                 placeholder={
                   isArabic
-                    ? "مدة التنفيذ المتوقعة"
-                    : "Expected duration (e.g. 6 weeks)"
+                    ? "وصف المشروع"
+                    : "Project description & success criteria"
                 }
                 required
-                value={form.expectedDuration}
+                value={form.projectDescription}
                 onChange={(e) =>
-                  handleChange("expectedDuration", e.target.value)
+                  handleChange("projectDescription", e.target.value)
                 }
               />
-              <Input
-                className={inputStyles}
-                placeholder={isArabic ? "بداية الميزانية" : "Budget from"}
-                type="number"
-                min={0}
-                required
-                value={form.budgetFrom}
-                onChange={(e) => handleChange("budgetFrom", e.target.value)}
-              />
-              <Input
-                className={inputStyles}
-                placeholder={isArabic ? "نهاية الميزانية" : "Budget to"}
-                type="number"
-                min={0}
-                required
-                value={form.budgetTo}
-                onChange={(e) => handleChange("budgetTo", e.target.value)}
-              />
-              <Input
-                className={inputStyles}
-                type="date"
-                required
-                value={form.startDate}
-                onChange={(e) => handleChange("startDate", e.target.value)}
-              />
-              <Input
-                className={inputStyles}
-                type="date"
-                required
-                value={form.endDate}
-                onChange={(e) => handleChange("endDate", e.target.value)}
+              {formErrors.projectDescription && (
+                <p className="mt-1 text-xs text-red-300">
+                  {formErrors.projectDescription}
+                </p>
+              )}
+            </div>
+            <div>
+              <Textarea
+                className={`${inputStyles} min-h-[100px]`}
+                placeholder={
+                  isArabic
+                    ? "معلومات إضافية (اختياري)"
+                    : "Additional context (optional)"
+                }
+                value={form.additionalInfo}
+                onChange={(e) => handleChange("additionalInfo", e.target.value)}
               />
             </div>
-            <Textarea
-              className={`${inputStyles} min-h-[120px]`}
-              placeholder={
-                isArabic
-                  ? "وصف المشروع"
-                  : "Project description & success criteria"
-              }
-              required
-              value={form.projectDescription}
-              onChange={(e) =>
-                handleChange("projectDescription", e.target.value)
-              }
-            />
-            <Textarea
-              className={`${inputStyles} min-h-[100px]`}
-              placeholder={
-                isArabic
-                  ? "معلومات إضافية (اختياري)"
-                  : "Additional context (optional)"
-              }
-              value={form.additionalInfo}
-              onChange={(e) => handleChange("additionalInfo", e.target.value)}
-            />
             <div className="flex justify-end gap-3">
               <Button
                 type="button"
@@ -567,7 +868,9 @@ export default function QuotationsPage() {
                     <div className="text-xs text-white/60">{request.phone}</div>
                   </td>
                   <td className="py-3">
-                    <p className="text-white">{request.serviceId}</p>
+                    <p className="text-white">
+                      {getServiceName(request.serviceId)}
+                    </p>
                     {request.companyName && (
                       <span className="text-xs text-white/60">
                         {request.companyName}
@@ -682,7 +985,7 @@ export default function QuotationsPage() {
                 )}
                 <div className="flex items-center gap-2">
                   <Layers className="h-4 w-4 text-primary" />
-                  <span>{request.serviceId}</span>
+                  <span>{getServiceName(request.serviceId)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-primary" />
@@ -863,7 +1166,7 @@ export default function QuotationsPage() {
               )}
               <DetailsField
                 label={copy.serviceLabel}
-                value={selectedRequest.serviceId}
+                value={getServiceName(selectedRequest.serviceId)}
               />
               <DetailsField
                 label={copy.budgetLabel}

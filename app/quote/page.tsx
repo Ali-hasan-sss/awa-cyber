@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +20,7 @@ import {
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { createQuotationRequestApi } from "@/lib/actions/quoteActions";
+import { fetchPublicServices } from "@/lib/actions/serviceActions";
 
 const contentMap = {
   en: {
@@ -124,22 +125,48 @@ const contentMap = {
   },
 };
 
-const serviceOptions = [
-  "Penetration Testing",
-  "Security Audits",
-  "Managed Detection & Response",
-  "Cloud Security",
-  "Incident Response",
-];
+interface PublicService {
+  _id: string;
+  title: string;
+  description?: string;
+}
 
 const budgetOptions = [
-  { value: "5-15", label: "$5k - $15k", from: 5000, to: 15000 },
-  { value: "15-30", label: "$15k - $30k", from: 15000, to: 30000 },
-  { value: "30-50", label: "$30k - $50k", from: 30000, to: 50000 },
-  { value: "50+", label: "$50k+", from: 50000, to: 100000 },
+  {
+    value: "200-500",
+    label: { en: "$200 - $500", ar: "200 - 500 دولار" },
+    from: 200,
+    to: 500,
+  },
+  {
+    value: "500-1000",
+    label: { en: "$500 - $1,000", ar: "500 - 1000 دولار" },
+    from: 500,
+    to: 1000,
+  },
+  {
+    value: "1000-2500",
+    label: { en: "$1,000 - $2,500", ar: "1000 - 2500 دولار" },
+    from: 1000,
+    to: 2500,
+  },
+  {
+    value: "2500-5000",
+    label: { en: "$2,500 - $5,000", ar: "2500 - 5000 دولار" },
+    from: 2500,
+    to: 5000,
+  },
 ];
 
-const durationOptions = ["2-4 Weeks", "1-2 Months", "3-4 Months", "Ongoing"];
+const durationOptions = [
+  { value: "2weeks", label: { en: "2 Weeks", ar: "أسبوعين" } },
+  { value: "1month", label: { en: "1 Month", ar: "شهر" } },
+  { value: "2months", label: { en: "2 Months", ar: "شهرين" } },
+  { value: "3months", label: { en: "3 Months", ar: "3 أشهر" } },
+  { value: "4months", label: { en: "4 Months", ar: "4 أشهر" } },
+  { value: "5months", label: { en: "5 Months", ar: "5 أشهر" } },
+  { value: "notimportant", label: { en: "Not Important", ar: "لا غير مهم" } },
+];
 
 const referralOptions = [
   "Google Search",
@@ -162,6 +189,8 @@ export default function QuotePage() {
     () => contentMap[locale as "en" | "ar"] || contentMap.en,
     [locale]
   );
+  const [services, setServices] = useState<PublicService[]>([]);
+  const [loadingServices, setLoadingServices] = useState(false);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -178,29 +207,167 @@ export default function QuotePage() {
     consent: false,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<
     { type: "success" | "error"; message: string } | undefined
   >();
+
+  useEffect(() => {
+    const loadServices = async () => {
+      setLoadingServices(true);
+      try {
+        const lang = locale === "ar" ? "ar" : "en";
+        const data = await fetchPublicServices(lang);
+        setServices(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Failed to load services:", error);
+        setServices([]);
+      } finally {
+        setLoadingServices(false);
+      }
+    };
+    loadServices();
+  }, [locale]);
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+    const isAr = locale === "ar";
+
+    // fullName: min 3 characters
+    if (!form.fullName.trim()) {
+      errors.fullName = isAr ? "الاسم الكامل مطلوب" : "Full name is required";
+    } else if (form.fullName.trim().length < 3) {
+      errors.fullName = isAr
+        ? "الاسم يجب أن يكون 3 أحرف على الأقل"
+        : "Full name must be at least 3 characters";
+    }
+
+    // email: valid email
+    if (!form.email.trim()) {
+      errors.email = isAr ? "البريد الإلكتروني مطلوب" : "Email is required";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(form.email.trim())) {
+        errors.email = isAr
+          ? "البريد الإلكتروني غير صحيح"
+          : "Invalid email address";
+      }
+    }
+
+    // phone: min 6 characters
+    if (!form.phone.trim()) {
+      errors.phone = isAr ? "رقم الهاتف مطلوب" : "Phone number is required";
+    } else if (form.phone.trim().length < 6) {
+      errors.phone = isAr
+        ? "رقم الهاتف يجب أن يكون 6 أحرف على الأقل"
+        : "Phone number must be at least 6 characters";
+    }
+
+    // companyName: min 2 characters if provided (optional)
+    if (
+      form.company &&
+      form.company.trim().length > 0 &&
+      form.company.trim().length < 2
+    ) {
+      errors.company = isAr
+        ? "اسم الشركة يجب أن يكون حرفين على الأقل"
+        : "Company name must be at least 2 characters";
+    }
+
+    // serviceId: min 1 character (required)
+    if (!form.serviceType || !form.serviceType.trim()) {
+      errors.serviceType = isAr ? "الخدمة مطلوبة" : "Service is required";
+    }
+
+    // projectDescription: min 10 characters
+    if (!form.projectDesc.trim()) {
+      errors.projectDesc = isAr
+        ? "وصف المشروع مطلوب"
+        : "Project description is required";
+    } else if (form.projectDesc.trim().length < 10) {
+      errors.projectDesc = isAr
+        ? "وصف المشروع يجب أن يكون 10 أحرف على الأقل"
+        : "Project description must be at least 10 characters";
+    }
+
+    // budget: required
+    if (!form.budgetRange) {
+      errors.budgetRange = isAr
+        ? "نطاق الميزانية مطلوب"
+        : "Budget range is required";
+    }
+
+    // expectedDuration: required
+    if (!form.duration || !form.duration.trim()) {
+      errors.duration = isAr
+        ? "مدة التنفيذ المتوقعة مطلوبة"
+        : "Expected duration is required";
+    }
+
+    // startDate: valid date
+    if (!form.startDate) {
+      errors.startDate = isAr ? "تاريخ البدء مطلوب" : "Start date is required";
+    } else {
+      const startDate = new Date(form.startDate);
+      if (Number.isNaN(startDate.getTime())) {
+        errors.startDate = isAr ? "تاريخ البدء غير صحيح" : "Invalid start date";
+      }
+    }
+
+    // endDate: valid date, must be after startDate
+    if (!form.endDate) {
+      errors.endDate = isAr ? "تاريخ الانتهاء مطلوب" : "End date is required";
+    } else {
+      const endDate = new Date(form.endDate);
+      if (Number.isNaN(endDate.getTime())) {
+        errors.endDate = isAr ? "تاريخ الانتهاء غير صحيح" : "Invalid end date";
+      } else if (form.startDate) {
+        const startDate = new Date(form.startDate);
+        if (endDate.getTime() < startDate.getTime()) {
+          errors.endDate = isAr
+            ? "تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء"
+            : "End date must be after start date";
+        }
+      }
+    }
+
+    // consent: required
+    if (!form.consent) {
+      errors.consent = isAr
+        ? "يرجى الموافقة على الشروط"
+        : "Please accept the consent";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleChange = <K extends keyof typeof form>(
     field: K,
     value: (typeof form)[K]
   ) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (formErrors[field]) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitting(true);
     setFeedback(undefined);
+
+    if (!validateForm()) {
+      setSubmitting(false);
+      return;
+    }
+
     try {
-      if (!form.consent) {
-        throw new Error(
-          locale === "ar"
-            ? "يرجى الموافقة على الشروط قبل الإرسال."
-            : "Please accept the consent before submitting."
-        );
-      }
       const budget = budgetOptions.find(
         (option) => option.value === form.budgetRange
       );
@@ -211,18 +378,27 @@ export default function QuotePage() {
             : "Please select a budget range."
         );
       }
+
+      // Get duration value
+      const durationOption = durationOptions.find(
+        (option) => option.value === form.duration
+      );
+      const durationValue = durationOption
+        ? durationOption.label[locale as "en" | "ar"]
+        : form.duration || "unspecified";
+
       await createQuotationRequestApi({
-        fullName: form.fullName,
-        email: form.email,
-        phone: form.phone,
-        companyName: form.company || undefined,
-        serviceId: form.serviceType || "custom",
-        projectDescription: form.projectDesc,
+        fullName: form.fullName.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        companyName: form.company?.trim() || undefined,
+        serviceId: form.serviceType.trim(),
+        projectDescription: form.projectDesc.trim(),
         budget: {
           from: budget.from,
           to: budget.to,
         },
-        expectedDuration: form.duration || "unspecified",
+        expectedDuration: durationValue,
         startDate: form.startDate,
         endDate: form.endDate,
         additionalInfo: [form.notes, form.referral].filter(Boolean).join(" — "),
@@ -249,6 +425,7 @@ export default function QuotePage() {
         referral: "",
         consent: false,
       });
+      setFormErrors({});
     } catch (error) {
       setFeedback({
         type: "error",
@@ -304,37 +481,45 @@ export default function QuotePage() {
               icon={<User className="h-5 w-5 text-primary" />}
             >
               <div className="grid gap-4 md:grid-cols-2">
-                <Field label={copy.labels.fullName}>
+                <Field label={copy.labels.fullName} error={formErrors.fullName}>
                   <Input
                     placeholder={copy.placeholders.fullName}
                     required
-                    className={inputClasses}
+                    className={`${inputClasses} ${
+                      formErrors.fullName ? "border-red-400/60" : ""
+                    }`}
                     value={form.fullName}
                     onChange={(e) => handleChange("fullName", e.target.value)}
                   />
                 </Field>
-                <Field label={copy.labels.email}>
+                <Field label={copy.labels.email} error={formErrors.email}>
                   <Input
                     type="email"
                     placeholder={copy.placeholders.email}
                     required
-                    className={inputClasses}
+                    className={`${inputClasses} ${
+                      formErrors.email ? "border-red-400/60" : ""
+                    }`}
                     value={form.email}
                     onChange={(e) => handleChange("email", e.target.value)}
                   />
                 </Field>
-                <Field label={copy.labels.phone}>
+                <Field label={copy.labels.phone} error={formErrors.phone}>
                   <Input
                     placeholder={copy.placeholders.phone}
-                    className={inputClasses}
+                    className={`${inputClasses} ${
+                      formErrors.phone ? "border-red-400/60" : ""
+                    }`}
                     value={form.phone}
                     onChange={(e) => handleChange("phone", e.target.value)}
                   />
                 </Field>
-                <Field label={copy.labels.company}>
+                <Field label={copy.labels.company} error={formErrors.company}>
                   <Input
                     placeholder={copy.placeholders.company}
-                    className={inputClasses}
+                    className={`${inputClasses} ${
+                      formErrors.company ? "border-red-400/60" : ""
+                    }`}
                     value={form.company}
                     onChange={(e) => handleChange("company", e.target.value)}
                   />
@@ -347,31 +532,44 @@ export default function QuotePage() {
               icon={<FileText className="h-5 w-5 text-primary" />}
             >
               <div className="grid gap-4">
-                <Field label={copy.labels.serviceType}>
+                <Field
+                  label={copy.labels.serviceType}
+                  error={formErrors.serviceType}
+                >
                   <select
-                    className={selectClasses}
+                    className={`${selectClasses} ${
+                      formErrors.serviceType ? "border-red-400/60" : ""
+                    }`}
                     value={form.serviceType}
                     onChange={(e) =>
                       handleChange("serviceType", e.target.value)
                     }
+                    disabled={loadingServices}
                   >
-                    <option value="">{copy.select.service}</option>
-                    {serviceOptions.map((option) => (
+                    <option value="" className="bg-slate-900 text-white">
+                      {copy.select.service}
+                    </option>
+                    {services.map((service) => (
                       <option
-                        key={option}
-                        value={option}
-                        className="text-black"
+                        key={service._id}
+                        value={service._id}
+                        className="bg-slate-900 text-white"
                       >
-                        {option}
+                        {service.title}
                       </option>
                     ))}
                   </select>
                 </Field>
-                <Field label={copy.labels.projectDesc}>
+                <Field
+                  label={copy.labels.projectDesc}
+                  error={formErrors.projectDesc}
+                >
                   <Textarea
                     rows={4}
                     placeholder={copy.placeholders.projectDesc}
-                    className={textareaClasses}
+                    className={`${textareaClasses} ${
+                      formErrors.projectDesc ? "border-red-400/60" : ""
+                    }`}
                     value={form.projectDesc}
                     onChange={(e) =>
                       handleChange("projectDesc", e.target.value)
@@ -386,58 +584,77 @@ export default function QuotePage() {
               icon={<Wallet className="h-5 w-5 text-primary" />}
             >
               <div className="grid gap-4 md:grid-cols-2">
-                <Field label={copy.labels.budgetRange}>
+                <Field
+                  label={copy.labels.budgetRange}
+                  error={formErrors.budgetRange}
+                >
                   <select
-                    className={selectClasses}
+                    className={`${selectClasses} ${
+                      formErrors.budgetRange ? "border-red-400/60" : ""
+                    }`}
                     value={form.budgetRange}
                     onChange={(e) =>
                       handleChange("budgetRange", e.target.value)
                     }
                     required
                   >
-                    <option value="">{copy.select.budget}</option>
+                    <option value="" className="bg-slate-900 text-white">
+                      {copy.select.budget}
+                    </option>
                     {budgetOptions.map((option) => (
                       <option
                         key={option.value}
                         value={option.value}
-                        className="text-black"
+                        className="bg-slate-900 text-white"
                       >
-                        {option.label}
+                        {option.label[locale as "en" | "ar"]}
                       </option>
                     ))}
                   </select>
                 </Field>
-                <Field label={copy.labels.duration}>
+                <Field label={copy.labels.duration} error={formErrors.duration}>
                   <select
-                    className={selectClasses}
+                    className={`${selectClasses} ${
+                      formErrors.duration ? "border-red-400/60" : ""
+                    }`}
                     value={form.duration}
                     onChange={(e) => handleChange("duration", e.target.value)}
+                    required
                   >
-                    <option value="">{copy.select.duration}</option>
+                    <option value="" className="bg-slate-900 text-white">
+                      {copy.select.duration}
+                    </option>
                     {durationOptions.map((option) => (
                       <option
-                        key={option}
-                        value={option}
-                        className="text-black"
+                        key={option.value}
+                        value={option.value}
+                        className="bg-slate-900 text-white"
                       >
-                        {option}
+                        {option.label[locale as "en" | "ar"]}
                       </option>
                     ))}
                   </select>
                 </Field>
-                <Field label={copy.labels.startDate}>
+                <Field
+                  label={copy.labels.startDate}
+                  error={formErrors.startDate}
+                >
                   <Input
                     type="date"
-                    className={inputClasses}
+                    className={`${inputClasses} ${
+                      formErrors.startDate ? "border-red-400/60" : ""
+                    }`}
                     value={form.startDate}
                     onChange={(e) => handleChange("startDate", e.target.value)}
                     required
                   />
                 </Field>
-                <Field label={copy.labels.endDate}>
+                <Field label={copy.labels.endDate} error={formErrors.endDate}>
                   <Input
                     type="date"
-                    className={inputClasses}
+                    className={`${inputClasses} ${
+                      formErrors.endDate ? "border-red-400/60" : ""
+                    }`}
                     value={form.endDate}
                     onChange={(e) => handleChange("endDate", e.target.value)}
                     required
@@ -480,21 +697,27 @@ export default function QuotePage() {
                   </select>
                 </Field>
 
-                <label className="flex items-start gap-3 text-xs text-white/80">
-                  <input
-                    type="checkbox"
-                    className="mt-1 h-4 w-4 rounded border-white/20 bg-transparent text-primary focus:ring-primary"
-                    required
-                    checked={form.consent}
-                    onChange={(e) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        consent: e.target.checked,
-                      }))
-                    }
-                  />
-                  <span>{copy.labels.consent}</span>
-                </label>
+                <div>
+                  <label className="flex items-start gap-3 text-xs text-white/80">
+                    <input
+                      type="checkbox"
+                      className={`mt-1 h-4 w-4 rounded border-white/20 bg-transparent text-primary focus:ring-primary ${
+                        formErrors.consent ? "border-red-400/60" : ""
+                      }`}
+                      required
+                      checked={form.consent}
+                      onChange={(e) => {
+                        handleChange("consent", e.target.checked);
+                      }}
+                    />
+                    <span>{copy.labels.consent}</span>
+                  </label>
+                  {formErrors.consent && (
+                    <p className="mt-1 text-xs text-red-300">
+                      {formErrors.consent}
+                    </p>
+                  )}
+                </div>
               </div>
             </Section>
 
@@ -574,14 +797,17 @@ function Section({
 function Field({
   label,
   children,
+  error,
 }: {
   label: string;
   children: React.ReactNode;
+  error?: string;
 }) {
   return (
     <label className="block text-sm text-white/80 space-y-2">
       <span>{label}</span>
       {children}
+      {error && <p className="text-xs text-red-300 mt-1">{error}</p>}
     </label>
   );
 }
