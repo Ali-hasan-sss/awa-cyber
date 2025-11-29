@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import { useUsers } from "@/contexts/UserContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -11,22 +10,24 @@ import {
   Plus,
   Trash2,
   Pencil,
-  KeyRound,
-  Users,
+  UserCog,
   RefreshCw,
   Search,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 
-const roleOptions = [{ value: "client", label: { en: "Client", ar: "زبون" } }];
+const roleOptions = [
+  { value: "employee", label: { en: "Employee", ar: "موظف" } },
+];
 
 type FormState = {
   name: string;
   email: string;
   phone: string;
   companyName: string;
-  role: "client";
+  role: "employee";
+  password: string;
 };
 
 const initialForm: FormState = {
@@ -34,7 +35,8 @@ const initialForm: FormState = {
   email: "",
   phone: "",
   companyName: "",
-  role: "client",
+  role: "employee",
+  password: "",
 };
 
 const glassPanel =
@@ -48,18 +50,16 @@ const selectStyles =
 const pillClass =
   "inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs uppercase tracking-[0.35em] text-white/70";
 
-export default function UsersManagementPage() {
+export default function EmployeesManagementPage() {
   const { locale } = useLanguage();
   const isArabic = locale === "ar";
-  const searchParams = useSearchParams();
-  const router = useRouter();
   const copy = {
-    title: isArabic ? "إدارة العملاء" : "Clients Management",
+    title: isArabic ? "إدارة الموظفين" : "Employees Management",
     subtitle: isArabic
-      ? "قم بإضافة العملاء وإدارة بياناتهم."
-      : "Add clients and manage their information.",
-    addUser: isArabic ? "إضافة عميل" : "Add Client",
-    updateUser: isArabic ? "تحديث بيانات" : "Update client",
+      ? "قم بإضافة الموظفين والمسؤولين وإدارة بياناتهم."
+      : "Add employees and admins and manage their information.",
+    addUser: isArabic ? "إضافة موظف" : "Add Employee",
+    updateUser: isArabic ? "تحديث بيانات" : "Update employee",
     delete: isArabic ? "حذف" : "Delete",
     edit: isArabic ? "تعديل" : "Edit",
   };
@@ -100,20 +100,23 @@ export default function UsersManagementPage() {
   const handleCreate = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      await createUser({
+      // Password is required for employee
+      const payload: any = {
         name: form.name,
         email: form.email,
         phone: form.phone,
         companyName: form.companyName,
-        role: "client",
-      });
+        role: "employee",
+        password: form.password,
+      };
+      await createUser(payload);
       setForm(initialForm);
-      // Refresh users with current filters
+      // Refresh users with current filters - only employees
       fetchUsers({
         page: currentPage,
         limit: 10,
         search: searchQuery || undefined,
-        role: "client",
+        role: "employee",
       });
     } catch (error) {
       // Error is handled by UserContext
@@ -123,21 +126,26 @@ export default function UsersManagementPage() {
   const handleUpdate = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!editingUserId) return;
-    await updateUser(editingUserId, {
+    // Only send password if provided
+    const payload: any = {
       name: form.name,
       email: form.email,
       phone: form.phone,
       companyName: form.companyName,
-      role: "client",
-    });
+      role: "employee",
+    };
+    if (form.password) {
+      payload.password = form.password;
+    }
+    await updateUser(editingUserId, payload);
     setEditingUserId(null);
     setForm(initialForm);
-    // Refresh users with current filters
+    // Refresh users with current filters - only employees
     fetchUsers({
       page: currentPage,
       limit: 10,
       search: searchQuery || undefined,
-      role: "client",
+      role: "employee",
     });
   };
 
@@ -150,10 +158,11 @@ export default function UsersManagementPage() {
       email: user.email,
       phone: user.phone,
       companyName: user.companyName,
-      role: "client",
+      role: "employee",
+      password: "", // Don't prefill password for security
     });
     // Scroll to form
-    const formElement = document.getElementById("user-form");
+    const formElement = document.getElementById("employee-form");
     if (formElement) {
       formElement.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -178,12 +187,12 @@ export default function UsersManagementPage() {
     try {
       await deleteUser(confirmDialog.userId);
       setConfirmDialog({ isOpen: false, userId: null, userName: "" });
-      // Refresh users with current filters
+      // Refresh users with current filters - only employees
       fetchUsers({
         page: currentPage,
         limit: 10,
         search: searchQuery || undefined,
-        role: "client",
+        role: "employee",
       });
     } catch (error) {
       // Error is handled by UserContext
@@ -198,7 +207,7 @@ export default function UsersManagementPage() {
       page: 1,
       limit: 10,
       search: searchQuery || undefined,
-      role: "client",
+      role: "employee",
     });
   };
 
@@ -209,46 +218,24 @@ export default function UsersManagementPage() {
       page,
       limit: 10,
       search: searchQuery || undefined,
+      role: "employee",
     });
   };
 
-  // Initial fetch on mount - only clients
+  // Initial fetch on mount - only employees
   useEffect(() => {
     fetchUsers({
       page: 1,
       limit: 10,
-      role: "client",
+      role: "employee",
     });
   }, []);
-
-  const [prefillApplied, setPrefillApplied] = useState(false);
-
-  useEffect(() => {
-    if (prefillApplied) return;
-    const prefillName = searchParams.get("prefillName");
-    const prefillEmail = searchParams.get("prefillEmail");
-    const prefillPhone = searchParams.get("prefillPhone");
-    const prefillCompany = searchParams.get("prefillCompany");
-    if (prefillName || prefillEmail || prefillPhone || prefillCompany) {
-      setForm((prev) => ({
-        ...prev,
-        name: prefillName || prev.name,
-        email: prefillEmail || prev.email,
-        phone: prefillPhone || prev.phone,
-        companyName: prefillCompany || prev.companyName,
-        role: "client",
-      }));
-      setPrefillApplied(true);
-      setEditingUserId(null);
-      router.replace("/admin/dashboard/users");
-    }
-  }, [searchParams, prefillApplied, router]);
 
   return (
     <div className="space-y-8 text-slate-100">
       <div className="space-y-2">
         <h1 className="flex items-center gap-3 text-3xl font-bold text-white drop-shadow">
-          <Users className="h-8 w-8 text-primary" />
+          <UserCog className="h-8 w-8 text-primary" />
           {copy.title}
         </h1>
         <p className="text-slate-300">{copy.subtitle}</p>
@@ -256,7 +243,7 @@ export default function UsersManagementPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <form
-          id="user-form"
+          id="employee-form"
           onSubmit={editingUserId ? handleUpdate : handleCreate}
           className={`${glassPanel} space-y-5 p-6`}
         >
@@ -290,13 +277,21 @@ export default function UsersManagementPage() {
               className={inputStyles}
             />
             <Input
-              placeholder={isArabic ? "اسم الشركة" : "Company name"}
+              placeholder={isArabic ? "المسمى الوظيفي" : "Job Title"}
               required
               value={form.companyName}
               onChange={(e) => handleInputChange("companyName", e.target.value)}
               className={inputStyles}
             />
-            <input type="hidden" value="client" />
+            <input type="hidden" value="employee" />
+            <Input
+              placeholder={isArabic ? "كلمة المرور" : "Password"}
+              type="password"
+              required={!editingUserId}
+              value={form.password}
+              onChange={(e) => handleInputChange("password", e.target.value)}
+              className={inputStyles}
+            />
           </div>
           <div className="flex justify-end gap-3">
             {editingUserId && (
@@ -324,8 +319,8 @@ export default function UsersManagementPage() {
             <RefreshCw className="h-5 w-5 text-primary" />
             <p className="text-sm text-slate-300">
               {isArabic
-                ? "تحديث مستمر لقائمة المستخدمين والتقارير اليومية."
-                : "Live overview of registered users and daily reports."}
+                ? "تحديث مستمر لقائمة الموظفين والمسؤولين."
+                : "Live overview of employees and admins."}
             </p>
           </div>
         </div>
@@ -382,7 +377,7 @@ export default function UsersManagementPage() {
                   {isArabic ? "الهاتف" : "Phone"}
                 </th>
                 <th className="py-2 ltr:text-left rtl:text-right">
-                  {isArabic ? "الشركة" : "Company"}
+                  {isArabic ? "المسمى الوظيفي" : "Job Title"}
                 </th>
                 <th className="py-2 ltr:text-left rtl:text-right">
                   {isArabic ? "الدور" : "Role"}
@@ -497,7 +492,7 @@ export default function UsersManagementPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="min-w-[80px] text-white/70 ltr:text-left rtl:text-right">
-                      {isArabic ? "الشركة" : "Company"}:
+                      {isArabic ? "المسمى الوظيفي" : "Job Title"}:
                     </span>
                     <span className="text-white/90">{user.companyName}</span>
                   </div>
@@ -611,8 +606,8 @@ export default function UsersManagementPage() {
         title={isArabic ? "تأكيد الحذف" : "Confirm Delete"}
         message={
           isArabic
-            ? `هل أنت متأكد من حذف المستخدم "${confirmDialog.userName}"؟ لا يمكن التراجع عن هذا الإجراء.`
-            : `Are you sure you want to delete user "${confirmDialog.userName}"? This action cannot be undone.`
+            ? `هل أنت متأكد من حذف الموظف "${confirmDialog.userName}"؟ لا يمكن التراجع عن هذا الإجراء.`
+            : `Are you sure you want to delete employee "${confirmDialog.userName}"? This action cannot be undone.`
         }
         confirmText={isArabic ? "حذف" : "Delete"}
         cancelText={isArabic ? "إلغاء" : "Cancel"}

@@ -46,6 +46,13 @@ export type AdminPayment = {
   updatedAt: string;
 };
 
+export type ModificationFile = {
+  url: string;
+  fileName: string;
+  fileType: string;
+  fileSize?: number;
+};
+
 export type AdminModification = {
   _id: string;
   title: string;
@@ -61,6 +68,7 @@ export type AdminModification = {
     | "needs_extra_payment";
   extraPaymentAmount?: number;
   costAccepted: boolean;
+  attachedFiles?: ModificationFile[];
   createdAt: string;
   updatedAt: string;
 };
@@ -93,6 +101,17 @@ export type AdminProject = {
   activeModificationId?: string | AdminModification;
   whatsappGroupLink?: string;
   portalCode?: string;
+  projectUrl?: string;
+  employees?: Array<
+    | string
+    | {
+        _id: string;
+        name: string;
+        email: string;
+        companyName: string;
+        role: string;
+      }
+  >;
   createdAt: string;
   updatedAt: string;
 };

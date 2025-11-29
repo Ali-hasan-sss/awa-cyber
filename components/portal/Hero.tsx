@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useProjects, AdminProject } from "@/contexts/ProjectContext";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
@@ -10,16 +12,54 @@ import {
   DollarSign,
   MessageCircle,
   Globe,
-  MapPin,
   TrendingUp,
   Calendar,
 } from "lucide-react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 
-export default function PortalHero() {
+function HeroContent() {
   const { locale, messages } = useLanguage();
   const isArabic = locale === "ar";
+  const searchParams = useSearchParams();
+  const code = searchParams.get("code");
+  const { getProjectByPortalCode } = useProjects();
+  const [project, setProject] = useState<AdminProject | null>(null);
+  const [loading, setLoading] = useState(true);
   const portalHero = (messages?.portalHero || {}) as any;
+
+  useEffect(() => {
+    loadProject();
+  }, [code]);
+
+  const loadProject = async () => {
+    if (!code) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const loadedProject = await getProjectByPortalCode(code);
+      if (loadedProject) {
+        setProject(loadedProject);
+      }
+    } catch (err) {
+      console.error("Failed to load project:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate current phase and progress
+  const currentPhase =
+    project?.phases?.find((phase) => phase.status === "in_progress") ||
+    project?.phases?.find((phase) => phase.status === "upcoming");
+
+  const progress = project?.progress || 0;
+  const currentPhaseTitle = currentPhase
+    ? isArabic
+      ? currentPhase.title.ar
+      : currentPhase.title.en
+    : "";
 
   const features = [
     {
@@ -65,48 +105,56 @@ export default function PortalHero() {
               />
 
               {/* Progress Overlay Box - Position based on language */}
-              <div
-                className={`absolute top-4 ${
-                  isArabic ? "left-4" : "right-4"
-                } bg-white rounded-xl border-2 border-primary p-4 shadow-lg`}
-              >
+              {!loading && project && (
                 <div
-                  className={`flex items-center gap-3 ${
-                    isArabic ? "flex-row-reverse" : ""
-                  }`}
+                  className={`absolute top-4 ${
+                    isArabic ? "left-4" : "right-4"
+                  } bg-white rounded-xl border-2 border-primary p-4 shadow-lg`}
                 >
-                  <div className={isArabic ? "text-right" : "text-left"}>
-                    <p className="text-xs text-gray-600 mb-1">
-                      {portalHero.overlay?.progress || ""}
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900">75%</p>
+                  <div
+                    className={`flex items-center gap-3 ${
+                      isArabic ? "flex-row-reverse" : ""
+                    }`}
+                  >
+                    <div className={isArabic ? "text-right" : "text-left"}>
+                      <p className="text-xs text-gray-600 mb-1">
+                        {portalHero.overlay?.progress ||
+                          (isArabic ? "نسبة التقدم" : "Progress")}
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {progress}%
+                      </p>
+                    </div>
+                    <TrendingUp className="w-8 h-8 text-primary" />
                   </div>
-                  <TrendingUp className="w-8 h-8 text-primary" />
                 </div>
-              </div>
+              )}
 
-              {/* Status Overlay Box - Position based on language */}
-              <div
-                className={`absolute bottom-4 ${
-                  isArabic ? "right-4" : "left-4"
-                } bg-white rounded-xl border-2 border-primary p-4 shadow-lg`}
-              >
+              {/* Current Phase Overlay Box - Position based on language */}
+              {!loading && project && currentPhaseTitle && (
                 <div
-                  className={`flex items-center gap-3 ${
-                    isArabic ? "flex-row-reverse" : ""
-                  }`}
+                  className={`absolute bottom-4 ${
+                    isArabic ? "right-4" : "left-4"
+                  } bg-white rounded-xl border-2 border-primary p-4 shadow-lg`}
                 >
-                  <div className={isArabic ? "text-right" : "text-left"}>
-                    <p className="text-xs text-gray-600 mb-1">
-                      {portalHero.overlay?.onTrack || ""}
-                    </p>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {portalHero.overlay?.deliveryStage || ""}
-                    </p>
+                  <div
+                    className={`flex items-center gap-3 ${
+                      isArabic ? "flex-row-reverse" : ""
+                    }`}
+                  >
+                    <div className={isArabic ? "text-right" : "text-left"}>
+                      <p className="text-xs text-gray-600 mb-1">
+                        {portalHero.overlay?.currentPhase ||
+                          (isArabic ? "المرحلة الحالية" : "Current Phase")}
+                      </p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {currentPhaseTitle}
+                      </p>
+                    </div>
+                    <Calendar className="w-6 h-6 text-gray-500" />
                   </div>
-                  <Calendar className="w-6 h-6 text-gray-500" />
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -180,79 +228,62 @@ export default function PortalHero() {
             <div className="flex flex-col gap-4 pt-4 items-center lg:items-start">
               <Button
                 size="lg"
-                className="group w-full md:w-auto bg-primary text-black hover:bg-primary/90 px-8 py-6 text-base font-semibold"
-                asChild
+                className="group w-full md:w-auto bg-primary text-black hover:bg-primary/90 px-8 py-6 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!project?.projectUrl}
+                asChild={!!project?.projectUrl}
               >
-                <Link href="/">
-                  {isArabic ? (
-                    <>
-                      {portalHero.cta?.visitMain || ""}
-                      <Globe className="w-5 h-5 mr-2" />
-                      <ArrowRight className="w-5 h-5 ml-2 rotate-180 group-hover:-translate-x-1 transition-transform" />
-                    </>
-                  ) : (
-                    <>
-                      <Globe className="w-5 h-5 mr-2" />
-                      {portalHero.cta?.visitMain || ""}
-                      <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
-                </Link>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full md:w-auto border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-6 text-base font-semibold"
-                asChild
-              >
-                <Link
-                  href="https://maps.google.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {isArabic ? (
-                    <>
-                      {portalHero.cta?.viewMaps || ""}
-                      <MapPin className="w-5 h-5 mr-2" />
-                      <ArrowRight className="w-5 h-5 ml-2 rotate-180" />
-                    </>
-                  ) : (
-                    <>
-                      <MapPin className="w-5 h-5 mr-2" />
-                      {portalHero.cta?.viewMaps || ""}
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </>
-                  )}
-                </Link>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full md:w-auto border-2 border-primary text-primary hover:bg-primary/10 px-8 py-6 text-base font-semibold"
-                asChild
-              >
-                <Link href="/portal/dashboard">
-                  {isArabic ? (
-                    <>
-                      {portalHero.cta?.trackProject || ""}
-                      <TrendingUp className="w-5 h-5 mr-2" />
-                      <ArrowRight className="w-5 h-5 ml-2 rotate-180" />
-                    </>
-                  ) : (
-                    <>
-                      <TrendingUp className="w-5 h-5 mr-2" />
-                      {portalHero.cta?.trackProject || ""}
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </>
-                  )}
-                </Link>
+                {project?.projectUrl ? (
+                  <Link
+                    href={project.projectUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {isArabic ? (
+                      <>
+                        {portalHero.cta?.visitSite ||
+                          (isArabic ? "زيارة الموقع" : "Visit Site")}
+                        <Globe className="w-5 h-5 mr-2" />
+                        <ArrowRight className="w-5 h-5 ml-2 rotate-180 group-hover:-translate-x-1 transition-transform" />
+                      </>
+                    ) : (
+                      <>
+                        <Globe className="w-5 h-5 mr-2" />
+                        {portalHero.cta?.visitSite ||
+                          (isArabic ? "زيارة الموقع" : "Visit Site")}
+                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
+                  </Link>
+                ) : (
+                  <span>
+                    {isArabic ? (
+                      <>
+                        {portalHero.cta?.visitSite ||
+                          (isArabic ? "زيارة الموقع" : "Visit Site")}
+                        <Globe className="w-5 h-5 mr-2" />
+                      </>
+                    ) : (
+                      <>
+                        <Globe className="w-5 h-5 mr-2" />
+                        {portalHero.cta?.visitSite ||
+                          (isArabic ? "زيارة الموقع" : "Visit Site")}
+                      </>
+                    )}
+                  </span>
+                )}
               </Button>
             </div>
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+export default function PortalHero() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HeroContent />
+    </Suspense>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Users,
+  UserCog,
   LayoutDashboard,
   ClipboardList,
   Layers,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "../ui/logo";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   {
@@ -22,7 +24,12 @@ const navItems = [
   {
     href: "/admin/dashboard/users",
     icon: Users,
-    label: { en: "Users", ar: "المستخدمون" },
+    label: { en: "Clients", ar: "العملاء" },
+  },
+  {
+    href: "/admin/dashboard/employees",
+    icon: UserCog,
+    label: { en: "Employees", ar: "الموظفون" },
   },
   {
     href: "/admin/dashboard/quotes",
@@ -56,6 +63,13 @@ export function AdminSidebar({
   locale: "en" | "ar";
 }) {
   const pathname = usePathname();
+  const { admin } = useAuth();
+  const isEmployee = admin?.role === "employee";
+
+  // Filter nav items based on role
+  const filteredNavItems = isEmployee
+    ? navItems.filter((item) => item.href === "/admin/dashboard/projects")
+    : navItems;
 
   const content = (
     <div className="relative flex h-full flex-col gap-8 overflow-hidden rounded-[28px] border border-white/10 bg-[#060e1f] px-5 py-6 text-slate-100 shadow-[0_25px_80px_rgba(2,6,23,0.65)]">
@@ -81,7 +95,7 @@ export function AdminSidebar({
           <span className="block h-px w-full bg-gradient-to-r from-transparent via-white/30 to-transparent" />
         </div>
         <nav className="admin-sidebar-nav flex-1 space-y-2 overflow-y-auto pr-1">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href; // Exact match for other pages
             return (

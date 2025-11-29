@@ -19,7 +19,7 @@ interface AuthState {
     id: string;
     name: string;
     email: string;
-    role: string;
+    role: "admin" | "client" | "employee";
   } | null;
   user: {
     id: string;
@@ -91,8 +91,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setError(null);
     try {
       const data = await loginAdminApi(email, password);
-      persistState({ token: data.token, admin: data.admin, user: null });
-      router.push("/admin/dashboard/home");
+      persistState({
+        token: data.token,
+        admin: {
+          ...data.admin,
+          role: data.admin.role as "admin" | "client" | "employee",
+        },
+        user: null,
+      });
+      // Redirect employees to projects page, admins to home
+      if (data.admin.role === "employee") {
+        router.push("/admin/dashboard/projects");
+      } else {
+        router.push("/admin/dashboard/home");
+      }
     } catch (err) {
       setError(typeof err === "string" ? err : "فشل تسجيل الدخول");
       throw err;

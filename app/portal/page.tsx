@@ -5,58 +5,59 @@ import PortalHero from "@/components/portal/Hero";
 import PortalFeatures from "@/components/portal/Features";
 import PortalFiles from "@/components/portal/Files";
 import PortalModifications from "@/components/portal/Modifications";
+import PortalPayments from "@/components/portal/Payments";
 import { useProjects } from "@/contexts/ProjectContext";
-import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 function PortalContent() {
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
-  const { user, loginWithCode } = useAuth();
-  const { getProjectByPortalCode, projects, fetchProjects } = useProjects();
+  const { getProjectByPortalCode, getProject } = useProjects();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null
   );
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadProject();
-  }, [code, user]);
+  }, [code]);
 
   const loadProject = async () => {
-    if (code) {
-      try {
-        // Try to get project by portal code
-        try {
-          const project = await getProjectByPortalCode(code);
-          if (project?._id) {
-            setSelectedProjectId(project._id);
-            return;
-          }
-        } catch (err) {
-          // If project code fails, try user login code
-          try {
-            await loginWithCode(code);
-            await fetchProjects();
-          } catch (loginErr) {
-            console.error("Failed to load project:", loginErr);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to load project:", err);
+    if (!code) {
+      console.error("No portal code provided");
+      return;
+    }
+    try {
+      // Get project by portal code
+      const project = await getProjectByPortalCode(code);
+      if (project?._id) {
+        setSelectedProjectId(project._id);
       }
-    } else if (user?.id) {
-      // If user is logged in, get first project
-      await fetchProjects();
+    } catch (err) {
+      console.error("Failed to load project:", err);
     }
   };
 
-  useEffect(() => {
-    if (projects.length > 0 && !selectedProjectId) {
-      const project = projects[0];
-      setSelectedProjectId(project._id);
+  const handleRefresh = async () => {
+    if (!code) return;
+    setRefreshing(true);
+    try {
+      // Reload project data
+      const project = await getProjectByPortalCode(code);
+      if (project?._id) {
+        setSelectedProjectId(project._id);
+        // Force re-render of child components
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error("Failed to refresh project:", err);
+    } finally {
+      setRefreshing(false);
     }
-  }, [projects, selectedProjectId]);
+  };
 
   return (
     <>
@@ -64,10 +65,20 @@ function PortalContent() {
       <PortalFeatures />
       {selectedProjectId && (
         <>
+          <PortalPayments projectId={selectedProjectId} />
           <PortalFiles projectId={selectedProjectId} />
           <PortalModifications projectId={selectedProjectId} />
         </>
       )}
+      {/* Floating Refresh Button */}
+      <Button
+        onClick={handleRefresh}
+        disabled={refreshing}
+        className="fixed bottom-8 right-8 z-50 h-14 w-14 rounded-full bg-primary text-black shadow-lg hover:bg-primary/90 transition-all hover:scale-110 disabled:opacity-50"
+        title="تحديث البيانات"
+      >
+        <RefreshCw className={`h-6 w-6 ${refreshing ? "animate-spin" : ""}`} />
+      </Button>
     </>
   );
 }

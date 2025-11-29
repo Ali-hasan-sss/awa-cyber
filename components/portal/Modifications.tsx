@@ -18,9 +18,14 @@ import {
   CheckCircle2,
   XCircle,
   Menu,
+  Download,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useProjects, AdminModification } from "@/contexts/ProjectContext";
+import {
+  useProjects,
+  AdminModification,
+  ModificationFile,
+} from "@/contexts/ProjectContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -81,8 +86,9 @@ const getStatusBadge = (status: string, isArabic: boolean) => {
 export default function Modifications({ projectId }: ModificationsProps) {
   const { locale, messages } = useLanguage();
   const isArabic = locale === "ar";
-  const { createModification, projects, updateModification } = useProjects();
+  const { createModification, getProject, updateModification } = useProjects();
   const [modifications, setModifications] = useState<AdminModification[]>([]);
+  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     title: "",
@@ -96,33 +102,58 @@ export default function Modifications({ projectId }: ModificationsProps) {
 
   useEffect(() => {
     loadModifications();
-  }, [projectId, projects]);
+  }, [projectId]);
 
-  const loadModifications = () => {
-    const project = projects.find((p) => p._id === projectId);
-    if (project && project.modifications) {
-      const mods = project.modifications;
-      // Check if modifications is an array of objects (AdminModification) or strings (IDs)
-      if (Array.isArray(mods) && mods.length > 0) {
-        // If first element is a string, it's an array of IDs, so return empty array
-        // Otherwise, it's an array of AdminModification objects
-        const isModificationObjects =
-          typeof mods[0] === "object" && mods[0] !== null && "_id" in mods[0];
-        setModifications(
-          isModificationObjects ? (mods as AdminModification[]) : []
-        );
+  const loadModifications = async () => {
+    if (!projectId) return;
+
+    setLoading(true);
+    try {
+      const project = await getProject(projectId);
+      if (project && project.modifications) {
+        const mods = project.modifications;
+        // Check if modifications is an array of objects (AdminModification) or strings (IDs)
+        if (Array.isArray(mods) && mods.length > 0) {
+          // If first element is a string, it's an array of IDs, so return empty array
+          // Otherwise, it's an array of AdminModification objects
+          const isModificationObjects =
+            typeof mods[0] === "object" && mods[0] !== null && "_id" in mods[0];
+          setModifications(
+            isModificationObjects ? (mods as AdminModification[]) : []
+          );
+        } else {
+          setModifications([]);
+        }
       } else {
         setModifications([]);
       }
-    } else {
+    } catch (err) {
+      console.error("Failed to load modifications:", err);
       setModifications([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      setAttachedFiles(Array.from(files));
+      const newFiles = Array.from(files);
+      // Limit to 5 files maximum
+      if (attachedFiles.length + newFiles.length > 5) {
+        alert(
+          isArabic
+            ? "يمكنك رفع حتى 5 ملفات فقط"
+            : "You can upload up to 5 files only"
+        );
+        const remainingSlots = 5 - attachedFiles.length;
+        setAttachedFiles([
+          ...attachedFiles,
+          ...newFiles.slice(0, remainingSlots),
+        ]);
+      } else {
+        setAttachedFiles([...attachedFiles, ...newFiles]);
+      }
     }
   };
 
@@ -144,36 +175,54 @@ export default function Modifications({ projectId }: ModificationsProps) {
     setSubmitting(true);
     try {
       // Upload files if any
-      const fileUrls: string[] = [];
-      for (const file of attachedFiles) {
-        const formData = new FormData();
-        formData.append("file", file);
+      const fileUrls: ModificationFile[] = [];
+      if (attachedFiles.length > 0) {
+        for (const file of attachedFiles) {
+          try {
+            const formData = new FormData();
+            formData.append("file", file);
 
-        const uploadResponse = await apiClient.post(
-          `${API_BASE_URL}/api/upload`,
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
+            const uploadResponse = await apiClient.post(
+              `${API_BASE_URL}/api/upload`,
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            );
+
+            const fileUrl =
+              uploadResponse.data.url || uploadResponse.data.data?.url;
+            if (fileUrl) {
+              fileUrls.push({
+                url: fileUrl,
+                fileName: file.name,
+                fileType: file.type || "application/octet-stream",
+                fileSize: file.size,
+              });
+            }
+          } catch (fileErr: any) {
+            console.error("Failed to upload file:", fileErr);
+            alert(
+              isArabic
+                ? `فشل رفع الملف: ${file.name}`
+                : `Failed to upload file: ${file.name}`
+            );
+            throw fileErr;
           }
-        );
-
-        const fileUrl =
-          uploadResponse.data.url || uploadResponse.data.data?.url;
-        if (fileUrl) {
-          fileUrls.push(fileUrl);
         }
       }
 
-      // Create modification
+      // Create modification with attached files
+      // Don't send userId - backend will get it from project
       await createModification({
         title: form.title,
         description: form.description,
         priority: form.priority,
         projectId,
-        userId: "", // Backend will get from token
         status: "pending",
+        attachedFiles: fileUrls.length > 0 ? fileUrls : undefined,
       });
 
       // Reset form
@@ -384,9 +433,16 @@ export default function Modifications({ projectId }: ModificationsProps) {
                     <p className="text-xs text-gray-500">
                       {t.supportedFormats ||
                         (isArabic
-                          ? "PDF, JPG, PNG, ZIP (الحد الأقصى 10 MB)"
-                          : "PDF, JPG, PNG, ZIP (Maximum 10 MB)")}
+                          ? "PDF, JPG, PNG, ZIP (الحد الأقصى 5 ملفات)"
+                          : "PDF, JPG, PNG, ZIP (Maximum 5 files)")}
                     </p>
+                    {attachedFiles.length > 0 && (
+                      <p className="text-xs text-primary font-semibold">
+                        {isArabic
+                          ? `${attachedFiles.length} / 5 ملفات`
+                          : `${attachedFiles.length} / 5 files`}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -516,10 +572,22 @@ export default function Modifications({ projectId }: ModificationsProps) {
                                   : "Urgent"}
                               </span>
                             )}
-                            <span className="flex items-center gap-1">
-                              <Paperclip className="w-3 h-3" />
-                              {isArabic ? "لا توجد مرفقات" : "No attachments"}
-                            </span>
+                            {mod.attachedFiles &&
+                            mod.attachedFiles.length > 0 ? (
+                              <span className="flex items-center gap-1">
+                                <Paperclip className="w-3 h-3" />
+                                {isArabic
+                                  ? `${mod.attachedFiles.length} مرفق`
+                                  : `${mod.attachedFiles.length} attachment${
+                                      mod.attachedFiles.length > 1 ? "s" : ""
+                                    }`}
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1">
+                                <Paperclip className="w-3 h-3" />
+                                {isArabic ? "لا توجد مرفقات" : "No attachments"}
+                              </span>
+                            )}
                           </div>
                         </div>
                         <span
@@ -529,6 +597,32 @@ export default function Modifications({ projectId }: ModificationsProps) {
                           {statusBadge.text}
                         </span>
                       </div>
+
+                      {/* Attached Files */}
+                      {mod.attachedFiles && mod.attachedFiles.length > 0 && (
+                        <div className="mt-4 space-y-2">
+                          <p className="text-sm font-semibold text-gray-700 mb-2">
+                            {isArabic ? "الملفات المرفقة" : "Attached Files"}:
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {mod.attachedFiles.map((file, fileIndex) => (
+                              <a
+                                key={fileIndex}
+                                href={file.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 rounded-lg p-2 transition"
+                              >
+                                <Paperclip className="w-4 h-4 text-gray-600" />
+                                <span className="text-sm text-gray-700 truncate flex-1">
+                                  {file.fileName}
+                                </span>
+                                <Download className="w-4 h-4 text-primary" />
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                       {/* Progress Info for Accepted */}
                       {mod.status === "accepted" && (

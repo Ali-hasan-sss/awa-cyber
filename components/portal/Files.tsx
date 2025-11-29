@@ -105,9 +105,9 @@ export default function PortalFiles({ projectId }: PortalFilesProps) {
 
         if (fileUrl) {
           // Create project file record
+          // Don't send userId - backend will get it from project
           await createProjectFile({
             projectId,
-            userId: "", // Will be set by backend from token
             fileUrl,
             fileName: file.name,
             fileType: file.type || "application/octet-stream",

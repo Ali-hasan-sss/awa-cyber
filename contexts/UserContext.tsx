@@ -1,11 +1,17 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+} from "react";
 import {
   createUserApi,
   deleteUserApi,
   fetchUsersApi,
-  generateLoginCodeApi,
   updateUserApi,
   UserPayload,
 } from "@/lib/actions/userActions";
@@ -17,9 +23,9 @@ interface User {
   email: string;
   phone: string;
   companyName: string;
-  role: "admin" | "client";
+  role: "admin" | "client" | "employee";
   hasLoginCode?: boolean;
-  loginCode?: string; // Raw login code (e.g., awa123456)
+  loginCode?: string; // Raw login code (deprecated - only for old clients)
   createdAt?: string;
 }
 
@@ -35,17 +41,15 @@ interface UserContextValue {
   loading: boolean;
   error: string | null;
   pagination: PaginationInfo | null;
-  lastGeneratedCode?: { code: string; userId: string };
   fetchUsers: (params?: {
     page?: number;
     limit?: number;
     search?: string;
-    role?: "admin" | "client";
+    role?: "admin" | "client" | "employee";
   }) => Promise<void>;
   createUser: (payload: UserPayload) => Promise<void>;
   updateUser: (id: string, payload: Partial<UserPayload>) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
-  generateLoginCode: (id: string) => Promise<string>;
 }
 
 const UserContext = createContext<UserContextValue | undefined>(undefined);
@@ -56,28 +60,29 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [lastGeneratedCode, setLastGeneratedCode] =
-    useState<UserContextValue["lastGeneratedCode"]>();
 
-  const fetchUsers = async (params?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    role?: "admin" | "client";
-  }) => {
-    if (!token) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await fetchUsersApi(params);
-      setUsers(data.users);
-      setPagination(data.pagination);
-    } catch (err) {
-      setError(typeof err === "string" ? err : "Failed to fetch users");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchUsers = useCallback(
+    async (params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      role?: "admin" | "client" | "employee";
+    }) => {
+      if (!token) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchUsersApi(params);
+        setUsers(data.users);
+        setPagination(data.pagination);
+      } catch (err) {
+        setError(typeof err === "string" ? err : "Failed to fetch users");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token]
+  );
 
   // Removed automatic fetchUsers on mount - let pages control when to fetch
   // Pages should call fetchUsers explicitly with their desired parameters
@@ -86,14 +91,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await createUserApi(payload);
-      // If the response includes a loginCode, store it temporarily
-      if (response.loginCode) {
-        setLastGeneratedCode({
-          code: response.loginCode,
-          userId: response._id,
-        });
-      }
+      await createUserApi(payload);
       await fetchUsers();
     } catch (err) {
       setError(typeof err === "string" ? err : "Failed to create user");
@@ -131,34 +129,18 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const generateLoginCode = async (id: string) => {
-    setError(null);
-    try {
-      const data = await generateLoginCodeApi(id);
-      setLastGeneratedCode({ code: data.code, userId: id });
-      // Refresh users list to get the updated login code
-      await fetchUsers();
-      return data.code;
-    } catch (err) {
-      setError(typeof err === "string" ? err : "Failed to generate code");
-      throw err;
-    }
-  };
-
   const value = useMemo(
     () => ({
       users,
       loading,
       error,
       pagination,
-      lastGeneratedCode,
       fetchUsers,
       createUser,
       updateUser,
       deleteUser,
-      generateLoginCode,
     }),
-    [users, loading, error, pagination, lastGeneratedCode]
+    [users, loading, error, pagination, fetchUsers]
   );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

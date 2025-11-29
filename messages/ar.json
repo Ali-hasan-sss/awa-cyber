@@ -477,5 +477,23 @@
     "submitRequest": "إرسال طلب التعديل",
     "previousRequests": "طلبات التعديل السابقة",
     "noModifications": "لا توجد طلبات تعديل"
+  },
+  "portalPayments": {
+    "title": "جدول الدفعات",
+    "subtitle": "تابع حالة دفعاتك ومدفوعاتك",
+    "remainingAmount": "المبلغ المتبقي",
+    "paidAmount": "المبلغ المدفوع",
+    "totalCost": "التكلفة الإجمالية",
+    "paymentName": "اسم الدفعة",
+    "amount": "المبلغ",
+    "dueDate": "تاريخ الاستحقاق",
+    "status": "الحالة",
+    "invoiceNumber": "رقم الفاتورة",
+    "noPayments": "لا توجد دفعات",
+    "downloadInvoices": "تحميل الفواتير",
+    "paymentHistory": "سجل المدفوعات",
+    "importantNote": "ملاحظة هامة:",
+    "note1": "يمكنك الدفع عبر التحويل البنكي",
+    "note2": "سيتم إرسال الفاتورة الضريبية بعد كل دفعة"
   }
 }

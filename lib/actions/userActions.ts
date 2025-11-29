@@ -12,7 +12,7 @@ export interface FetchUsersParams {
   page?: number;
   limit?: number;
   search?: string;
-  role?: "admin" | "client";
+  role?: "admin" | "client" | "employee";
 }
 
 export interface UsersResponse {
@@ -47,9 +47,4 @@ export const updateUserApi = async (
 
 export const deleteUserApi = async (id: string) => {
   await apiClient.delete(`/api/users/${id}`);
-};
-
-export const generateLoginCodeApi = async (id: string) => {
-  const { data } = await apiClient.post(`/api/users/${id}/login-code`);
-  return data;
 };

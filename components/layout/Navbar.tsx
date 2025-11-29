@@ -5,17 +5,13 @@ import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Menu, X, Globe, LogIn, LogOut, User } from "lucide-react";
+import { Menu, X, Globe, LogOut, User, ArrowRight } from "lucide-react";
 import Logo from "../ui/logo";
 
 export default function Navbar() {
   const { locale, setLocale, t } = useLanguage();
-  const { user, admin, loginWithCode, logout, loading } = useAuth();
+  const { user, admin, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [loginCode, setLoginCode] = useState("");
-  const [showLoginForm, setShowLoginForm] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
 
   const navLinks = [
     { key: "nav.services", href: "/services" },
@@ -33,28 +29,6 @@ export default function Navbar() {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError(null);
-    if (!loginCode.trim()) {
-      setLoginError(
-        locale === "ar" ? "يرجى إدخال رمز الدخول" : "Please enter login code"
-      );
-      return;
-    }
-
-    try {
-      await loginWithCode(loginCode.trim());
-      setLoginCode("");
-      setShowLoginForm(false);
-    } catch (error) {
-      // Error is handled by AuthContext
-      setLoginError(
-        locale === "ar" ? "رمز الدخول غير صحيح" : "Invalid login code"
-      );
-    }
   };
 
   const isLoggedIn = !!user || !!admin;
@@ -108,7 +82,7 @@ export default function Navbar() {
                 <span className="uppercase">{nextLocaleLabel}</span>
               </button>
 
-              {/* Login Form or User Info */}
+              {/* User Info or Quote Button */}
               {isLoggedIn ? (
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2 px-3 py-1.5 text-sm text-foreground">
@@ -127,58 +101,17 @@ export default function Navbar() {
                     {locale === "ar" ? "تسجيل الخروج" : "Logout"}
                   </Button>
                 </div>
-              ) : showLoginForm ? (
-                <form
-                  onSubmit={handleLogin}
-                  className="flex items-center gap-2"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Input
-                    type="text"
-                    placeholder={locale === "ar" ? "رمز الدخول" : "Login Code"}
-                    value={loginCode}
-                    onChange={(e) => {
-                      setLoginCode(e.target.value);
-                      setLoginError(null);
-                    }}
-                    className="w-32 bg-white/10 border-foreground/20 text-primary placeholder:text-foreground/60"
-                    disabled={loading}
-                  />
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={loading}
-                    className="bg-primary text-black hover:bg-primary/90"
-                  >
-                    {loading ? (
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    ) : (
-                      <>
-                        <LogIn className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-                        {locale === "ar" ? "دخول" : "Login"}
-                      </>
-                    )}
-                  </Button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowLoginForm(false);
-                      setLoginCode("");
-                      setLoginError(null);
-                    }}
-                    className="text-foreground/60 hover:text-foreground"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </form>
               ) : (
                 <Button
                   size="sm"
-                  onClick={() => setShowLoginForm(true)}
-                  className="bg-primary text-black hover:bg-primary/90"
+                  className="bg-primary text-black hover:bg-primary/90 group"
+                  asChild
                 >
-                  <LogIn className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-                  {locale === "ar" ? "تسجيل الدخول" : "Login"}
+                  <Link href="/quote">
+                    {t("nav.quote") ||
+                      (locale === "ar" ? "إنشاء طلب تسعير" : "Request Quote")}
+                    <ArrowRight className="h-4 w-4 ltr:ml-2 rtl:mr-2 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  </Link>
                 </Button>
               )}
             </div>
@@ -261,8 +194,8 @@ export default function Navbar() {
                 {/* Divider */}
                 <div className="border-t border-border my-4" />
 
-                {/* Login Form or User Info - Mobile */}
-                {isLoggedIn ? (
+                {/* User Info - Mobile */}
+                {isLoggedIn && (
                   <>
                     <div className="flex items-center gap-3 py-2 text-foreground">
                       <User className="h-5 w-5" />
@@ -282,35 +215,6 @@ export default function Navbar() {
                       {locale === "ar" ? "تسجيل الخروج" : "Logout"}
                     </Button>
                   </>
-                ) : (
-                  <form onSubmit={handleLogin} className="space-y-3">
-                    <Input
-                      type="text"
-                      placeholder={
-                        locale === "ar" ? "رمز الدخول" : "Login Code"
-                      }
-                      value={loginCode}
-                      onChange={(e) => {
-                        setLoginCode(e.target.value);
-                        setLoginError(null);
-                      }}
-                      className="w-full bg-slate-50 border-border"
-                      disabled={loading}
-                    />
-                    {loginError && (
-                      <p className="text-sm text-red-500">{loginError}</p>
-                    )}
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? (
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      ) : (
-                        <>
-                          <LogIn className="h-5 w-5 ltr:mr-2 rtl:ml-2" />
-                          {locale === "ar" ? "تسجيل الدخول" : "Login"}
-                        </>
-                      )}
-                    </Button>
-                  </form>
                 )}
 
                 {/* Divider */}

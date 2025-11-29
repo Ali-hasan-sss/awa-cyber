@@ -6,7 +6,7 @@ interface AdminLoginResponse {
     id: string;
     name: string;
     email: string;
-    role: string;
+    role: "admin" | "client" | "employee";
   };
 }
 

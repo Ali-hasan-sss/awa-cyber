@@ -481,5 +481,23 @@
     "submitRequest": "Send Modification Request",
     "previousRequests": "Previous Modification Requests",
     "noModifications": "No modification requests"
+  },
+  "portalPayments": {
+    "title": "Payment Schedule",
+    "subtitle": "Track your payment schedule and payments",
+    "remainingAmount": "Amount Remaining",
+    "paidAmount": "Amount Paid",
+    "totalCost": "Total Cost",
+    "paymentName": "Payment Name",
+    "amount": "Amount",
+    "dueDate": "Due Date",
+    "status": "Status",
+    "invoiceNumber": "Invoice No",
+    "noPayments": "No payments found",
+    "downloadInvoices": "Download Invoices",
+    "paymentHistory": "Payment History",
+    "importantNote": "Important Note:",
+    "note1": "You can pay via bank transfer",
+    "note2": "The tax invoice will be sent after each payment"
   }
 }

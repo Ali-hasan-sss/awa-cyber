@@ -25,15 +25,23 @@ export type PaymentPayload = {
   status?: PaymentStatus;
 };
 
+export type ModificationFilePayload = {
+  url: string;
+  fileName: string;
+  fileType: string;
+  fileSize?: number;
+};
+
 export type ModificationPayload = {
   title: string;
   description: string;
   priority?: ModificationPriority;
   projectId: string;
-  userId: string;
+  userId?: string; // Optional - backend will get it from project or authenticated user
   status?: ModificationStatus;
   extraPaymentAmount?: number;
   costAccepted?: boolean;
+  attachedFiles?: ModificationFilePayload[];
 };
 
 export type PhaseStatus = "upcoming" | "in_progress" | "completed";
@@ -42,6 +50,7 @@ export type ProjectPhasePayload = {
   title: LocalizedString;
   description?: LocalizedString;
   duration: number;
+  phaseNumber?: number;
   status?: PhaseStatus;
   progress?: number;
 };
@@ -57,6 +66,8 @@ export type ProjectPayload = {
   progress?: number;
   progressType?: ProgressType;
   whatsappGroupLink?: string;
+  projectUrl?: string;
+  employees?: string[]; // Array of employee user IDs
 };
 
 // Project APIs
@@ -132,7 +143,7 @@ export const deleteModificationApi = async (id: string) => {
 // Project Files
 export type ProjectFilePayload = {
   projectId: string;
-  userId: string;
+  userId?: string; // Optional - backend will get it from project or authenticated user
   fileUrl: string;
   fileName: string;
   fileType: string;

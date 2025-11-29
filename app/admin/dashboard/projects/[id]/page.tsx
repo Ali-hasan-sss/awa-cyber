@@ -36,6 +36,7 @@ import {
   Upload,
   Key,
   Copy,
+  RefreshCw,
 } from "lucide-react";
 import { AdminProjectPhase } from "@/contexts/ProjectContext";
 
@@ -80,6 +81,7 @@ export default function ProjectDetailsPage() {
 
   const [project, setProject] = useState<AdminProject | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [form, setForm] = useState({
     nameEn: "",
     nameAr: "",
@@ -101,6 +103,7 @@ export default function ProjectDetailsPage() {
     progress: 0,
     progressType: "project" as "project" | "modification",
     whatsappGroupLink: "",
+    employees: [] as string[],
   });
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<
@@ -305,6 +308,13 @@ export default function ProjectDetailsPage() {
         progress: loadedProject.progress,
         progressType: loadedProject.progressType,
         whatsappGroupLink: loadedProject.whatsappGroupLink || "",
+        employees: Array.isArray(loadedProject.employees)
+          ? loadedProject.employees.map((emp: any) =>
+              typeof emp === "object" && emp !== null && "_id" in emp
+                ? emp._id
+                : emp
+            )
+          : [],
       });
 
       // Load files
@@ -368,6 +378,7 @@ export default function ProjectDetailsPage() {
         progress: calculatedProgress, // Use calculated progress
         progressType: form.progressType,
         whatsappGroupLink: form.whatsappGroupLink || undefined,
+        employees: form.employees.length > 0 ? form.employees : undefined,
       });
       setIsEditing(false);
       await loadProject();
@@ -617,6 +628,8 @@ export default function ProjectDetailsPage() {
       copyCode: isArabic ? "نسخ الرمز" : "Copy Code",
       codeCopied: isArabic ? "تم نسخ الرمز" : "Code Copied",
       portalLink: isArabic ? "رابط البورتال" : "Portal Link",
+      employees: isArabic ? "الموظفين المسؤولين" : "Assigned Employees",
+      selectEmployees: isArabic ? "اختر الموظفين" : "Select Employees",
     }),
     [isArabic]
   );
@@ -2491,6 +2504,28 @@ export default function ProjectDetailsPage() {
             </div>
           </div>
         </div>
+      )}
+      {/* Floating Refresh Button - Only show when project is loaded */}
+      {project && (
+        <Button
+          onClick={async () => {
+            setRefreshing(true);
+            try {
+              await loadProject();
+            } catch (err) {
+              console.error("Failed to refresh project:", err);
+            } finally {
+              setRefreshing(false);
+            }
+          }}
+          disabled={refreshing}
+          className="fixed bottom-8 left-8 z-50 h-14 w-14 rounded-full bg-primary text-black shadow-lg hover:bg-primary/90 transition-all hover:scale-110 disabled:opacity-50"
+          title={isArabic ? "تحديث البيانات" : "Refresh Data"}
+        >
+          <RefreshCw
+            className={`h-6 w-6 ${refreshing ? "animate-spin" : ""}`}
+          />
+        </Button>
       )}
     </div>
   );

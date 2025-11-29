@@ -58,7 +58,7 @@ export default function PortalFeatures() {
   const isArabic = locale === "ar";
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
-  const { user, loginWithCode } = useAuth();
+  const { user } = useAuth();
   const { loading, getProjectByPortalCode, projects, fetchProjects } =
     useProjects();
   const [selectedProject, setSelectedProject] = useState<AdminProject | null>(
@@ -87,55 +87,20 @@ export default function PortalFeatures() {
     setError(null);
 
     try {
-      // First, try to load project by portal code
-      try {
-        const project = await getProjectByPortalCode(code);
-        // Check if we got a valid project
-        if (project && project._id) {
-          setSelectedProject(project);
-          setIsLoadingCode(false);
-          return;
-        }
-      } catch (projectErr: any) {
-        // If project code fails (404 or 400), try user login code
-        // Only continue if it's a "not found" or "invalid portal code" error
-        const errorMsg = projectErr?.message?.toLowerCase() || "";
-        if (
-          errorMsg.includes("invalid portal code") ||
-          errorMsg.includes("not found") ||
-          projectErr?.response?.status === 400 ||
-          projectErr?.response?.status === 404
-        ) {
-          console.log(
-            "Not a project code, trying user login code...",
-            projectErr?.message
-          );
-          // Continue to try user login code
-        } else {
-          // Other errors, throw them
-          throw projectErr;
-        }
-      }
-
-      // Try to login with user code
-      try {
-        await loginWithCode(code);
-        // After successful login, fetch user projects
-        await loadUserProjects();
-      } catch (loginErr: any) {
-        // Both failed, show error
-        const errorMessage =
-          loginErr?.response?.data?.message ||
-          loginErr?.message ||
-          (isArabic ? "رمز الدخول غير صحيح" : "Invalid access code");
-        setError(errorMessage);
-        setSelectedProject(null);
+      // Load project by portal code
+      const project = await getProjectByPortalCode(code);
+      // Check if we got a valid project
+      if (project && project._id) {
+        setSelectedProject(project);
+        setIsLoadingCode(false);
+        return;
       }
     } catch (err: any) {
+      // Show error if portal code is invalid
       const errorMessage =
         err?.response?.data?.message ||
         err?.message ||
-        (isArabic ? "فشل تحميل البيانات" : "Failed to load data");
+        (isArabic ? "رمز الدخول غير صحيح" : "Invalid portal code");
       setError(errorMessage);
       setSelectedProject(null);
     } finally {
