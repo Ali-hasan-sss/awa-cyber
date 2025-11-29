@@ -486,8 +486,8 @@ export default function ServicesManagementPage() {
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <h3 className="text-lg font-semibold text-white flex-1">
-                        {localizedTitle}
-                      </h3>
+                      {localizedTitle}
+                    </h3>
                       <div className="flex items-center gap-2">
                         <Button
                           type="button"

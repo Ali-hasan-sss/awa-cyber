@@ -397,5 +397,89 @@
     "backText": "Not an admin?",
     "backLink": "Return to homepage",
     "error": "Login failed, please verify your credentials."
+  },
+  "portalHero": {
+    "banner": "Secure Client Portal",
+    "title": {
+      "line1": "Track your project's progress in",
+      "highlight": "real time"
+    },
+    "description": "Access your control panel to monitor development stages, manage adjustments, track payments, and communicate directly with our team - all in one secure portal.",
+    "overlay": {
+      "progress": "Progress",
+      "onTrack": "On Track",
+      "deliveryStage": "Delivery Stage"
+    },
+    "features": [
+      {
+        "title": "Live Progress Tracking",
+        "description": "Monitor every stage of the project"
+      },
+      {
+        "title": "Easy Adjustments",
+        "description": "Request changes immediately"
+      },
+      {
+        "title": "Payment Management",
+        "description": "Track invoices and deadlines"
+      },
+      {
+        "title": "Live Support",
+        "description": "Talk to our team anytime"
+      }
+    ],
+    "cta": {
+      "visitMain": "Visit Main Website",
+      "viewMaps": "View on Google Maps",
+      "trackProject": "Track Your Project"
+    },
+    "imageAlt": "Client working on project"
+  },
+  "portalDashboard": {
+    "title": "Track Your Project",
+    "subtitle": "Follow all your project details in one place",
+    "projectName": "Project Name",
+    "serviceType": "Service Type",
+    "clientName": "Client Name",
+    "remainingDays": "Remaining Free Modification Days",
+    "currentStage": "Current Stage",
+    "expectedDelivery": "Expected Delivery Date",
+    "startDate": "Start Date",
+    "overallProgress": "Overall Project Progress",
+    "timeline": "Project Timeline",
+    "complete": "Complete",
+    "days": "days",
+    "viewFullDetails": "View Full Details",
+    "enterCode": "Please enter portal access code",
+    "invalidCode": "Invalid portal code",
+    "inProgress": "In Progress",
+    "upcoming": "Upcoming"
+  },
+  "portalFiles": {
+    "title": "File Management",
+    "clientFiles": "Client Files",
+    "companyFiles": "Company Files",
+    "uploadNewFile": "Upload new file",
+    "dragDrop": "Drag and drop the file here or click to browse",
+    "noFiles": "No files",
+    "file": "file",
+    "files": "files"
+  },
+  "portalModifications": {
+    "title": "Modification Requests",
+    "freeModificationsInfo": "Free modifications are available within the first 10 days only",
+    "newRequest": "New Modification Request",
+    "modificationTitle": "Modification Title",
+    "titlePlaceholder": "Example: Change homepage colors",
+    "modificationDescription": "Modification Description",
+    "descriptionPlaceholder": "Explain the required modification in detail.....",
+    "priority": "Priority",
+    "uploadFiles": "Upload attached files (optional)",
+    "dragDropFiles": "Drag files here or click to browse",
+    "supportedFormats": "PDF, JPG, PNG, ZIP (Maximum 10 MB)",
+    "cancel": "Cancel",
+    "submitRequest": "Send Modification Request",
+    "previousRequests": "Previous Modification Requests",
+    "noModifications": "No modification requests"
   }
 }

@@ -12,6 +12,8 @@ import {
   ProjectPayload,
   PaymentPayload,
   ModificationPayload,
+  ProjectFilePayload,
+  ProjectFile,
   fetchProjects,
   getProjectById,
   createProjectApi,
@@ -23,6 +25,12 @@ import {
   createModificationApi,
   updateModificationApi,
   deleteModificationApi,
+  createProjectFile,
+  getProjectFiles,
+  updateProjectFile,
+  deleteProjectFile as deleteProjectFileApi,
+  generatePortalCode as generatePortalCodeApi,
+  getProjectByPortalCode as getProjectByPortalCodeApi,
 } from "@/lib/actions/projectActions";
 
 export type AdminPayment = {
@@ -45,7 +53,12 @@ export type AdminModification = {
   priority: "low" | "medium" | "high" | "critical";
   projectId: string | { _id: string };
   userId: string | { _id: string; name: string; companyName: string };
-  status: "pending" | "accepted" | "completed" | "needs_extra_payment";
+  status:
+    | "pending"
+    | "accepted"
+    | "rejected"
+    | "completed"
+    | "needs_extra_payment";
   extraPaymentAmount?: number;
   costAccepted: boolean;
   createdAt: string;
@@ -78,6 +91,8 @@ export type AdminProject = {
   progress: number;
   progressType: "project" | "modification";
   activeModificationId?: string | AdminModification;
+  whatsappGroupLink?: string;
+  portalCode?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -106,6 +121,18 @@ interface ProjectContextValue {
     payload: Partial<ModificationPayload>
   ) => Promise<void>;
   deleteModification: (id: string) => Promise<void>;
+  createProjectFile: (payload: ProjectFilePayload) => Promise<void>;
+  getProjectFiles: (
+    projectId: string,
+    uploadedBy?: "client" | "company"
+  ) => Promise<ProjectFile[]>;
+  updateProjectFile: (
+    id: string,
+    payload: { fileName?: string }
+  ) => Promise<void>;
+  deleteProjectFile: (id: string) => Promise<void>;
+  generatePortalCode: (projectId: string) => Promise<{ portalCode: string }>;
+  getProjectByPortalCode: (code: string) => Promise<AdminProject>;
 }
 
 const ProjectContext = createContext<ProjectContextValue | undefined>(
@@ -308,6 +335,116 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     [fetchProjectsList]
   );
 
+  const createProjectFileHandler = useCallback(
+    async (payload: ProjectFilePayload) => {
+      setLoading(true);
+      setError(null);
+      try {
+        await createProjectFile(payload);
+        await fetchProjectsList();
+      } catch (err) {
+        setError(typeof err === "string" ? err : "Failed to upload file");
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchProjectsList]
+  );
+
+  const getProjectFilesHandler = useCallback(
+    async (projectId: string, uploadedBy?: "client" | "company") => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await getProjectFiles(projectId, uploadedBy);
+        // Handle both response formats: { data: [...] } or direct array
+        if (result && typeof result === "object" && "data" in result) {
+          return Array.isArray(result.data) ? result.data : [];
+        }
+        return Array.isArray(result) ? result : [];
+      } catch (err) {
+        setError(typeof err === "string" ? err : "Failed to get files");
+        return [];
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const updateProjectFileHandler = useCallback(
+    async (id: string, payload: { fileName?: string }) => {
+      setLoading(true);
+      setError(null);
+      try {
+        await updateProjectFile(id, payload);
+        await fetchProjectsList();
+      } catch (err) {
+        setError(typeof err === "string" ? err : "Failed to update file");
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchProjectsList]
+  );
+
+  const deleteProjectFileHandler = useCallback(
+    async (id: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        await deleteProjectFileApi(id);
+        await fetchProjectsList();
+      } catch (err) {
+        setError(typeof err === "string" ? err : "Failed to delete file");
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchProjectsList]
+  );
+
+  const generatePortalCodeHandler = useCallback(
+    async (projectId: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await generatePortalCodeApi(projectId);
+        await fetchProjectsList();
+        return result.data;
+      } catch (err) {
+        setError(
+          typeof err === "string" ? err : "Failed to generate portal code"
+        );
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchProjectsList]
+  );
+
+  const getProjectByPortalCodeHandler = useCallback(async (code: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await getProjectByPortalCodeApi(code);
+      // Return the project data directly
+      return result.data || result;
+    } catch (err: any) {
+      const errorMessage =
+        err?.message ||
+        (typeof err === "string" ? err : "Failed to get project by code");
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const value = useMemo(
     () => ({
       projects,
@@ -324,6 +461,12 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       createModification,
       updateModification,
       deleteModification,
+      createProjectFile: createProjectFileHandler,
+      getProjectFiles: getProjectFilesHandler,
+      updateProjectFile: updateProjectFileHandler,
+      deleteProjectFile: deleteProjectFileHandler,
+      generatePortalCode: generatePortalCodeHandler,
+      getProjectByPortalCode: getProjectByPortalCodeHandler,
     }),
     [
       projects,
@@ -340,6 +483,12 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       createModification,
       updateModification,
       deleteModification,
+      createProjectFileHandler,
+      getProjectFilesHandler,
+      updateProjectFileHandler,
+      deleteProjectFileHandler,
+      generatePortalCodeHandler,
+      getProjectByPortalCodeHandler,
     ]
   );
 

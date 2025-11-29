@@ -393,5 +393,89 @@
     "backText": "لست مسؤولاً؟",
     "backLink": "العودة للصفحة الرئيسية",
     "error": "فشل تسجيل الدخول، يرجى التحقق من البيانات."
+  },
+  "portalHero": {
+    "banner": "بوابة العملاء الآمنة",
+    "title": {
+      "line1": "تتبع تقدم مشروعك في الوقت",
+      "highlight": "الفعلي"
+    },
+    "description": "ادخل إلى لوحة التحكم الخاصة بك لمراقبة مراحل التطوير وإدارة التعديلات وتتبع المدفوعات والتواصل مباشرة مع فريقنا - كل ذلك في بوابة آمنة واحدة.",
+    "overlay": {
+      "progress": "التقدم",
+      "onTrack": "على المسار",
+      "deliveryStage": "مرحلة التسليم"
+    },
+    "features": [
+      {
+        "title": "تتبع التقدم المباشر",
+        "description": "راقب كل مرحلة من مراحل المشروع"
+      },
+      {
+        "title": "تعديلات سهلة",
+        "description": "اطلب التغييرات فوراً"
+      },
+      {
+        "title": "إدارة المدفوعات",
+        "description": "تتبع الفواتير والمواعيد النهائية"
+      },
+      {
+        "title": "دعم مباشر",
+        "description": "تحدث مع فريقنا في أي وقت"
+      }
+    ],
+    "cta": {
+      "visitMain": "زيارة الموقع الرئيسي",
+      "viewMaps": "عرض الموقع على خرائط جوجل",
+      "trackProject": "تتبع مشروعك"
+    },
+    "imageAlt": "عميل يعمل على مشروع"
+  },
+  "portalDashboard": {
+    "title": "تتبع مشروعك",
+    "subtitle": "تابع جميع تفاصيل مشروعك في مكان واحد",
+    "projectName": "اسم المشروع",
+    "serviceType": "نوع الخدمة",
+    "clientName": "اسم العميل",
+    "remainingDays": "أيام التعديل المجانية المتبقية",
+    "currentStage": "المرحلة الحالية",
+    "expectedDelivery": "تاريخ التسليم المتوقع",
+    "startDate": "تاريخ البدء",
+    "overallProgress": "تقدم المشروع الكلي",
+    "timeline": "الجدول الزمني للمشروع",
+    "complete": "مكتمل",
+    "days": "أيام",
+    "viewFullDetails": "عرض التفاصيل الكاملة",
+    "enterCode": "يرجى إدخال رمز الدخول للبورتال",
+    "invalidCode": "رمز الدخول غير صحيح",
+    "inProgress": "قيد التنفيذ",
+    "upcoming": "قادم"
+  },
+  "portalFiles": {
+    "title": "إدارة الملفات",
+    "clientFiles": "ملفات العميل",
+    "companyFiles": "ملفات الشركة",
+    "uploadNewFile": "رفع ملف جديد",
+    "dragDrop": "اسحب وأفلت الملف هنا أو انقر للتصفح",
+    "noFiles": "لا توجد ملفات",
+    "file": "ملف",
+    "files": "ملفات"
+  },
+  "portalModifications": {
+    "title": "طلبات التعديل",
+    "freeModificationsInfo": "التعديلات المجانية متاحة خلال أول 10 أيام فقط",
+    "newRequest": "طلب تعديل جديد",
+    "modificationTitle": "عنوان التعديل",
+    "titlePlaceholder": "مثال: تغيير ألوان الصفحة الرئيسية",
+    "modificationDescription": "وصف التعديل",
+    "descriptionPlaceholder": "اشرح التعديل المطلوب بالتفصيل.....",
+    "priority": "الأولوية",
+    "uploadFiles": "رفع ملفات مرفقة (اختياري)",
+    "dragDropFiles": "اسحب الملفات هنا أو انقر للتصفح",
+    "supportedFormats": "PDF, JPG, PNG, ZIP (الحد الأقصى 10 MB)",
+    "cancel": "إلغاء",
+    "submitRequest": "إرسال طلب التعديل",
+    "previousRequests": "طلبات التعديل السابقة",
+    "noModifications": "لا توجد طلبات تعديل"
   }
 }

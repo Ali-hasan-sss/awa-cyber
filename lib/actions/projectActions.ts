@@ -10,6 +10,7 @@ export type ModificationPriority = "low" | "medium" | "high" | "critical";
 export type ModificationStatus =
   | "pending"
   | "accepted"
+  | "rejected"
   | "completed"
   | "needs_extra_payment";
 export type ProgressType = "project" | "modification";
@@ -55,6 +56,7 @@ export type ProjectPayload = {
   startDate?: string;
   progress?: number;
   progressType?: ProgressType;
+  whatsappGroupLink?: string;
 };
 
 // Project APIs
@@ -125,4 +127,80 @@ export const updateModificationApi = async (
 
 export const deleteModificationApi = async (id: string) => {
   await apiClient.delete(`/api/projects/modifications/${id}`);
+};
+
+// Project Files
+export type ProjectFilePayload = {
+  projectId: string;
+  userId: string;
+  fileUrl: string;
+  fileName: string;
+  fileType: string;
+  fileSize?: number;
+  uploadedBy: "client" | "company";
+};
+
+export type ProjectFile = {
+  _id: string;
+  projectId: string | { _id: string };
+  userId: string | { _id: string; name: string; email: string };
+  fileUrl: string;
+  fileName: string;
+  fileType: string;
+  fileSize?: number;
+  uploadedBy: "client" | "company";
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const createProjectFile = async (data: ProjectFilePayload) => {
+  const response = await apiClient.post("/api/projects/files", data);
+  return response.data;
+};
+
+export const getProjectFiles = async (
+  projectId: string,
+  uploadedBy?: "client" | "company"
+) => {
+  const params = uploadedBy ? { uploadedBy } : {};
+  const response = await apiClient.get(`/api/projects/files/${projectId}`, {
+    params,
+  });
+  return response.data;
+};
+
+export const updateProjectFile = async (
+  id: string,
+  data: { fileName?: string }
+) => {
+  const response = await apiClient.patch(`/api/projects/files/${id}`, data);
+  return response.data;
+};
+
+export const deleteProjectFile = async (id: string) => {
+  const response = await apiClient.delete(`/api/projects/files/${id}`);
+  return response.data;
+};
+
+// Portal Code
+export const generatePortalCode = async (projectId: string) => {
+  const response = await apiClient.post(
+    `/api/projects/${projectId}/generate-portal-code`
+  );
+  return response.data;
+};
+
+export const getProjectByPortalCode = async (code: string) => {
+  try {
+    const response = await apiClient.get(`/api/projects/portal/${code}`);
+    if (response.data.success && response.data.data) {
+      return response.data;
+    }
+    throw new Error(response.data.message || "Invalid portal code");
+  } catch (error: any) {
+    // Re-throw with a clear error message
+    const errorMessage =
+      error?.response?.data?.message || error?.message || "Invalid portal code";
+    throw new Error(errorMessage);
+  }
 };

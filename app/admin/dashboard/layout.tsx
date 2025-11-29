@@ -55,23 +55,23 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <ServiceProvider>
           <PortfolioProvider>
             <ProjectProvider>
-              <div className="relative min-h-screen overflow-hidden bg-[#030617] text-slate-100">
-                <BackgroundDecor />
-                <div className="relative z-10 flex h-screen max-h-screen overflow-hidden">
-                  <AdminSidebar
-                    open={sidebarOpen}
-                    onClose={() => setSidebarOpen(false)}
-                    locale={locale}
-                  />
-                  <div className="flex flex-1 min-w-0 flex-col">
-                    <AdminHeader onToggleSidebar={() => setSidebarOpen(true)} />
-                    <main className="dashboard-scroll flex-1 min-h-0 overflow-y-auto px-6 py-8">
-                      {children}
-                    </main>
-                    <AdminFooter />
-                  </div>
+            <div className="relative min-h-screen overflow-hidden bg-[#030617] text-slate-100">
+              <BackgroundDecor />
+              <div className="relative z-10 flex h-screen max-h-screen overflow-hidden">
+                <AdminSidebar
+                  open={sidebarOpen}
+                  onClose={() => setSidebarOpen(false)}
+                  locale={locale}
+                />
+                <div className="flex flex-1 min-w-0 flex-col">
+                  <AdminHeader onToggleSidebar={() => setSidebarOpen(true)} />
+                  <main className="dashboard-scroll flex-1 min-h-0 overflow-y-auto px-6 py-8">
+                    {children}
+                  </main>
+                  <AdminFooter />
                 </div>
               </div>
+            </div>
             </ProjectProvider>
           </PortfolioProvider>
         </ServiceProvider>
