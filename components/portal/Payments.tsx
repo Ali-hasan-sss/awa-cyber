@@ -112,7 +112,7 @@ export default function Payments({ projectId }: PaymentsProps) {
   const remainingAmount = totalCost - paidAmount;
 
   return (
-    <section className="relative bg-white py-20 md:py-28">
+    <section id="payments" className="relative bg-white py-20 md:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className={`mb-12 text-center ${isArabic ? "rtl" : "ltr"}`}>

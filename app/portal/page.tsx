@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PortalHeader from "@/components/portal/PortalHeader";
 
 function PortalContent() {
   const searchParams = useSearchParams();
@@ -61,6 +62,7 @@ function PortalContent() {
 
   return (
     <>
+      <PortalHeader />
       <PortalHero />
       <PortalFeatures />
       {selectedProjectId && (

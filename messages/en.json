@@ -499,5 +499,10 @@
     "importantNote": "Important Note:",
     "note1": "You can pay via bank transfer",
     "note2": "The tax invoice will be sent after each payment"
+  },
+  "portalHeader": {
+    "payments": "Payment Schedule",
+    "files": "File Management",
+    "modifications": "Modification Requests"
   }
 }

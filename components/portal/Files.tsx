@@ -153,7 +153,7 @@ export default function PortalFiles({ projectId }: PortalFilesProps) {
   };
 
   return (
-    <section className="relative bg-white py-20 md:py-28">
+    <section id="files" className="relative bg-white py-20 md:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div

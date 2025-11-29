@@ -286,7 +286,7 @@ export default function Modifications({ projectId }: ModificationsProps) {
   };
 
   return (
-    <section className="relative bg-white py-20 md:py-28">
+    <section id="modifications" className="relative bg-white py-20 md:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div
