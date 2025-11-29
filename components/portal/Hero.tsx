@@ -98,9 +98,9 @@ function HeroContent() {
               <Image
                 src="/images/publicContain.webp"
                 alt={portalHero.imageAlt || ""}
-                width={600}
-                height={800}
-                className="object-cover w-full h-[600px] lg:h-[700px]"
+                width={400}
+                height={600}
+                className="object-cover w-full "
                 priority
               />
 
@@ -225,10 +225,9 @@ function HeroContent() {
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col gap-4 pt-4 items-center lg:items-start">
+            <div className="flex flex-col gap-4 w-full pt-4 items-center lg:items-start">
               <Button
-                size="lg"
-                className="group w-full md:w-auto bg-primary text-black hover:bg-primary/90 px-8 py-6 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group w-full  bg-primary text-black hover:bg-primary/90 px-8 py-6 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={!project?.projectUrl}
                 asChild={!!project?.projectUrl}
               >
@@ -237,17 +236,18 @@ function HeroContent() {
                     href={project.projectUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="w-full "
                   >
                     {isArabic ? (
                       <>
                         {portalHero.cta?.visitSite ||
                           (isArabic ? "زيارة الموقع" : "Visit Site")}
-                        <Globe className="w-5 h-5 mr-2" />
+                        <Globe className="w-5 inline h-5 mr-2" />
                         <ArrowRight className="w-5 h-5 ml-2 rotate-180 group-hover:-translate-x-1 transition-transform" />
                       </>
                     ) : (
                       <>
-                        <Globe className="w-5 h-5 mr-2" />
+                        <Globe className="w-5 inline h-5 mr-2" />
                         {portalHero.cta?.visitSite ||
                           (isArabic ? "زيارة الموقع" : "Visit Site")}
                         <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -260,11 +260,11 @@ function HeroContent() {
                       <>
                         {portalHero.cta?.visitSite ||
                           (isArabic ? "زيارة الموقع" : "Visit Site")}
-                        <Globe className="w-5 h-5 mr-2" />
+                        <Globe className="w-5 inline h-5 mr-2" />
                       </>
                     ) : (
                       <>
-                        <Globe className="w-5 h-5 mr-2" />
+                        <Globe className="w-5 inline h-5 mr-2" />
                         {portalHero.cta?.visitSite ||
                           (isArabic ? "زيارة الموقع" : "Visit Site")}
                       </>

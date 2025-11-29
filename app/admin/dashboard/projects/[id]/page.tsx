@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   useProjects,
@@ -38,7 +38,10 @@ import {
   Copy,
   RefreshCw,
 } from "lucide-react";
-import { AdminProjectPhase } from "@/contexts/ProjectContext";
+import { AdminProjectPhase, ModificationFile } from "@/contexts/ProjectContext";
+import { apiClient } from "@/lib/apiClient";
+import { API_BASE_URL } from "@/lib/config/api";
+import { Paperclip } from "lucide-react";
 
 type PaymentStatus = "due" | "due_soon" | "paid" | "upcoming";
 type ModificationPriority = "low" | "medium" | "high" | "critical";
@@ -146,6 +149,10 @@ export default function ProjectDetailsPage() {
     title: "",
     description: "",
   });
+  const [modificationAttachedFiles, setModificationAttachedFiles] = useState<
+    File[]
+  >([]);
+  const modificationFileInputRef = useRef<HTMLInputElement>(null);
 
   // Extra payment form for modifications
   const [extraPaymentModalOpen, setExtraPaymentModalOpen] = useState(false);
@@ -432,6 +439,37 @@ export default function ProjectDetailsPage() {
     }
   };
 
+  const handleModificationFileSelect = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = e.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
+      // Limit to 5 files maximum
+      if (modificationAttachedFiles.length + newFiles.length > 5) {
+        alert(
+          isArabic
+            ? "يمكنك رفع ما يصل إلى 5 ملفات فقط"
+            : "You can upload up to 5 files only"
+        );
+        const remainingSlots = 5 - modificationAttachedFiles.length;
+        setModificationAttachedFiles([
+          ...modificationAttachedFiles,
+          ...newFiles.slice(0, remainingSlots),
+        ]);
+      } else {
+        setModificationAttachedFiles([
+          ...modificationAttachedFiles,
+          ...newFiles,
+        ]);
+      }
+    }
+  };
+
+  const handleRemoveModificationFile = (index: number) => {
+    setModificationAttachedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleCreateModification = async () => {
     if (!project) return;
     setSubmitting(true);
@@ -440,6 +478,46 @@ export default function ProjectDetailsPage() {
         typeof project.userId === "object" && project.userId !== null
           ? project.userId._id
           : project.userId;
+
+      // Upload files if any
+      const fileUrls: ModificationFile[] = [];
+      if (modificationAttachedFiles.length > 0) {
+        for (const file of modificationAttachedFiles) {
+          try {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const uploadResponse = await apiClient.post(
+              `${API_BASE_URL}/api/upload`,
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            );
+
+            const fileUrl =
+              uploadResponse.data.url || uploadResponse.data.data?.url;
+            if (fileUrl) {
+              fileUrls.push({
+                url: fileUrl,
+                fileName: file.name,
+                fileType: file.type || "application/octet-stream",
+                fileSize: file.size,
+              });
+            }
+          } catch (fileErr: any) {
+            console.error("Failed to upload file:", fileErr);
+            alert(
+              isArabic
+                ? `فشل رفع الملف: ${file.name}`
+                : `Failed to upload file: ${file.name}`
+            );
+            throw fileErr;
+          }
+        }
+      }
 
       // If created by admin, status is "accepted" by default
       await createModification({
@@ -451,6 +529,7 @@ export default function ProjectDetailsPage() {
         status: "accepted", // Admin creates with accepted status
         extraPaymentAmount: undefined,
         costAccepted: false,
+        attachedFiles: fileUrls.length > 0 ? fileUrls : undefined,
       });
 
       setModificationModalOpen(false);
@@ -458,6 +537,10 @@ export default function ProjectDetailsPage() {
         title: "",
         description: "",
       });
+      setModificationAttachedFiles([]);
+      if (modificationFileInputRef.current) {
+        modificationFileInputRef.current.value = "";
+      }
       await loadProject();
     } catch (err) {
       console.error("Failed to create modification:", err);
@@ -810,11 +893,21 @@ export default function ProjectDetailsPage() {
                 />
               ) : (
                 project.logo && (
-                  <img
-                    src={project.logo}
-                    alt={project.name.en}
-                    className="h-24 w-24 rounded-lg object-cover border border-white/10"
-                  />
+                  <div className="relative h-24 w-24">
+                    <img
+                      src={project.logo}
+                      alt={project.name.en}
+                      className="h-24 w-24 rounded-lg object-cover border border-white/10"
+                      onError={(e) => {
+                        console.error("Failed to load logo:", project.logo);
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                      }}
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                    />
+                  </div>
                 )
               )}
             </div>
@@ -857,7 +950,12 @@ export default function ProjectDetailsPage() {
                 <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm">
                   {project.startDate
                     ? new Date(project.startDate).toLocaleDateString(
-                        isArabic ? "ar-SA" : "en-US"
+                        isArabic ? "ar-EG-u-ca-gregory" : "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
                       )
                     : "-"}
                 </p>
@@ -1770,7 +1868,12 @@ export default function ProjectDetailsPage() {
                           <span>
                             {copy.dueDate}:{" "}
                             {new Date(paymentData.dueDate).toLocaleDateString(
-                              isArabic ? "ar-SA" : "en-US"
+                              isArabic ? "ar-EG-u-ca-gregory" : "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
                             )}
                           </span>
                           <span
@@ -1910,6 +2013,37 @@ export default function ProjectDetailsPage() {
                         <p className="text-sm text-white/70 mt-1">
                           {modData.description}
                         </p>
+                        {/* Attached Files */}
+                        {modData.attachedFiles &&
+                          modData.attachedFiles.length > 0 && (
+                            <div className="mt-3 space-y-2">
+                              <p className="text-xs text-white/60 font-semibold">
+                                {isArabic
+                                  ? "الملفات المرفقة"
+                                  : "Attached Files"}
+                                :
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {modData.attachedFiles.map(
+                                  (file, fileIndex) => (
+                                    <a
+                                      key={fileIndex}
+                                      href={file.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-xs text-white/80 hover:bg-white/10 transition-colors"
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                      <span className="truncate max-w-[200px]">
+                                        {file.fileName}
+                                      </span>
+                                      <Download className="h-3 w-3" />
+                                    </a>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
                         {modData.extraPaymentAmount && (
                           <p className="text-xs text-yellow-400 mt-2">
                             {copy.extraPayment}:{" "}
@@ -2202,6 +2336,78 @@ export default function ProjectDetailsPage() {
                     })
                   }
                 />
+              </div>
+              {/* File Upload */}
+              <div>
+                <label className="mb-2 block text-sm text-white/80">
+                  {isArabic
+                    ? "رفع ملفات مرفقة (اختياري)"
+                    : "Upload attached files (optional)"}
+                </label>
+                <div
+                  className={`border-2 border-dashed border-white/20 rounded-xl p-6 text-center cursor-pointer transition-all hover:bg-white/5 ${
+                    isArabic ? "rtl" : "ltr"
+                  }`}
+                  onClick={() => modificationFileInputRef.current?.click()}
+                >
+                  <input
+                    ref={modificationFileInputRef}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={handleModificationFileSelect}
+                    accept=".pdf,.jpg,.jpeg,.png,.zip,.doc,.docx"
+                  />
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="bg-primary/10 p-4 rounded-full">
+                      <Paperclip className="w-6 h-6 text-primary" />
+                    </div>
+                    <p className="text-sm text-white/70">
+                      {isArabic
+                        ? "اسحب الملفات هنا أو انقر للتصفح"
+                        : "Drag files here or click to browse"}
+                    </p>
+                    <p className="text-xs text-white/50">
+                      {isArabic
+                        ? "PDF, JPG, PNG, ZIP, DOC, DOCX (الحد الأقصى 5 ملفات)"
+                        : "PDF, JPG, PNG, ZIP, DOC, DOCX (Maximum 5 files)"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Selected Files Count */}
+                {modificationAttachedFiles.length > 0 && (
+                  <p className="mt-2 text-sm text-white/60 text-center">
+                    {isArabic
+                      ? `${modificationAttachedFiles.length} / 5 ملفات`
+                      : `${modificationAttachedFiles.length} / 5 files`}
+                  </p>
+                )}
+
+                {/* Selected Files List */}
+                {modificationAttachedFiles.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    {modificationAttachedFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between bg-white/5 rounded-lg p-3"
+                      >
+                        <span className="text-sm text-white/80 truncate flex-1">
+                          {file.name}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveModificationFile(index)}
+                          className="h-8 w-8 text-red-400 hover:text-red-300"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex justify-end gap-3">

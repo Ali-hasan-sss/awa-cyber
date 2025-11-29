@@ -37,7 +37,10 @@ interface ModificationsProps {
 }
 
 const formatDate = (date: string, isArabic: boolean) => {
-  return new Date(date).toLocaleDateString(isArabic ? "ar-SA" : "en-US", {
+  const dateObj = new Date(date);
+  // Force Gregorian calendar by using English locale for Arabic
+  const locale = isArabic ? "ar-EG-u-ca-gregory" : "en-US";
+  return dateObj.toLocaleDateString(locale, {
     year: "numeric",
     month: "long",
     day: "numeric",

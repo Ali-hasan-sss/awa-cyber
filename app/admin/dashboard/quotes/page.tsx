@@ -70,11 +70,12 @@ const statusLabels = {
   closed: { en: "Closed", ar: "مغلق" },
 } as const;
 
-const formatDate = (value?: string) => {
+const formatDate = (value?: string, isArabic?: boolean) => {
   if (!value) return "-";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString(undefined, {
+  const locale = isArabic ? "ar-EG-u-ca-gregory" : "en-US";
+  return date.toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -893,11 +894,11 @@ export default function QuotationsPage() {
                   </td>
                   <td className="py-3">
                     <div className="text-xs text-white/80">
-                      {formatDate(request.startDate)} →{" "}
-                      {formatDate(request.endDate)}
+                      {formatDate(request.startDate, isArabic)} →{" "}
+                      {formatDate(request.endDate, isArabic)}
                     </div>
                     <div className="text-xs text-white/40">
-                      {formatDate(request.createdAt)}
+                      {formatDate(request.createdAt, isArabic)}
                     </div>
                   </td>
                   <td className="py-3">
@@ -997,8 +998,8 @@ export default function QuotationsPage() {
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-primary" />
                   <span>
-                    {formatDate(request.startDate)} →{" "}
-                    {formatDate(request.endDate)}
+                    {formatDate(request.startDate, isArabic)} →{" "}
+                    {formatDate(request.endDate, isArabic)}
                   </span>
                 </div>
                 <p className="text-xs text-white/60">
@@ -1123,7 +1124,7 @@ export default function QuotationsPage() {
                   {selectedRequest.fullName}
                 </h3>
                 <p className="text-sm text-white/60">
-                  {formatDate(selectedRequest.createdAt)}
+                  {formatDate(selectedRequest.createdAt, isArabic)}
                 </p>
               </div>
               <div className="flex gap-2">

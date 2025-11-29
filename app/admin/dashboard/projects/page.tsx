@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useProjects, AdminProject } from "@/contexts/ProjectContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { FolderKanban, Plus, Trash2, Building2 } from "lucide-react";
+import Image from "next/image";
 
 export default function ProjectsManagementPage() {
   const { locale } = useLanguage();
@@ -146,12 +147,29 @@ export default function ProjectsManagementPage() {
                         src={project.logo}
                         alt={getProjectName(project, isArabic ? "ar" : "en")}
                         className="h-10 w-10 rounded-lg object-cover border border-white/10"
+                        onError={(e) => {
+                          console.error("Failed to load logo:", project.logo);
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = "none";
+                          const fallback =
+                            target.nextElementSibling as HTMLElement;
+                          if (fallback) {
+                            fallback.style.display = "flex";
+                          }
+                        }}
+                        crossOrigin="anonymous"
+                        referrerPolicy="no-referrer"
+                        loading="lazy"
+                        style={{ display: "block" }}
                       />
-                    ) : (
-                      <div className="h-10 w-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                        <Building2 className="h-5 w-5 text-white/40" />
-                      </div>
-                    )}
+                    ) : null}
+                    <div
+                      className={`h-10 w-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center ${
+                        project.logo ? "hidden" : ""
+                      }`}
+                    >
+                      <Building2 className="h-5 w-5 text-white/40" />
+                    </div>
                   </td>
                   <td className="py-4">
                     <p className="font-semibold text-white">
@@ -170,7 +188,12 @@ export default function ProjectsManagementPage() {
                     <p className="text-sm text-white/70">
                       {project.startDate
                         ? new Date(project.startDate).toLocaleDateString(
-                            isArabic ? "ar-SA" : "en-US"
+                            isArabic ? "ar-EG-u-ca-gregory" : "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }
                           )
                         : "-"}
                     </p>

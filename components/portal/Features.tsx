@@ -507,20 +507,6 @@ export default function PortalFeatures() {
             </div>
           </div>
         </div>
-
-        {/* View Full Details Link */}
-        <div className="mt-8 text-center">
-          <Link
-            href={`/portal/dashboard/${selectedProject._id}${
-              code ? `?code=${code}` : ""
-            }`}
-            className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-semibold"
-          >
-            {section.viewFullDetails ||
-              (isArabic ? "عرض التفاصيل الكاملة" : "View Full Details")}
-            <TrendingUp className="w-5 h-5" />
-          </Link>
-        </div>
       </div>
     </section>
   );

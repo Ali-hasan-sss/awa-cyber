@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Hourglass,
   CheckCircle,
@@ -15,6 +15,7 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProjects, AdminPayment } from "@/contexts/ProjectContext";
 import { Button } from "@/components/ui/button";
+import html2canvas from "html2canvas";
 
 interface PaymentsProps {
   projectId: string;
@@ -50,7 +51,10 @@ const getStatusBadge = (status: string, isArabic: boolean) => {
 };
 
 const formatDate = (date: string, isArabic: boolean) => {
-  return new Date(date).toLocaleDateString(isArabic ? "ar-SA" : "en-US", {
+  const dateObj = new Date(date);
+  // Force Gregorian calendar by using English locale for Arabic
+  const locale = isArabic ? "ar-EG-u-ca-gregory" : "en-US";
+  return dateObj.toLocaleDateString(locale, {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -68,6 +72,8 @@ export default function Payments({ projectId }: PaymentsProps) {
   const [payments, setPayments] = useState<AdminPayment[]>([]);
   const [loading, setLoading] = useState(false);
   const [project, setProject] = useState<any>(null);
+  const [downloading, setDownloading] = useState(false);
+  const invoiceRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   const t = messages.portalPayments || {};
 
@@ -110,6 +116,115 @@ export default function Payments({ projectId }: PaymentsProps) {
     .filter((p) => p.status === "paid")
     .reduce((sum, p) => sum + p.amount, 0);
   const remainingAmount = totalCost - paidAmount;
+
+  // Get paid payments only
+  const paidPayments = payments.filter((p) => p.status === "paid");
+
+  // Generate invoice image
+  const generateInvoice = async (payment: AdminPayment, index: number) => {
+    const invoiceElement = invoiceRefs.current[payment._id];
+    if (!invoiceElement) return;
+
+    try {
+      // Make element visible temporarily for capture
+      const originalStyle = invoiceElement.style.cssText;
+      invoiceElement.style.position = "absolute";
+      invoiceElement.style.left = "0";
+      invoiceElement.style.top = "0";
+      invoiceElement.style.width = "210mm";
+      invoiceElement.style.visibility = "visible";
+      invoiceElement.style.opacity = "1";
+      invoiceElement.style.zIndex = "9999";
+      invoiceElement.style.display = "block";
+
+      // Wait for images to load
+      const images = invoiceElement.querySelectorAll("img");
+      await Promise.all(
+        Array.from(images).map((img) => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve; // Continue even if image fails
+            setTimeout(resolve, 2000); // Timeout after 2 seconds
+          });
+        })
+      );
+
+      // Small delay to ensure rendering
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      const canvas = await html2canvas(invoiceElement, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+        width: invoiceElement.offsetWidth || 794, // A4 width in pixels at 96 DPI
+        height: invoiceElement.offsetHeight || 1123, // A4 height in pixels at 96 DPI
+      });
+
+      // Restore original style
+      invoiceElement.style.cssText = originalStyle;
+
+      if (canvas.width === 0 || canvas.height === 0) {
+        throw new Error("Canvas is empty");
+      }
+
+      const imgData = canvas.toDataURL("image/png", 1.0);
+      if (!imgData || imgData === "data:,") {
+        throw new Error("Failed to generate image data");
+      }
+
+      const link = document.createElement("a");
+      const paymentTitle = isArabic ? payment.title.ar : payment.title.en;
+      const invoiceNumber = `00${index + 1}-INV`;
+      link.download = `Invoice-${invoiceNumber}-${paymentTitle.replace(
+        /\s+/g,
+        "-"
+      )}.png`;
+      link.href = imgData;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Failed to generate invoice:", error);
+      // Restore original style in case of error
+      const invoiceElement = invoiceRefs.current[payment._id];
+      if (invoiceElement) {
+        invoiceElement.style.cssText = "";
+      }
+      throw error;
+    }
+  };
+
+  // Download all paid invoices
+  const handleDownloadAllInvoices = async () => {
+    if (paidPayments.length === 0) {
+      alert(
+        isArabic
+          ? "لا توجد فواتير مدفوعة للتحميل"
+          : "No paid invoices to download"
+      );
+      return;
+    }
+
+    setDownloading(true);
+    try {
+      // Download invoices one by one with a small delay
+      for (let i = 0; i < paidPayments.length; i++) {
+        await generateInvoice(paidPayments[i], i + 1);
+        // Small delay between downloads
+        if (i < paidPayments.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to download invoices:", error);
+      alert(isArabic ? "فشل تحميل الفواتير" : "Failed to download invoices");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <section id="payments" className="relative bg-white py-20 md:py-28">
@@ -274,19 +389,21 @@ export default function Payments({ projectId }: PaymentsProps) {
         >
           <Button
             variant="outline"
-            className="rounded-xl border-gray-300 px-6 py-3 text-gray-700 hover:bg-gray-50"
+            onClick={handleDownloadAllInvoices}
+            disabled={downloading || paidPayments.length === 0}
+            className="rounded-xl border-gray-300 px-6 py-3 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Download className="h-5 w-5 ltr:mr-2 rtl:ml-2" />
-            {t.downloadInvoices ||
-              (isArabic ? "تحميل الفواتير" : "Download Invoices")}
-          </Button>
-          <Button
-            variant="outline"
-            className="rounded-xl border-gray-300 px-6 py-3 text-gray-700 hover:bg-gray-50"
-          >
-            <History className="h-5 w-5 ltr:mr-2 rtl:ml-2" />
-            {t.paymentHistory ||
-              (isArabic ? "سجل المدفوعات" : "Payment History")}
+            <Download
+              className={`h-5 w-5 ltr:mr-2 rtl:ml-2 ${
+                downloading ? "animate-bounce" : ""
+              }`}
+            />
+            {downloading
+              ? isArabic
+                ? "جاري التحميل..."
+                : "Downloading..."
+              : t.downloadInvoices ||
+                (isArabic ? "تحميل الفواتير" : "Download Invoices")}
           </Button>
         </div>
 
@@ -322,6 +439,204 @@ export default function Payments({ projectId }: PaymentsProps) {
             </li>
           </ul>
         </div>
+      </div>
+
+      {/* Hidden Invoice Templates for Paid Payments */}
+      <div
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          top: "-9999px",
+          visibility: "hidden",
+          width: "210mm",
+        }}
+      >
+        {paidPayments.map((payment, index) => {
+          const paymentTitle = isArabic ? payment.title.ar : payment.title.en;
+          const invoiceNumber = `00${index + 1}-INV`;
+          const clientName =
+            typeof project?.userId === "object" && project?.userId
+              ? project.userId.name
+              : "";
+          const clientCompany =
+            typeof project?.userId === "object" && project?.userId
+              ? project.userId.companyName
+              : "";
+          const projectName = isArabic ? project?.name?.ar : project?.name?.en;
+
+          return (
+            <div
+              key={payment._id}
+              ref={(el) => {
+                invoiceRefs.current[payment._id] = el;
+              }}
+              className="invoice-template bg-white p-8"
+              style={{
+                width: "210mm",
+                minHeight: "297mm",
+                direction: isArabic ? "rtl" : "ltr",
+                fontFamily: "Arial, sans-serif",
+              }}
+            >
+              {/* Header */}
+              <div
+                className={`mb-8 flex items-center justify-between border-b-2 border-gray-300 pb-6 ${
+                  isArabic ? "flex-row-reverse" : ""
+                }`}
+              >
+                <div>
+                  <img
+                    src="/images/logo.png"
+                    alt="AWA CYBER"
+                    style={{ height: "80px", width: "auto", maxWidth: "200px" }}
+                    crossOrigin="anonymous"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                </div>
+                <div className={`text-right ${isArabic ? "text-left" : ""}`}>
+                  <h1 className="mb-2 text-3xl font-bold text-gray-900">
+                    {isArabic ? "فاتورة ضريبية" : "Tax Invoice"}
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    {isArabic ? "رقم الفاتورة" : "Invoice No"}: {invoiceNumber}
+                  </p>
+                </div>
+              </div>
+
+              {/* Company Info */}
+              <div className={`mb-6 ${isArabic ? "text-right" : "text-left"}`}>
+                <h2 className="mb-2 text-xl font-bold text-gray-900">
+                  AWA CYBER
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {isArabic
+                    ? "شركة الحلول السيبرانية والبرمجيات"
+                    : "Cybersecurity & Software Solutions"}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {isArabic ? "سلطنة عمان" : "Sultanate of Oman"}
+                </p>
+              </div>
+
+              {/* Client Info */}
+              <div
+                className={`mb-6 rounded-lg bg-gray-50 p-4 ${
+                  isArabic ? "text-right" : "text-left"
+                }`}
+              >
+                <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                  {isArabic ? "العميل" : "Client"}
+                </h3>
+                <p className="text-sm text-gray-700">{clientName}</p>
+                {clientCompany && (
+                  <p className="text-sm text-gray-700">{clientCompany}</p>
+                )}
+              </div>
+
+              {/* Project Info */}
+              <div className={`mb-6 ${isArabic ? "text-right" : "text-left"}`}>
+                <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                  {isArabic ? "المشروع" : "Project"}
+                </h3>
+                <p className="text-sm text-gray-700">{projectName}</p>
+              </div>
+
+              {/* Invoice Details */}
+              <div className="mb-6">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-800 text-white">
+                      <th
+                        className={`border border-gray-300 px-4 py-3 text-sm font-semibold ${
+                          isArabic ? "text-right" : "text-left"
+                        }`}
+                      >
+                        {isArabic ? "الوصف" : "Description"}
+                      </th>
+                      <th
+                        className={`border border-gray-300 px-4 py-3 text-sm font-semibold ${
+                          isArabic ? "text-right" : "text-left"
+                        }`}
+                      >
+                        {isArabic ? "المبلغ" : "Amount"}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td
+                        className={`border border-gray-300 px-4 py-3 text-sm text-gray-700 ${
+                          isArabic ? "text-right" : "text-left"
+                        }`}
+                      >
+                        {paymentTitle}
+                      </td>
+                      <td
+                        className={`border border-gray-300 px-4 py-3 text-sm font-semibold text-gray-900 ${
+                          isArabic ? "text-right" : "text-left"
+                        }`}
+                      >
+                        {formatCurrency(payment.amount, isArabic)}
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-gray-100">
+                      <td
+                        className={`border border-gray-300 px-4 py-3 text-sm font-bold text-gray-900 ${
+                          isArabic ? "text-right" : "text-left"
+                        }`}
+                      >
+                        {isArabic ? "الإجمالي" : "Total"}
+                      </td>
+                      <td
+                        className={`border border-gray-300 px-4 py-3 text-sm font-bold text-gray-900 ${
+                          isArabic ? "text-right" : "text-left"
+                        }`}
+                      >
+                        {formatCurrency(payment.amount, isArabic)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              {/* Payment Date */}
+              <div className={`mb-6 ${isArabic ? "text-right" : "text-left"}`}>
+                <p className="text-sm text-gray-600">
+                  {isArabic ? "تاريخ الدفع" : "Payment Date"}:{" "}
+                  {formatDate(payment.dueDate, isArabic)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {isArabic ? "الحالة" : "Status"}:{" "}
+                  <span className="font-semibold text-green-600">
+                    {isArabic ? "مدفوع" : "Paid"}
+                  </span>
+                </p>
+              </div>
+
+              {/* Footer */}
+              <div
+                className={`mt-auto border-t-2 border-gray-300 pt-6 text-center text-xs text-gray-500 ${
+                  isArabic ? "text-right" : "text-left"
+                }`}
+              >
+                <p>
+                  {isArabic
+                    ? "شكراً لتعاملكم معنا"
+                    : "Thank you for your business"}
+                </p>
+                <p className="mt-2">
+                  {isArabic
+                    ? "للاستفسارات، يرجى الاتصال بنا"
+                    : "For inquiries, please contact us"}
+                </p>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
