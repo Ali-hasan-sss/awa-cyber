@@ -1,63 +1,41 @@
 "use client";
 
 import { useEffect, useMemo, useState, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   useProjects,
   AdminProject,
   AdminPayment,
   AdminModification,
+  ModificationFile,
 } from "@/contexts/ProjectContext";
 import { useUsers } from "@/contexts/UserContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import FileUpload from "@/components/ui/FileUpload";
-import {
-  FolderKanban,
-  ArrowLeft,
-  Pencil,
-  X,
-  Save,
-  Plus,
-  Trash2,
-  Calendar,
-  DollarSign,
-  TrendingUp,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  FileText,
-  XCircle,
-  MessageCircle,
-  Download,
-  Upload,
-  Key,
-  Copy,
-  RefreshCw,
-} from "lucide-react";
-import { AdminProjectPhase, ModificationFile } from "@/contexts/ProjectContext";
+import { ArrowLeft, Pencil, RefreshCw, Plus } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import { API_BASE_URL } from "@/lib/config/api";
-import { Paperclip } from "lucide-react";
 
-type PaymentStatus = "due" | "due_soon" | "paid" | "upcoming";
-type ModificationPriority = "low" | "medium" | "high" | "critical";
-type ModificationStatus =
-  | "pending"
-  | "accepted"
-  | "rejected"
-  | "completed"
-  | "needs_extra_payment";
-
-const inputStyles =
-  "rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-cyan-400 focus:border-transparent focus:bg-white/[0.05] transition";
+// Import components
+import OverviewTab from "./components/OverviewTab";
+import TimelineTab from "./components/TimelineTab";
+import PaymentsTab from "./components/PaymentsTab";
+import ModificationsTab from "./components/ModificationsTab";
+import TeamTab from "./components/TeamTab";
+import ClientFilesTab from "./components/ClientFilesTab";
+import CompanyFilesTab from "./components/CompanyFilesTab";
+import PaymentModal from "./components/modals/PaymentModal";
+import ModificationModal from "./components/modals/ModificationModal";
+import ExtraPaymentModal from "./components/modals/ExtraPaymentModal";
+import AddEmployeeModal from "./components/modals/AddEmployeeModal";
+import FileUploadModal from "./components/modals/FileUploadModal";
+import { PhaseForm, PaymentStatus } from "./components/types";
 
 export default function ProjectDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { locale } = useLanguage();
   const isArabic = locale === "ar";
   const { admin } = useAuth();
@@ -116,20 +94,13 @@ export default function ProjectDetailsPage() {
     | "modifications"
     | "clientFiles"
     | "companyFiles"
+    | "team"
   >("overview");
   const [editingPhaseIndex, setEditingPhaseIndex] = useState<number | null>(
     null
   );
-  const [newPhase, setNewPhase] = useState<{
-    titleEn: string;
-    titleAr: string;
-    descriptionEn: string;
-    descriptionAr: string;
-    duration: number;
-    phaseNumber: number;
-    status: "upcoming" | "in_progress" | "completed";
-    progress: number;
-  } | null>(null);
+  const [newPhase, setNewPhase] = useState<PhaseForm | null>(null);
+  const [submittingPortalCode, setSubmittingPortalCode] = useState(false);
 
   // Payment form
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -142,6 +113,10 @@ export default function ProjectDetailsPage() {
     dueDate: "",
     status: "upcoming" as PaymentStatus,
   });
+
+  // Team form
+  const [addEmployeeModalOpen, setAddEmployeeModalOpen] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
 
   // Modification form
   const [modificationModalOpen, setModificationModalOpen] = useState(false);
@@ -177,6 +152,25 @@ export default function ProjectDetailsPage() {
     }
     fetchUsers();
   }, [projectId]);
+
+  // Read tab from query parameters and set active tab
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (
+      tabParam &&
+      [
+        "overview",
+        "timeline",
+        "payments",
+        "modifications",
+        "clientFiles",
+        "companyFiles",
+        "team",
+      ].includes(tabParam)
+    ) {
+      setActiveTab(tabParam as typeof activeTab);
+    }
+  }, [searchParams]);
 
   // Auto-calculate project progress based on phases
   useEffect(() => {
@@ -299,16 +293,43 @@ export default function ProjectDetailsPage() {
         descriptionAr: loadedProject.description.ar,
         logo: loadedProject.logo || "",
         totalCost: loadedProject.totalCost,
-        phases: (loadedProject.phases || []).map((phase, index) => ({
-          titleEn: phase.title.en,
-          titleAr: phase.title.ar,
-          descriptionEn: phase.description?.en || "",
-          descriptionAr: phase.description?.ar || "",
-          duration: phase.duration,
-          phaseNumber: (phase as any).phaseNumber || index + 1,
-          status: phase.status,
-          progress: phase.progress,
-        })),
+        phases: (loadedProject.phases || []).map((phase: any, index) => {
+          // Ensure we properly extract title and description
+          let titleEn = "";
+          let titleAr = "";
+          let descriptionEn = "";
+          let descriptionAr = "";
+
+          // Extract title
+          if (phase.title) {
+            if (typeof phase.title === "object" && phase.title !== null) {
+              titleEn = String(phase.title.en || "").trim();
+              titleAr = String(phase.title.ar || "").trim();
+            }
+          }
+
+          // Extract description
+          if (phase.description) {
+            if (
+              typeof phase.description === "object" &&
+              phase.description !== null
+            ) {
+              descriptionEn = String(phase.description.en || "").trim();
+              descriptionAr = String(phase.description.ar || "").trim();
+            }
+          }
+
+          return {
+            titleEn: titleEn || "",
+            titleAr: titleAr || "",
+            descriptionEn: descriptionEn || "",
+            descriptionAr: descriptionAr || "",
+            duration: phase.duration,
+            phaseNumber: phase.phaseNumber || index + 1,
+            status: phase.status,
+            progress: phase.progress,
+          };
+        }),
         startDate: loadedProject.startDate
           ? new Date(loadedProject.startDate).toISOString().split("T")[0]
           : "",
@@ -755,9 +776,17 @@ export default function ProjectDetailsPage() {
     return "-";
   };
 
-  const payments = Array.isArray(project.payments) ? project.payments : [];
-  const modifications = Array.isArray(project.modifications)
-    ? project.modifications
+  const payments: AdminPayment[] = Array.isArray(project.payments)
+    ? project.payments.filter(
+        (p): p is AdminPayment => typeof p === "object" && p !== null
+      )
+    : [];
+  const modifications: AdminModification[] = Array.isArray(
+    project.modifications
+  )
+    ? project.modifications.filter(
+        (m): m is AdminModification => typeof m === "object" && m !== null
+      )
     : [];
 
   return (
@@ -790,6 +819,7 @@ export default function ProjectDetailsPage() {
             "timeline",
             ...(isAdmin ? ["payments"] : []),
             "modifications",
+            "team",
             "clientFiles",
             "companyFiles",
           ] as const
@@ -803,1914 +833,522 @@ export default function ProjectDetailsPage() {
                 : "text-white/60 hover:text-white"
             }`}
           >
-            {copy[tab as keyof typeof copy]}
+            {tab === "team"
+              ? isArabic
+                ? "طاقم العمل"
+                : "Team"
+              : copy[tab as keyof typeof copy]}
           </button>
         ))}
       </div>
 
       {/* Overview Tab */}
-      {activeTab === "overview" && (
-        <div className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-sm text-white/80">
-                {copy.projectName} (EN)
-              </label>
-              {isEditing ? (
-                <Input
-                  className={inputStyles}
-                  value={form.nameEn}
-                  onChange={(e) => setForm({ ...form, nameEn: e.target.value })}
-                />
-              ) : (
-                <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm">
-                  {project.name.en}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="mb-2 block text-sm text-white/80">
-                {copy.projectName} (AR)
-              </label>
-              {isEditing ? (
-                <Input
-                  className={inputStyles}
-                  value={form.nameAr}
-                  onChange={(e) => setForm({ ...form, nameAr: e.target.value })}
-                />
-              ) : (
-                <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm">
-                  {project.name.ar}
-                </p>
-              )}
-            </div>
-            <div className="md:col-span-2">
-              <label className="mb-2 block text-sm text-white/80">
-                {copy.description} (EN)
-              </label>
-              {isEditing ? (
-                <Textarea
-                  className={inputStyles}
-                  value={form.descriptionEn}
-                  onChange={(e) =>
-                    setForm({ ...form, descriptionEn: e.target.value })
-                  }
-                />
-              ) : (
-                <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm">
-                  {project.description.en}
-                </p>
-              )}
-            </div>
-            <div className="md:col-span-2">
-              <label className="mb-2 block text-sm text-white/80">
-                {copy.description} (AR)
-              </label>
-              {isEditing ? (
-                <Textarea
-                  className={inputStyles}
-                  value={form.descriptionAr}
-                  onChange={(e) =>
-                    setForm({ ...form, descriptionAr: e.target.value })
-                  }
-                />
-              ) : (
-                <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm">
-                  {project.description.ar}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="mb-2 block text-sm text-white/80">
-                {copy.logo}
-              </label>
-              {isEditing ? (
-                <FileUpload
-                  accept="image/*"
-                  maxSize={5}
-                  hideUploadedFiles={true}
-                  onUploadComplete={(url) => setForm({ ...form, logo: url })}
-                />
-              ) : (
-                project.logo && (
-                  <div className="relative h-24 w-24">
-                    <img
-                      src={project.logo}
-                      alt={project.name.en}
-                      className="h-24 w-24 rounded-lg object-cover border border-white/10"
-                      onError={(e) => {
-                        console.error("Failed to load logo:", project.logo);
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = "none";
-                      }}
-                      crossOrigin="anonymous"
-                      referrerPolicy="no-referrer"
-                      loading="lazy"
-                    />
-                  </div>
-                )
-              )}
-            </div>
-            {isAdmin && (
-              <div>
-                <label className="mb-2 block text-sm text-white/80">
-                  {copy.totalCost}
-                </label>
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    className={inputStyles}
-                    value={form.totalCost}
-                    onChange={(e) =>
-                      setForm({ ...form, totalCost: Number(e.target.value) })
-                    }
-                  />
-                ) : (
-                  <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm">
-                    {project.totalCost.toLocaleString()}{" "}
-                    {isArabic ? "ريال" : "SAR"}
-                  </p>
-                )}
-              </div>
-            )}
-            <div>
-              <label className="mb-2 block text-sm text-white/80">
-                {copy.startDate}
-              </label>
-              {isEditing ? (
-                <Input
-                  type="date"
-                  className={inputStyles}
-                  value={form.startDate}
-                  onChange={(e) =>
-                    setForm({ ...form, startDate: e.target.value })
-                  }
-                />
-              ) : (
-                <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm">
-                  {project.startDate
-                    ? new Date(project.startDate).toLocaleDateString(
-                        isArabic ? "ar-EG-u-ca-gregory" : "en-US",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        }
-                      )
-                    : "-"}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="mb-2 block text-sm text-white/80">
-                {copy.progress} ({form.progress}%)
-                {!isAdmin && (
-                  <span className="text-xs text-white/60 block mt-1">
-                    {isArabic
-                      ? "(محسوب تلقائياً حسب المراحل)"
-                      : "(Auto-calculated based on phases)"}
-                  </span>
-                )}
-              </label>
-              {isEditing && isAdmin ? (
-                <div className="space-y-2">
-                  <Input
-                    type="range"
-                    min="0"
-                    max="100"
-                    className="w-full"
-                    value={form.progress}
-                    onChange={(e) =>
-                      setForm({ ...form, progress: Number(e.target.value) })
-                    }
-                  />
-                  <p className="text-xs text-white/60 text-center">
-                    {form.progress}%
-                  </p>
-                </div>
-              ) : (
-                <div className="w-full bg-white/10 rounded-full h-2">
-                  <div
-                    className="bg-primary h-2 rounded-full transition-all"
-                    style={{ width: `${form.progress}%` }}
-                  />
-                </div>
-              )}
-            </div>
-            <div>
-              <label className="mb-2 block text-sm text-white/80">
-                {copy.client}
-              </label>
-              <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm">
-                {getUserName(project.userId)}
-              </p>
-            </div>
-            <div>
-              <label className="mb-2 block text-sm text-white/80">
-                {copy.company}
-              </label>
-              <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm">
-                {getCompanyName(project.userId)}
-              </p>
-            </div>
-            <div className="md:col-span-2">
-              <label className="mb-2 block text-sm text-white/80">
-                {copy.whatsappGroupLink}
-              </label>
-              {isEditing ? (
-                <Input
-                  type="url"
-                  placeholder={
-                    isArabic
-                      ? "https://chat.whatsapp.com/..."
-                      : "https://chat.whatsapp.com/..."
-                  }
-                  className={inputStyles}
-                  value={form.whatsappGroupLink}
-                  onChange={(e) =>
-                    setForm({ ...form, whatsappGroupLink: e.target.value })
-                  }
-                />
-              ) : (
-                <div className="flex items-center gap-3">
-                  <p className="flex-1 rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm">
-                    {project.whatsappGroupLink || "-"}
-                  </p>
-                  {project.whatsappGroupLink && (
-                    <Button
-                      onClick={() =>
-                        window.open(project.whatsappGroupLink, "_blank")
-                      }
-                      className="rounded-full bg-green-500/20 px-6 py-3 text-green-300 hover:bg-green-500/30"
-                    >
-                      <MessageCircle className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-                      {copy.openWhatsApp}
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-            {isAdmin && (
-              <div className="md:col-span-2">
-                <label className="mb-2 block text-sm text-white/80">
-                  {copy.portalCode}
-                </label>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm flex items-center justify-between">
-                    <code className="text-primary font-mono text-lg">
-                      {project.portalCode || "---"}
-                    </code>
-                    {project.portalCode && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            `${window.location.origin}/portal?code=${project.portalCode}`
-                          );
-                          alert(copy.codeCopied);
-                        }}
-                        className="h-8 w-8 rounded-full bg-primary/20 text-primary hover:bg-primary/30"
-                        title={copy.copyCode}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                  <Button
-                    onClick={async () => {
-                      if (!project) return;
-                      setSubmitting(true);
-                      try {
-                        const result = await generatePortalCode(project._id);
-                        await loadProject();
-                        if (result?.portalCode) {
-                          navigator.clipboard.writeText(
-                            `${window.location.origin}/portal?code=${result.portalCode}`
-                          );
-                          alert(copy.codeCopied);
-                        }
-                      } catch (err) {
-                        console.error("Failed to generate portal code:", err);
-                      } finally {
-                        setSubmitting(false);
-                      }
-                    }}
-                    disabled={submitting}
-                    className="rounded-full bg-primary px-6 py-3 text-black shadow-lg hover:bg-primary/90"
-                  >
-                    <Key className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-                    {copy.generateCode}
-                  </Button>
-                </div>
-                {project.portalCode && (
-                  <p className="mt-2 text-xs text-white/60">
-                    {copy.portalLink}:{" "}
-                    <a
-                      href={`/portal?code=${project.portalCode}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      {window.location.origin}/portal?code={project.portalCode}
-                    </a>
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-          {isEditing && (
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setIsEditing(false);
-                  loadProject();
-                }}
-                className="rounded-full border border-white/20 px-6 text-white/70 hover:bg-white/5"
-              >
-                {copy.cancel}
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={submitting}
-                className="rounded-full bg-primary px-6 text-black shadow-lg hover:bg-primary/90"
-              >
-                <Save className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-                {copy.save}
-              </Button>
-            </div>
-          )}
-        </div>
+      {activeTab === "overview" && project && (
+        <OverviewTab
+          project={project}
+          isEditing={isEditing}
+          form={{
+            nameEn: form.nameEn,
+            nameAr: form.nameAr,
+            descriptionEn: form.descriptionEn,
+            descriptionAr: form.descriptionAr,
+            logo: form.logo,
+            totalCost: form.totalCost,
+            startDate: form.startDate,
+            progress: form.progress,
+            whatsappGroupLink: form.whatsappGroupLink,
+          }}
+          setForm={(newForm) =>
+            setForm({
+              ...form,
+              ...newForm,
+            })
+          }
+          onSave={handleSave}
+          onCancel={() => {
+            setIsEditing(false);
+            loadProject();
+          }}
+          submitting={submitting}
+          generatePortalCode={generatePortalCode}
+          loadProject={loadProject}
+          submittingPortalCode={submittingPortalCode}
+          setSubmittingPortalCode={setSubmittingPortalCode}
+        />
       )}
 
       {/* Timeline Tab */}
-      {activeTab === "timeline" && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <Button
-              onClick={() => {
-                // Determine status: first phase should be in_progress, others upcoming
-                const hasInProgress = form.phases.some(
-                  (p) => p.status === "in_progress"
-                );
-                const allCompleted = form.phases.every(
-                  (p) => p.status === "completed"
-                );
-                const status =
-                  form.phases.length === 0 || allCompleted
-                    ? "in_progress"
-                    : "upcoming";
+      {activeTab === "timeline" && project && (
+        <TimelineTab
+          project={project}
+          phases={form.phases}
+          setPhases={(phases) => {
+            if (typeof phases === "function") {
+              setForm((prev) => ({ ...prev, phases: phases(prev.phases) }));
+            } else {
+              setForm((prev) => ({ ...prev, phases }));
+            }
+          }}
+          newPhase={newPhase}
+          setNewPhase={setNewPhase}
+          editingPhaseIndex={editingPhaseIndex}
+          setEditingPhaseIndex={setEditingPhaseIndex}
+          onAddPhase={() => {
+            const hasInProgress = form.phases.some(
+              (p) => p.status === "in_progress"
+            );
+            const allCompleted = form.phases.every(
+              (p) => p.status === "completed"
+            );
+            const status =
+              form.phases.length === 0 || allCompleted
+                ? "in_progress"
+                : "upcoming";
 
-                // Find available phase number
-                const usedNumbers = form.phases.map((p) => p.phaseNumber);
-                const availableNumbers = [1, 2, 3, 4, 5].filter(
-                  (n) => !usedNumbers.includes(n)
-                );
-                const phaseNumber = availableNumbers[0] || 1;
+            const usedNumbers = form.phases.map((p) => p.phaseNumber);
+            const availableNumbers = [1, 2, 3, 4, 5].filter(
+              (n) => !usedNumbers.includes(n)
+            );
+            const phaseNumber = availableNumbers[0] || 1;
 
-                setNewPhase({
-                  titleEn: "",
-                  titleAr: "",
-                  descriptionEn: "",
-                  descriptionAr: "",
-                  duration: 1,
-                  phaseNumber: phaseNumber,
-                  status: status as "upcoming" | "in_progress" | "completed",
-                  progress: 0,
+            setNewPhase({
+              titleEn: "",
+              titleAr: "",
+              descriptionEn: "",
+              descriptionAr: "",
+              duration: 1,
+              phaseNumber: phaseNumber,
+              status: status as "upcoming" | "in_progress" | "completed",
+              progress: 0,
+            });
+          }}
+          onSavePhase={async (phase) => {
+            if (!project) return;
+            if (!phase.titleEn.trim() || !phase.titleAr.trim()) {
+              alert(
+                isArabic
+                  ? "عنوان المرحلة مطلوب باللغتين"
+                  : "Phase title is required in both languages"
+              );
+              return;
+            }
+            setSubmitting(true);
+            try {
+              const updatedPhases = [
+                ...form.phases,
+                {
+                  titleEn: phase.titleEn.trim(),
+                  titleAr: phase.titleAr.trim(),
+                  descriptionEn: phase.descriptionEn.trim(),
+                  descriptionAr: phase.descriptionAr.trim(),
+                  duration: phase.duration,
+                  phaseNumber: phase.phaseNumber,
+                  status: phase.status,
+                  progress: phase.progress,
+                },
+              ];
+
+              const totalPhases = updatedPhases.length;
+              let calculatedProgress = 0;
+              if (totalPhases > 0) {
+                const phaseWeight = 100 / totalPhases;
+                updatedPhases.forEach((phase) => {
+                  if (phase.status === "completed") {
+                    calculatedProgress += phaseWeight;
+                  } else if (phase.status === "in_progress") {
+                    calculatedProgress += (phaseWeight * phase.progress) / 100;
+                  }
                 });
-              }}
-              className="rounded-full bg-primary px-6 py-3 text-black shadow-lg hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-              {copy.addPhase}
-            </Button>
-          </div>
+                calculatedProgress = Math.round(calculatedProgress);
+              }
 
-          {/* New Phase Form */}
-          {newPhase && (
-            <div className="rounded-2xl border border-primary/30 bg-white/[0.03] p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-primary">
-                  {isArabic ? "مرحلة جديدة" : "New Phase"}
-                </h4>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setNewPhase(null)}
-                  className="h-8 w-8 rounded-full text-white/70 hover:bg-white/10"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <Input
-                  placeholder={isArabic ? "العنوان (EN)" : "Title (EN)"}
-                  className={inputStyles}
-                  value={newPhase.titleEn}
-                  onChange={(e) =>
-                    setNewPhase({ ...newPhase, titleEn: e.target.value })
+              await updateProject(project._id, {
+                phases: updatedPhases.map((phase) => ({
+                  title: { en: phase.titleEn, ar: phase.titleAr },
+                  description:
+                    phase.descriptionEn || phase.descriptionAr
+                      ? {
+                          en: phase.descriptionEn,
+                          ar: phase.descriptionAr,
+                        }
+                      : undefined,
+                  duration: phase.duration,
+                  phaseNumber: phase.phaseNumber,
+                  status: phase.status,
+                  progress: phase.progress,
+                })),
+                progress: calculatedProgress,
+              });
+              setNewPhase(null);
+              await loadProject();
+            } catch (err) {
+              console.error("Failed to add phase:", err);
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+          onUpdatePhase={async (index) => {
+            if (!project) return;
+            setSubmitting(true);
+            try {
+              const totalPhases = form.phases.length;
+              let calculatedProgress = 0;
+              if (totalPhases > 0) {
+                const phaseWeight = 100 / totalPhases;
+                form.phases.forEach((phase) => {
+                  if (phase.status === "completed") {
+                    calculatedProgress += phaseWeight;
+                  } else if (phase.status === "in_progress") {
+                    calculatedProgress += (phaseWeight * phase.progress) / 100;
                   }
-                />
-                <Input
-                  placeholder={isArabic ? "العنوان (AR)" : "Title (AR)"}
-                  className={inputStyles}
-                  value={newPhase.titleAr}
-                  onChange={(e) =>
-                    setNewPhase({ ...newPhase, titleAr: e.target.value })
+                });
+                calculatedProgress = Math.round(calculatedProgress);
+              }
+
+              await updateProject(project._id, {
+                phases: form.phases.map((phase) => ({
+                  title: {
+                    en: phase.titleEn,
+                    ar: phase.titleAr,
+                  },
+                  description:
+                    phase.descriptionEn || phase.descriptionAr
+                      ? {
+                          en: phase.descriptionEn,
+                          ar: phase.descriptionAr,
+                        }
+                      : undefined,
+                  duration: phase.duration,
+                  phaseNumber: phase.phaseNumber,
+                  status: phase.status,
+                  progress: phase.progress,
+                })),
+                progress: calculatedProgress,
+              });
+              setEditingPhaseIndex(null);
+              await loadProject();
+            } catch (err) {
+              console.error("Failed to update phase:", err);
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+          onDeletePhase={async (index) => {
+            if (!project) return;
+            setSubmitting(true);
+            try {
+              const updatedPhases = form.phases.filter((_, i) => i !== index);
+
+              const totalPhases = updatedPhases.length;
+              let calculatedProgress = 0;
+              if (totalPhases > 0) {
+                const phaseWeight = 100 / totalPhases;
+                updatedPhases.forEach((phase) => {
+                  if (phase.status === "completed") {
+                    calculatedProgress += phaseWeight;
+                  } else if (phase.status === "in_progress") {
+                    calculatedProgress += (phaseWeight * phase.progress) / 100;
                   }
-                />
-                <Textarea
-                  placeholder={isArabic ? "الوصف (EN)" : "Description (EN)"}
-                  className={inputStyles}
-                  value={newPhase.descriptionEn}
-                  onChange={(e) =>
-                    setNewPhase({ ...newPhase, descriptionEn: e.target.value })
-                  }
-                />
-                <Textarea
-                  placeholder={isArabic ? "الوصف (AR)" : "Description (AR)"}
-                  className={inputStyles}
-                  value={newPhase.descriptionAr}
-                  onChange={(e) =>
-                    setNewPhase({ ...newPhase, descriptionAr: e.target.value })
-                  }
-                />
-                <div>
-                  <label className="mb-2 block text-sm text-white/80">
-                    {copy.duration} <span className="text-red-400">*</span>
-                  </label>
-                  <Input
-                    type="number"
-                    min="1"
-                    placeholder={
-                      isArabic ? "المدة بالأيام" : "Duration in days"
-                    }
-                    className={inputStyles}
-                    value={newPhase.duration}
-                    onChange={(e) =>
-                      setNewPhase({
-                        ...newPhase,
-                        duration: Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm text-white/80">
-                    {copy.phaseNumber} <span className="text-red-400">*</span>
-                  </label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((num) => {
-                      const usedNumbers = form.phases.map((p) => p.phaseNumber);
-                      const isUsed = usedNumbers.includes(num);
-                      const isSelected = newPhase.phaseNumber === num;
+                });
+                calculatedProgress = Math.round(calculatedProgress);
+              }
 
-                      if (isUsed) return null;
-
-                      return (
-                        <button
-                          key={num}
-                          type="button"
-                          onClick={() => {
-                            setNewPhase({
-                              ...newPhase,
-                              phaseNumber: num,
-                            });
-                          }}
-                          className={`w-12 h-12 rounded-lg border-2 transition-all ${
-                            isSelected
-                              ? "bg-primary text-black border-primary font-bold"
-                              : "bg-white/[0.02] text-white/70 border-white/20 hover:border-white/40 hover:bg-white/[0.05]"
-                          }`}
-                        >
-                          {num}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <select
-                  className={inputStyles}
-                  value={newPhase.status}
-                  onChange={(e) =>
-                    setNewPhase({
-                      ...newPhase,
-                      status: e.target.value as
-                        | "upcoming"
-                        | "in_progress"
-                        | "completed",
-                    })
-                  }
-                >
-                  <option value="upcoming">{copy.upcoming}</option>
-                  <option value="in_progress">{copy.inProgress}</option>
-                  <option value="completed">{copy.completed}</option>
-                </select>
-                {newPhase.status === "in_progress" && (
-                  <div className="md:col-span-2">
-                    <label className="mb-2 block text-xs text-white/60">
-                      {copy.phaseProgress} ({newPhase.progress}%)
-                    </label>
-                    <Input
-                      type="range"
-                      min="0"
-                      max="100"
-                      className="w-full"
-                      value={newPhase.progress}
-                      onChange={(e) =>
-                        setNewPhase({
-                          ...newPhase,
-                          progress: Number(e.target.value),
-                        })
-                      }
-                    />
-                  </div>
-                )}
-              </div>
-              <div className="flex justify-end gap-3 pt-2">
-                <Button
-                  variant="ghost"
-                  onClick={() => setNewPhase(null)}
-                  className="rounded-full border border-white/20 px-6 text-white/70 hover:bg-white/5"
-                >
-                  {copy.cancel}
-                </Button>
-                <Button
-                  onClick={async () => {
-                    if (!project || !newPhase) return;
-                    if (!newPhase.titleEn.trim() || !newPhase.titleAr.trim()) {
-                      alert(
-                        isArabic
-                          ? "عنوان المرحلة مطلوب باللغتين"
-                          : "Phase title is required in both languages"
-                      );
-                      return;
-                    }
-                    setSubmitting(true);
-                    try {
-                      const updatedPhases = [
-                        ...form.phases,
-                        {
-                          titleEn: newPhase.titleEn.trim(),
-                          titleAr: newPhase.titleAr.trim(),
-                          descriptionEn: newPhase.descriptionEn.trim(),
-                          descriptionAr: newPhase.descriptionAr.trim(),
-                          duration: newPhase.duration,
-                          phaseNumber: newPhase.phaseNumber,
-                          status: newPhase.status,
-                          progress: newPhase.progress,
-                        },
-                      ];
-
-                      // Calculate progress
-                      const totalPhases = updatedPhases.length;
-                      let calculatedProgress = 0;
-                      if (totalPhases > 0) {
-                        const phaseWeight = 100 / totalPhases;
-                        updatedPhases.forEach((phase) => {
-                          if (phase.status === "completed") {
-                            calculatedProgress += phaseWeight;
-                          } else if (phase.status === "in_progress") {
-                            calculatedProgress +=
-                              (phaseWeight * phase.progress) / 100;
-                          }
-                        });
-                        calculatedProgress = Math.round(calculatedProgress);
-                      }
-
-                      await updateProject(project._id, {
-                        phases: updatedPhases.map((phase) => ({
-                          title: { en: phase.titleEn, ar: phase.titleAr },
-                          description:
-                            phase.descriptionEn || phase.descriptionAr
-                              ? {
-                                  en: phase.descriptionEn,
-                                  ar: phase.descriptionAr,
-                                }
-                              : undefined,
-                          duration: phase.duration,
-                          phaseNumber: phase.phaseNumber,
-                          status: phase.status,
-                          progress: phase.progress,
-                        })),
-                        progress: calculatedProgress,
-                      });
-                      setNewPhase(null);
-                      await loadProject();
-                    } catch (err) {
-                      console.error("Failed to add phase:", err);
-                    } finally {
-                      setSubmitting(false);
-                    }
-                  }}
-                  disabled={submitting}
-                  className="rounded-full bg-primary px-6 text-black shadow-lg hover:bg-primary/90"
-                >
-                  <Save className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-                  {copy.save}
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Existing Phases */}
-          <div className="space-y-4">
-            {form.phases.map((phase, index) => (
-              <div
-                key={index}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
-              >
-                {editingPhaseIndex === index ? (
-                  // Edit Mode
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-semibold text-white">
-                        {copy.phaseTitle} {index + 1}
-                      </h4>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setEditingPhaseIndex(null);
-                          loadProject();
-                        }}
-                        className="h-8 w-8 rounded-full text-white/70 hover:bg-white/10"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div>
-                        <label className="mb-2 block text-sm text-white/80">
-                          {copy.phaseTitle} (EN){" "}
-                          <span className="text-red-400">*</span>
-                        </label>
-                        <Input
-                          placeholder={isArabic ? "العنوان (EN)" : "Title (EN)"}
-                          className={inputStyles}
-                          value={phase.titleEn}
-                          onChange={(e) => {
-                            const newPhases = [...form.phases];
-                            newPhases[index].titleEn = e.target.value;
-                            setForm({ ...form, phases: newPhases });
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm text-white/80">
-                          {copy.phaseTitle} (AR){" "}
-                          <span className="text-red-400">*</span>
-                        </label>
-                        <Input
-                          placeholder={isArabic ? "العنوان (AR)" : "Title (AR)"}
-                          className={inputStyles}
-                          value={phase.titleAr}
-                          onChange={(e) => {
-                            const newPhases = [...form.phases];
-                            newPhases[index].titleAr = e.target.value;
-                            setForm({ ...form, phases: newPhases });
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm text-white/80">
-                          {copy.phaseDescription} (EN)
-                        </label>
-                        <Textarea
-                          placeholder={
-                            isArabic ? "الوصف (EN)" : "Description (EN)"
-                          }
-                          className={inputStyles}
-                          value={phase.descriptionEn}
-                          onChange={(e) => {
-                            const newPhases = [...form.phases];
-                            newPhases[index].descriptionEn = e.target.value;
-                            setForm({ ...form, phases: newPhases });
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm text-white/80">
-                          {copy.phaseDescription} (AR)
-                        </label>
-                        <Textarea
-                          placeholder={
-                            isArabic ? "الوصف (AR)" : "Description (AR)"
-                          }
-                          className={inputStyles}
-                          value={phase.descriptionAr}
-                          onChange={(e) => {
-                            const newPhases = [...form.phases];
-                            newPhases[index].descriptionAr = e.target.value;
-                            setForm({ ...form, phases: newPhases });
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm text-white/80">
-                          {copy.duration}{" "}
-                          <span className="text-red-400">*</span>
-                        </label>
-                        <Input
-                          type="number"
-                          min="1"
-                          placeholder={
-                            isArabic ? "المدة بالأيام" : "Duration in days"
-                          }
-                          className={inputStyles}
-                          value={phase.duration}
-                          onChange={(e) => {
-                            const newPhases = [...form.phases];
-                            newPhases[index].duration = Number(e.target.value);
-                            setForm({ ...form, phases: newPhases });
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm text-white/80">
-                          {copy.phaseNumber}{" "}
-                          <span className="text-red-400">*</span>
-                        </label>
-                        <div className="flex gap-2">
-                          {[1, 2, 3, 4, 5].map((num) => {
-                            const usedNumbers = form.phases
-                              .map((p, i) =>
-                                i !== index ? p.phaseNumber : null
-                              )
-                              .filter((n) => n !== null) as number[];
-                            const isUsed = usedNumbers.includes(num);
-                            const isSelected = phase.phaseNumber === num;
-
-                            if (isUsed) return null;
-
-                            return (
-                              <button
-                                key={num}
-                                type="button"
-                                onClick={() => {
-                                  const newPhases = [...form.phases];
-                                  newPhases[index].phaseNumber = num;
-                                  setForm({ ...form, phases: newPhases });
-                                }}
-                                className={`w-12 h-12 rounded-lg border-2 transition-all ${
-                                  isSelected
-                                    ? "bg-primary text-black border-primary font-bold"
-                                    : "bg-white/[0.02] text-white/70 border-white/20 hover:border-white/40 hover:bg-white/[0.05]"
-                                }`}
-                              >
-                                {num}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm text-white/80">
-                          {copy.phaseStatus}
-                        </label>
-                        <select
-                          className={inputStyles}
-                          value={phase.status}
-                          onChange={(e) => {
-                            const newPhases = [...form.phases];
-                            newPhases[index].status = e.target.value as
-                              | "upcoming"
-                              | "in_progress"
-                              | "completed";
-                            setForm({ ...form, phases: newPhases });
-                          }}
-                        >
-                          <option value="upcoming">{copy.upcoming}</option>
-                          <option value="in_progress">{copy.inProgress}</option>
-                          <option value="completed">{copy.completed}</option>
-                        </select>
-                      </div>
-                      {phase.status === "in_progress" && (
-                        <div className="md:col-span-2">
-                          <label className="mb-2 block text-sm text-white/80">
-                            {copy.phaseProgress} ({phase.progress}%)
-                          </label>
-                          <Input
-                            type="range"
-                            min="0"
-                            max="100"
-                            className="w-full"
-                            value={phase.progress}
-                            onChange={(e) => {
-                              const newPhases = [...form.phases];
-                              newPhases[index].progress = Number(
-                                e.target.value
-                              );
-                              setForm({ ...form, phases: newPhases });
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex justify-end gap-3 pt-2">
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          setEditingPhaseIndex(null);
-                          loadProject();
-                        }}
-                        className="rounded-full border border-white/20 px-6 text-white/70 hover:bg-white/5"
-                      >
-                        {copy.cancel}
-                      </Button>
-                      <Button
-                        onClick={async () => {
-                          if (!project) return;
-                          setSubmitting(true);
-                          try {
-                            // Calculate progress
-                            const totalPhases = form.phases.length;
-                            let calculatedProgress = 0;
-                            if (totalPhases > 0) {
-                              const phaseWeight = 100 / totalPhases;
-                              form.phases.forEach((phase) => {
-                                if (phase.status === "completed") {
-                                  calculatedProgress += phaseWeight;
-                                } else if (phase.status === "in_progress") {
-                                  calculatedProgress +=
-                                    (phaseWeight * phase.progress) / 100;
-                                }
-                              });
-                              calculatedProgress =
-                                Math.round(calculatedProgress);
-                            }
-
-                            await updateProject(project._id, {
-                              phases: form.phases.map((phase) => ({
-                                title: { en: phase.titleEn, ar: phase.titleAr },
-                                description:
-                                  phase.descriptionEn || phase.descriptionAr
-                                    ? {
-                                        en: phase.descriptionEn,
-                                        ar: phase.descriptionAr,
-                                      }
-                                    : undefined,
-                                duration: phase.duration,
-                                phaseNumber: phase.phaseNumber,
-                                status: phase.status,
-                                progress: phase.progress,
-                              })),
-                              progress: calculatedProgress,
-                            });
-                            setEditingPhaseIndex(null);
-                            await loadProject();
-                          } catch (err) {
-                            console.error("Failed to update phase:", err);
-                          } finally {
-                            setSubmitting(false);
-                          }
-                        }}
-                        disabled={submitting}
-                        className="rounded-full bg-primary px-6 text-black shadow-lg hover:bg-primary/90"
-                      >
-                        <Save className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-                        {copy.save}
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  // View Mode
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold text-white">
-                          {phase.phaseNumber}.{" "}
-                          {phase.titleEn ||
-                            phase.titleAr ||
-                            `${copy.phaseTitle} ${index + 1}`}
-                        </h4>
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${
-                            phase.status === "completed"
-                              ? "bg-green-500/20 text-green-300"
-                              : phase.status === "in_progress"
-                              ? "bg-blue-500/20 text-blue-300"
-                              : "bg-gray-500/20 text-gray-300"
-                          }`}
-                        >
-                          {phase.status === "completed"
-                            ? copy.completed
-                            : phase.status === "in_progress"
-                            ? copy.inProgress
-                            : copy.upcoming}
-                        </span>
-                      </div>
-                      {(phase.descriptionEn || phase.descriptionAr) && (
-                        <p className="text-sm text-white/70 mb-2">
-                          {phase.descriptionEn || phase.descriptionAr}
-                        </p>
-                      )}
-                      <div className="flex gap-4 text-xs text-white/60">
-                        <span>
-                          {copy.duration}: {phase.duration}{" "}
-                          {isArabic ? "يوم" : "days"}
-                        </span>
-                        {phase.status === "in_progress" && (
-                          <span>
-                            {copy.phaseProgress}: {phase.progress}%
-                          </span>
-                        )}
-                      </div>
-                      {phase.status === "in_progress" && (
-                        <div className="w-full bg-white/10 rounded-full h-2 mt-2">
-                          <div
-                            className="bg-primary h-2 rounded-full transition-all"
-                            style={{ width: `${phase.progress}%` }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditingPhaseIndex(index)}
-                        className="h-8 w-8 rounded-full bg-primary/20 text-primary hover:bg-primary/30"
-                        title={copy.edit}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={async () => {
-                          if (
-                            confirm(
-                              isArabic
-                                ? "حذف هذه المرحلة؟"
-                                : "Delete this phase?"
-                            )
-                          ) {
-                            if (!project) return;
-                            setSubmitting(true);
-                            try {
-                              const updatedPhases = form.phases.filter(
-                                (_, i) => i !== index
-                              );
-
-                              // Calculate progress
-                              const totalPhases = updatedPhases.length;
-                              let calculatedProgress = 0;
-                              if (totalPhases > 0) {
-                                const phaseWeight = 100 / totalPhases;
-                                updatedPhases.forEach((phase) => {
-                                  if (phase.status === "completed") {
-                                    calculatedProgress += phaseWeight;
-                                  } else if (phase.status === "in_progress") {
-                                    calculatedProgress +=
-                                      (phaseWeight * phase.progress) / 100;
-                                  }
-                                });
-                                calculatedProgress =
-                                  Math.round(calculatedProgress);
-                              }
-
-                              await updateProject(project._id, {
-                                phases: updatedPhases.map((phase) => ({
-                                  title: {
-                                    en: phase.titleEn,
-                                    ar: phase.titleAr,
-                                  },
-                                  description:
-                                    phase.descriptionEn || phase.descriptionAr
-                                      ? {
-                                          en: phase.descriptionEn,
-                                          ar: phase.descriptionAr,
-                                        }
-                                      : undefined,
-                                  duration: phase.duration,
-                                  phaseNumber: phase.phaseNumber,
-                                  status: phase.status,
-                                  progress: phase.progress,
-                                })),
-                                progress: calculatedProgress,
-                              });
-                              await loadProject();
-                            } catch (err) {
-                              console.error("Failed to delete phase:", err);
-                            } finally {
-                              setSubmitting(false);
-                            }
-                          }
-                        }}
-                        className="h-8 w-8 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                        title={copy.delete}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-            {form.phases.length === 0 && !newPhase && (
-              <p className="text-white/60 text-center py-8">
-                {isArabic
-                  ? "لا توجد مراحل. اضغط على 'إضافة مرحلة' لإضافة مرحلة جديدة."
-                  : "No phases. Click 'Add Phase' to add a new phase."}
-              </p>
-            )}
-          </div>
-        </div>
+              await updateProject(project._id, {
+                phases: updatedPhases.map((phase) => ({
+                  title: {
+                    en: phase.titleEn,
+                    ar: phase.titleAr,
+                  },
+                  description:
+                    phase.descriptionEn || phase.descriptionAr
+                      ? {
+                          en: phase.descriptionEn,
+                          ar: phase.descriptionAr,
+                        }
+                      : undefined,
+                  duration: phase.duration,
+                  phaseNumber: phase.phaseNumber,
+                  status: phase.status,
+                  progress: phase.progress,
+                })),
+                progress: calculatedProgress,
+              });
+              await loadProject();
+            } catch (err) {
+              console.error("Failed to delete phase:", err);
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+          onCancelEdit={() => {
+            setEditingPhaseIndex(null);
+            loadProject();
+          }}
+          submitting={submitting}
+          loadProject={loadProject}
+        />
       )}
 
       {/* Payments Tab */}
-      {activeTab === "payments" && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <Button
-              onClick={() => setPaymentModalOpen(true)}
-              className="rounded-full bg-primary px-6 py-3 text-black shadow-lg hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-              {copy.addPayment}
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {payments.length === 0 ? (
-              <p className="text-white/60 text-center py-8">
-                {isArabic ? "لا توجد دفعات" : "No payments"}
-              </p>
-            ) : (
-              payments.map((payment) => {
-                const paymentData =
-                  typeof payment === "object" ? payment : null;
-                if (!paymentData) return null;
-
-                return (
-                  <div
-                    key={paymentData._id}
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-white">
-                          {paymentData.title[isArabic ? "ar" : "en"]}
-                        </h4>
-                        {paymentData.description && (
-                          <p className="text-sm text-white/70 mt-1">
-                            {paymentData.description[isArabic ? "ar" : "en"]}
-                          </p>
-                        )}
-                        <div className="flex gap-4 mt-2 text-xs text-white/60">
-                          <span>
-                            {copy.amount}: {paymentData.amount.toLocaleString()}{" "}
-                            {isArabic ? "ريال" : "SAR"}
-                          </span>
-                          <span>
-                            {copy.dueDate}:{" "}
-                            {new Date(paymentData.dueDate).toLocaleDateString(
-                              isArabic ? "ar-EG-u-ca-gregory" : "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              }
-                            )}
-                          </span>
-                          <span
-                            className={`${
-                              paymentData.status === "paid"
-                                ? "text-green-400"
-                                : paymentData.status === "due"
-                                ? "text-red-400"
-                                : paymentData.status === "due_soon"
-                                ? "text-yellow-400"
-                                : "text-blue-400"
-                            }`}
-                          >
-                            {copy.status}:{" "}
-                            {paymentData.status === "paid"
-                              ? isArabic
-                                ? "مدفوعة"
-                                : "Paid"
-                              : paymentData.status === "due"
-                              ? isArabic
-                                ? "مستحقة"
-                                : "Due"
-                              : paymentData.status === "due_soon"
-                              ? isArabic
-                                ? "مستحقة قريباً"
-                                : "Due Soon"
-                              : isArabic
-                              ? "قادمة"
-                              : "Upcoming"}
-                          </span>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                        onClick={async () => {
-                          if (
-                            confirm(
-                              isArabic
-                                ? "حذف هذه الدفعة؟"
-                                : "Delete this payment?"
-                            )
-                          ) {
-                            await deletePayment(paymentData._id);
-                            await loadProject();
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+      {activeTab === "payments" && project && (
+        <PaymentsTab
+          payments={payments}
+          onAddPayment={() => setPaymentModalOpen(true)}
+          onDeletePayment={async (paymentId) => {
+            await deletePayment(paymentId);
+            await loadProject();
+          }}
+        />
       )}
 
       {/* Modifications Tab */}
-      {activeTab === "modifications" && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <Button
-              onClick={() => setModificationModalOpen(true)}
-              className="rounded-full bg-primary px-6 py-3 text-black shadow-lg hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-              {copy.addModification}
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {modifications.length === 0 ? (
-              <p className="text-white/60 text-center py-8">
-                {isArabic ? "لا توجد تعديلات" : "No modifications"}
-              </p>
-            ) : (
-              modifications.map((mod) => {
-                const modData = typeof mod === "object" ? mod : null;
-                if (!modData) return null;
+      {activeTab === "modifications" && project && (
+        <ModificationsTab
+          modifications={modifications}
+          onAddModification={() => setModificationModalOpen(true)}
+          onAcceptModification={async (modificationId) => {
+            await updateModification(modificationId, {
+              status: "accepted",
+            });
+            await loadProject();
+          }}
+          onRejectModification={async (modificationId) => {
+            if (
+              !confirm(
+                isArabic
+                  ? "هل أنت متأكد من رفض هذا التعديل؟"
+                  : "Are you sure you want to reject this modification?"
+              )
+            ) {
+              return;
+            }
+            await updateModification(modificationId, {
+              status: "rejected",
+            });
+            await loadProject();
+          }}
+          onRequestExtraPayment={(modificationId) => {
+            setSelectedModificationId(modificationId);
+            setExtraPaymentModalOpen(true);
+          }}
+          onAcceptExtraPayment={async (modificationId) => {
+            const modification = modifications.find((mod) => {
+              const modData = typeof mod === "object" ? mod : null;
+              return modData?._id === modificationId;
+            });
+            const modData =
+              typeof modification === "object" ? modification : null;
+            const extraPaymentAmount = modData?.extraPaymentAmount || 0;
 
-                return (
-                  <div
-                    key={modData._id}
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-semibold text-white">
-                            {modData.title}
-                          </h4>
-                          <span
-                            className={`text-xs px-2 py-1 rounded-full ${
-                              modData.priority === "critical"
-                                ? "bg-red-500/20 text-red-300"
-                                : modData.priority === "high"
-                                ? "bg-orange-500/20 text-orange-300"
-                                : modData.priority === "medium"
-                                ? "bg-yellow-500/20 text-yellow-300"
-                                : "bg-blue-500/20 text-blue-300"
-                            }`}
-                          >
-                            {modData.priority}
-                          </span>
-                          <span
-                            className={`text-xs px-2 py-1 rounded-full ${
-                              modData.status === "completed"
-                                ? "bg-green-500/20 text-green-300"
-                                : modData.status === "accepted"
-                                ? "bg-blue-500/20 text-blue-300"
-                                : modData.status === "rejected"
-                                ? "bg-red-500/20 text-red-300"
-                                : modData.status === "needs_extra_payment"
-                                ? "bg-orange-500/20 text-orange-300"
-                                : "bg-gray-500/20 text-gray-300"
-                            }`}
-                          >
-                            {modData.status === "completed"
-                              ? isArabic
-                                ? "مكتمل"
-                                : "Completed"
-                              : modData.status === "accepted"
-                              ? isArabic
-                                ? "موافق"
-                                : "Accepted"
-                              : modData.status === "needs_extra_payment"
-                              ? isArabic
-                                ? "يحتاج دفعة إضافية"
-                                : "Needs Extra Payment"
-                              : isArabic
-                              ? "معلق"
-                              : "Pending"}
-                          </span>
-                        </div>
-                        <p className="text-sm text-white/70 mt-1">
-                          {modData.description}
-                        </p>
-                        {/* Attached Files */}
-                        {modData.attachedFiles &&
-                          modData.attachedFiles.length > 0 && (
-                            <div className="mt-3 space-y-2">
-                              <p className="text-xs text-white/60 font-semibold">
-                                {isArabic
-                                  ? "الملفات المرفقة"
-                                  : "Attached Files"}
-                                :
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                {modData.attachedFiles.map(
-                                  (file, fileIndex) => (
-                                    <a
-                                      key={fileIndex}
-                                      href={file.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center gap-2 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-xs text-white/80 hover:bg-white/10 transition-colors"
-                                    >
-                                      <FileText className="h-4 w-4" />
-                                      <span className="truncate max-w-[200px]">
-                                        {file.fileName}
-                                      </span>
-                                      <Download className="h-3 w-3" />
-                                    </a>
-                                  )
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        {modData.extraPaymentAmount && (
-                          <p className="text-xs text-yellow-400 mt-2">
-                            {copy.extraPayment}:{" "}
-                            {modData.extraPaymentAmount.toLocaleString()}{" "}
-                            {isArabic ? "ريال" : "SAR"}
-                          </p>
-                        )}
-                        {modData.status === "needs_extra_payment" && (
-                          <p className="text-xs text-white/60 mt-2">
-                            {copy.costAccepted}:{" "}
-                            {modData.costAccepted
-                              ? isArabic
-                                ? "نعم"
-                                : "Yes"
-                              : isArabic
-                              ? "لا"
-                              : "No"}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {modData.status === "pending" && isAdmin && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                handleAcceptModification(modData._id)
-                              }
-                              className="rounded-full bg-green-500/20 px-4 py-2 text-green-300 hover:bg-green-500/30"
-                              title={copy.accept}
-                            >
-                              <CheckCircle className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-                              {copy.accept}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                handleRejectModification(modData._id)
-                              }
-                              className="rounded-full bg-red-500/20 px-4 py-2 text-red-300 hover:bg-red-500/30"
-                              title={copy.reject}
-                            >
-                              <XCircle className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-                              {copy.reject}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedModificationId(modData._id);
-                                setExtraPaymentModalOpen(true);
-                              }}
-                              className="rounded-full bg-orange-500/20 px-4 py-2 text-orange-300 hover:bg-orange-500/30"
-                              title={copy.requestExtraPayment}
-                            >
-                              <DollarSign className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-                              {copy.requestExtraPayment}
-                            </Button>
-                          </>
-                        )}
-                        {modData.status === "accepted" && isAdmin && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedModificationId(modData._id);
-                              setExtraPaymentModalOpen(true);
-                            }}
-                            className="rounded-full bg-orange-500/20 px-4 py-2 text-orange-300 hover:bg-orange-500/30"
-                            title={copy.requestExtraPayment}
-                          >
-                            <DollarSign className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-                            {copy.requestExtraPayment}
-                          </Button>
-                        )}
-                        {modData.status === "needs_extra_payment" &&
-                          !modData.costAccepted && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                handleAcceptExtraPayment(modData._id)
-                              }
-                              className="rounded-full bg-blue-500/20 px-4 py-2 text-blue-300 hover:bg-blue-500/30"
-                              title={copy.clientAcceptedPayment}
-                            >
-                              <CheckCircle className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-                              {copy.clientAcceptedPayment}
-                            </Button>
-                          )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                          onClick={async () => {
-                            if (
-                              confirm(
-                                isArabic
-                                  ? "حذف هذا التعديل؟"
-                                  : "Delete this modification?"
-                              )
-                            ) {
-                              await deleteModification(modData._id);
-                              await loadProject();
-                            }
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+            const shouldAddToTotal =
+              !modData?.costAccepted && extraPaymentAmount > 0;
+
+            await updateModification(modificationId, {
+              costAccepted: true,
+              status: "accepted",
+            });
+
+            if (shouldAddToTotal && project) {
+              await updateProject(project._id, {
+                totalCost: project.totalCost + extraPaymentAmount,
+              });
+            }
+
+            await loadProject();
+          }}
+          onDeleteModification={async (modificationId) => {
+            await deleteModification(modificationId);
+            await loadProject();
+          }}
+        />
       )}
+
+      {/* Team Tab */}
+      {activeTab === "team" && project && (
+        <TeamTab
+          project={project}
+          onAddEmployee={() => setAddEmployeeModalOpen(true)}
+          onRemoveEmployee={async (employeeId) => {
+            if (!project) return;
+            setSubmitting(true);
+            try {
+              const currentEmployees = Array.isArray(project.employees)
+                ? project.employees
+                    .map((e: any) =>
+                      typeof e === "object" && e !== null && "_id" in e
+                        ? e._id
+                        : e
+                    )
+                    .filter((id: string) => id !== employeeId)
+                : [];
+              await updateProject(project._id, {
+                employees: currentEmployees,
+              });
+              await loadProject();
+            } catch (err) {
+              console.error("Failed to remove employee:", err);
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+          submitting={submitting}
+        />
+      )}
+
+      {/* Add Employee Modal */}
+      <AddEmployeeModal
+        isOpen={addEmployeeModalOpen}
+        onClose={() => {
+          setAddEmployeeModalOpen(false);
+          setSelectedEmployeeId("");
+        }}
+        project={project}
+        users={users}
+        selectedEmployeeId={selectedEmployeeId}
+        setSelectedEmployeeId={setSelectedEmployeeId}
+        onSubmit={async () => {
+          if (!project || !selectedEmployeeId) {
+            alert(isArabic ? "يرجى اختيار موظف" : "Please select an employee");
+            return;
+          }
+          setSubmitting(true);
+          try {
+            const currentEmployees = Array.isArray(project.employees)
+              ? project.employees.map((e: any) =>
+                  typeof e === "object" && e !== null && "_id" in e ? e._id : e
+                )
+              : [];
+            await updateProject(project._id, {
+              employees: [...currentEmployees, selectedEmployeeId],
+            });
+            setAddEmployeeModalOpen(false);
+            setSelectedEmployeeId("");
+            await loadProject();
+          } catch (err) {
+            console.error("Failed to add employee:", err);
+          } finally {
+            setSubmitting(false);
+          }
+        }}
+        submitting={submitting}
+      />
 
       {/* Payment Modal */}
-      {paymentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8">
-          <div className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-[32px] border border-white/10 bg-gradient-to-br from-[#040812] via-[#050a18] to-[#01030a] p-8 text-white shadow-[0_40px_120px_rgba(0,0,0,0.7)] space-y-6">
-            <div className="flex items-start justify-between">
-              <h3 className="text-xl font-bold">{copy.addPayment}</h3>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setPaymentModalOpen(false)}
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Input
-                placeholder={isArabic ? "العنوان (EN)" : "Title (EN)"}
-                className={inputStyles}
-                value={paymentForm.titleEn}
-                onChange={(e) =>
-                  setPaymentForm({ ...paymentForm, titleEn: e.target.value })
-                }
-              />
-              <Input
-                placeholder={isArabic ? "العنوان (AR)" : "Title (AR)"}
-                className={inputStyles}
-                value={paymentForm.titleAr}
-                onChange={(e) =>
-                  setPaymentForm({ ...paymentForm, titleAr: e.target.value })
-                }
-              />
-              <Textarea
-                placeholder={isArabic ? "الوصف (EN)" : "Description (EN)"}
-                className={inputStyles}
-                value={paymentForm.descriptionEn}
-                onChange={(e) =>
-                  setPaymentForm({
-                    ...paymentForm,
-                    descriptionEn: e.target.value,
-                  })
-                }
-              />
-              <Textarea
-                placeholder={isArabic ? "الوصف (AR)" : "Description (AR)"}
-                className={inputStyles}
-                value={paymentForm.descriptionAr}
-                onChange={(e) =>
-                  setPaymentForm({
-                    ...paymentForm,
-                    descriptionAr: e.target.value,
-                  })
-                }
-              />
-              <div>
-                <label className="mb-2 block text-sm text-white/80">
-                  {copy.amount} <span className="text-red-400">*</span>
-                </label>
-                <Input
-                  type="number"
-                  placeholder={copy.amount}
-                  className={inputStyles}
-                  value={paymentForm.amount}
-                  onChange={(e) =>
-                    setPaymentForm({
-                      ...paymentForm,
-                      amount: Number(e.target.value),
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm text-white/80">
-                  {copy.dueDate} <span className="text-red-400">*</span>
-                </label>
-                <Input
-                  type="date"
-                  placeholder={copy.dueDate}
-                  className={inputStyles}
-                  value={paymentForm.dueDate}
-                  onChange={(e) =>
-                    setPaymentForm({ ...paymentForm, dueDate: e.target.value })
-                  }
-                />
-              </div>
-              <select
-                className={inputStyles}
-                value={paymentForm.status}
-                onChange={(e) =>
-                  setPaymentForm({
-                    ...paymentForm,
-                    status: e.target.value as PaymentStatus,
-                  })
-                }
-              >
-                <option value="upcoming">
-                  {isArabic ? "قادمة" : "Upcoming"}
-                </option>
-                <option value="due_soon">
-                  {isArabic ? "مستحقة قريباً" : "Due Soon"}
-                </option>
-                <option value="due">{isArabic ? "مستحقة" : "Due"}</option>
-                <option value="paid">{isArabic ? "مدفوعة" : "Paid"}</option>
-              </select>
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="ghost"
-                onClick={() => setPaymentModalOpen(false)}
-                className="rounded-full border border-white/20 px-6 text-white/70 hover:bg-white/5"
-              >
-                {copy.cancel}
-              </Button>
-              <Button
-                onClick={handleCreatePayment}
-                disabled={submitting}
-                className="rounded-full bg-primary px-6 text-black shadow-lg hover:bg-primary/90"
-              >
-                {copy.save}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PaymentModal
+        isOpen={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        form={paymentForm}
+        setForm={setPaymentForm}
+        onSubmit={handleCreatePayment}
+        submitting={submitting}
+      />
 
       {/* Modification Modal */}
-      {modificationModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8">
-          <div className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-[32px] border border-white/10 bg-gradient-to-br from-[#040812] via-[#050a18] to-[#01030a] p-8 text-white shadow-[0_40px_120px_rgba(0,0,0,0.7)] space-y-6">
-            <div className="flex items-start justify-between">
-              <h3 className="text-xl font-bold">{copy.addModification}</h3>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setModificationModalOpen(false)}
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="mb-2 block text-sm text-white/80">
-                  {copy.modificationTitle}{" "}
-                  <span className="text-red-400">*</span>
-                </label>
-                <Input
-                  placeholder={copy.modificationTitle}
-                  className={inputStyles}
-                  value={modificationForm.title}
-                  onChange={(e) =>
-                    setModificationForm({
-                      ...modificationForm,
-                      title: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm text-white/80">
-                  {copy.description} <span className="text-red-400">*</span>
-                </label>
-                <Textarea
-                  placeholder={copy.description}
-                  className={inputStyles}
-                  value={modificationForm.description}
-                  onChange={(e) =>
-                    setModificationForm({
-                      ...modificationForm,
-                      description: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              {/* File Upload */}
-              <div>
-                <label className="mb-2 block text-sm text-white/80">
-                  {isArabic
-                    ? "رفع ملفات مرفقة (اختياري)"
-                    : "Upload attached files (optional)"}
-                </label>
-                <div
-                  className={`border-2 border-dashed border-white/20 rounded-xl p-6 text-center cursor-pointer transition-all hover:bg-white/5 ${
-                    isArabic ? "rtl" : "ltr"
-                  }`}
-                  onClick={() => modificationFileInputRef.current?.click()}
-                >
-                  <input
-                    ref={modificationFileInputRef}
-                    type="file"
-                    multiple
-                    className="hidden"
-                    onChange={handleModificationFileSelect}
-                    accept=".pdf,.jpg,.jpeg,.png,.zip,.doc,.docx"
-                  />
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="bg-primary/10 p-4 rounded-full">
-                      <Paperclip className="w-6 h-6 text-primary" />
-                    </div>
-                    <p className="text-sm text-white/70">
-                      {isArabic
-                        ? "اسحب الملفات هنا أو انقر للتصفح"
-                        : "Drag files here or click to browse"}
-                    </p>
-                    <p className="text-xs text-white/50">
-                      {isArabic
-                        ? "PDF, JPG, PNG, ZIP, DOC, DOCX (الحد الأقصى 5 ملفات)"
-                        : "PDF, JPG, PNG, ZIP, DOC, DOCX (Maximum 5 files)"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Selected Files Count */}
-                {modificationAttachedFiles.length > 0 && (
-                  <p className="mt-2 text-sm text-white/60 text-center">
-                    {isArabic
-                      ? `${modificationAttachedFiles.length} / 5 ملفات`
-                      : `${modificationAttachedFiles.length} / 5 files`}
-                  </p>
-                )}
-
-                {/* Selected Files List */}
-                {modificationAttachedFiles.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    {modificationAttachedFiles.map((file, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between bg-white/5 rounded-lg p-3"
-                      >
-                        <span className="text-sm text-white/80 truncate flex-1">
-                          {file.name}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleRemoveModificationFile(index)}
-                          className="h-8 w-8 text-red-400 hover:text-red-300"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="ghost"
-                onClick={() => setModificationModalOpen(false)}
-                className="rounded-full border border-white/20 px-6 text-white/70 hover:bg-white/5"
-              >
-                {copy.cancel}
-              </Button>
-              <Button
-                onClick={handleCreateModification}
-                disabled={submitting}
-                className="rounded-full bg-primary px-6 text-black shadow-lg hover:bg-primary/90"
-              >
-                {copy.save}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ModificationModal
+        isOpen={modificationModalOpen}
+        onClose={() => {
+          setModificationModalOpen(false);
+          setModificationForm({ title: "", description: "" });
+          setModificationAttachedFiles([]);
+          if (modificationFileInputRef.current) {
+            modificationFileInputRef.current.value = "";
+          }
+        }}
+        form={modificationForm}
+        setForm={setModificationForm}
+        attachedFiles={modificationAttachedFiles}
+        onFileSelect={handleModificationFileSelect}
+        onRemoveFile={handleRemoveModificationFile}
+        onSubmit={handleCreateModification}
+        submitting={submitting}
+      />
 
       {/* Extra Payment Modal */}
-      {extraPaymentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8">
-          <div className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-[32px] border border-white/10 bg-gradient-to-br from-[#040812] via-[#050a18] to-[#01030a] p-8 text-white shadow-[0_40px_120px_rgba(0,0,0,0.7)] space-y-6">
-            <div className="flex items-start justify-between">
-              <h3 className="text-xl font-bold">{copy.requestExtraPayment}</h3>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  setExtraPaymentModalOpen(false);
-                  setSelectedModificationId(null);
-                  setExtraPaymentForm({ amount: 0 });
-                }}
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="mb-2 block text-sm text-white/80">
-                  {copy.extraPaymentAmount}{" "}
-                  <span className="text-red-400">*</span>
-                </label>
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder={copy.extraPaymentAmount}
-                  className={inputStyles}
-                  value={extraPaymentForm.amount}
-                  onChange={(e) =>
-                    setExtraPaymentForm({
-                      amount: Number(e.target.value),
-                    })
-                  }
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setExtraPaymentModalOpen(false);
-                  setSelectedModificationId(null);
-                  setExtraPaymentForm({ amount: 0 });
-                }}
-                className="rounded-full border border-white/20 px-6 text-white/70 hover:bg-white/5"
-              >
-                {copy.cancel}
-              </Button>
-              <Button
-                onClick={handleRequestExtraPayment}
-                disabled={submitting || extraPaymentForm.amount <= 0}
-                className="rounded-full bg-primary px-6 text-black shadow-lg hover:bg-primary/90"
-              >
-                {copy.save}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ExtraPaymentModal
+        isOpen={extraPaymentModalOpen}
+        onClose={() => {
+          setExtraPaymentModalOpen(false);
+          setSelectedModificationId(null);
+          setExtraPaymentForm({ amount: 0 });
+        }}
+        amount={extraPaymentForm.amount}
+        setAmount={(amount) => setExtraPaymentForm({ amount })}
+        onSubmit={handleRequestExtraPayment}
+        submitting={submitting}
+      />
 
       {/* Client Files Tab */}
       {activeTab === "clientFiles" && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <Button
-              onClick={() => {
-                setFileUploadType("client");
-                setFileUploadModalOpen(true);
-              }}
-              className="rounded-full bg-primary px-6 py-3 text-black shadow-lg hover:bg-primary/90"
-            >
-              <Upload className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-              {copy.uploadFile}
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {clientFiles.length === 0 ? (
-              <p className="text-white/60 text-center py-8">{copy.noFiles}</p>
-            ) : (
-              clientFiles.map((file) => (
-                <div
-                  key={file._id}
-                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-white">
-                        {file.fileName}
-                      </h4>
-                      <p className="text-xs text-white/60 mt-1">
-                        {copy.fileType}: {file.fileType}
-                      </p>
-                      {file.fileSize && (
-                        <p className="text-xs text-white/60">
-                          {(file.fileSize / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => window.open(file.fileUrl, "_blank")}
-                        className="h-8 w-8 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
-                        title="Download"
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={async () => {
-                          if (
-                            confirm(
-                              isArabic ? "حذف هذا الملف؟" : "Delete this file?"
-                            )
-                          ) {
-                            await deleteProjectFile(file._id);
-                            await loadProject();
-                          }
-                        }}
-                        className="h-8 w-8 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        <ClientFilesTab
+          files={clientFiles}
+          onUpload={() => {
+            setFileUploadType("client");
+            setFileUploadModalOpen(true);
+          }}
+          onDelete={async (fileId) => {
+            await deleteProjectFile(fileId);
+            await loadProject();
+          }}
+        />
       )}
 
       {/* Company Files Tab */}
       {activeTab === "companyFiles" && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <Button
-              onClick={() => {
-                setFileUploadType("company");
-                setFileUploadModalOpen(true);
-              }}
-              className="rounded-full bg-primary px-6 py-3 text-black shadow-lg hover:bg-primary/90"
-            >
-              <Upload className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-              {copy.uploadFile}
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {companyFiles.length === 0 ? (
-              <p className="text-white/60 text-center py-8">{copy.noFiles}</p>
-            ) : (
-              companyFiles.map((file) => (
-                <div
-                  key={file._id}
-                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-white">
-                        {file.fileName}
-                      </h4>
-                      <p className="text-xs text-white/60 mt-1">
-                        {copy.fileType}: {file.fileType}
-                      </p>
-                      {file.fileSize && (
-                        <p className="text-xs text-white/60">
-                          {(file.fileSize / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => window.open(file.fileUrl, "_blank")}
-                        className="h-8 w-8 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
-                        title="Download"
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={async () => {
-                          if (
-                            confirm(
-                              isArabic ? "حذف هذا الملف؟" : "Delete this file?"
-                            )
-                          ) {
-                            await deleteProjectFile(file._id);
-                            await loadProject();
-                          }
-                        }}
-                        className="h-8 w-8 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        <CompanyFilesTab
+          files={companyFiles}
+          onUpload={() => {
+            setFileUploadType("company");
+            setFileUploadModalOpen(true);
+          }}
+          onDelete={async (fileId) => {
+            await deleteProjectFile(fileId);
+            await loadProject();
+          }}
+        />
       )}
 
       {/* File Upload Modal */}
-      {fileUploadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8">
-          <div className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-[32px] border border-white/10 bg-gradient-to-br from-[#040812] via-[#050a18] to-[#01030a] p-8 text-white shadow-[0_40px_120px_rgba(0,0,0,0.7)] space-y-6">
-            <div className="flex items-start justify-between">
-              <h3 className="text-xl font-bold">{copy.uploadFile}</h3>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  setFileUploadModalOpen(false);
-                  setFileUploadType("client");
-                }}
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="space-y-4">
-              <div className="mb-4">
-                <label className="mb-2 block text-sm text-white/80">
-                  {copy.uploadedBy}:{" "}
-                  {fileUploadType === "client"
-                    ? isArabic
-                      ? "الزبون"
-                      : "Client"
-                    : isArabic
-                    ? "الشركة"
-                    : "Company"}
-                </label>
-              </div>
-              <FileUpload
-                accept="*/*"
-                maxSize={50}
-                onUploadComplete={async (url) => {
-                  if (!project) return;
-                  setSubmitting(true);
-                  try {
-                    const userId =
-                      typeof project.userId === "object" &&
-                      project.userId !== null
-                        ? project.userId._id
-                        : project.userId;
+      <FileUploadModal
+        isOpen={fileUploadModalOpen}
+        onClose={() => {
+          setFileUploadModalOpen(false);
+          setFileUploadType("client");
+        }}
+        uploadType={fileUploadType}
+        onUploadComplete={async (url) => {
+          if (!project) return;
+          setSubmitting(true);
+          try {
+            const userId =
+              typeof project.userId === "object" && project.userId !== null
+                ? project.userId._id
+                : project.userId;
 
-                    // Extract file name and type from URL or use defaults
-                    const fileName = url.split("/").pop() || "file";
-                    const fileType = fileName.split(".").pop() || "unknown";
+            // Extract file name and type from URL or use defaults
+            const fileName = url.split("/").pop() || "file";
+            const fileType = fileName.split(".").pop() || "unknown";
 
-                    await createProjectFile({
-                      projectId: project._id,
-                      userId: userId as string,
-                      fileUrl: url,
-                      fileName: fileName,
-                      fileType: fileType,
-                      uploadedBy: fileUploadType,
-                    });
+            await createProjectFile({
+              projectId: project._id,
+              userId: userId as string,
+              fileUrl: url,
+              fileName: fileName,
+              fileType: fileType,
+              uploadedBy: fileUploadType,
+            });
 
-                    setFileUploadModalOpen(false);
-                    setFileUploadType("client");
-                    await loadProject();
-                  } catch (err) {
-                    console.error("Failed to upload file:", err);
-                    alert(isArabic ? "فشل رفع الملف" : "Failed to upload file");
-                  } finally {
-                    setSubmitting(false);
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+            setFileUploadModalOpen(false);
+            setFileUploadType("client");
+            await loadProject();
+          } catch (err) {
+            console.error("Failed to upload file:", err);
+            alert(isArabic ? "فشل رفع الملف" : "Failed to upload file");
+          } finally {
+            setSubmitting(false);
+          }
+        }}
+        submitting={submitting}
+      />
       {/* Floating Refresh Button - Only show when project is loaded */}
       {project && (
         <Button

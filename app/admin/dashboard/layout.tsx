@@ -12,6 +12,7 @@ import { QuoteProvider } from "@/contexts/QuoteContext";
 import { ServiceProvider } from "@/contexts/ServiceContext";
 import { PortfolioProvider } from "@/contexts/PortfolioContext";
 import { ProjectProvider } from "@/contexts/ProjectContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { token, initializing } = useAuth();
@@ -55,23 +56,27 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <ServiceProvider>
           <PortfolioProvider>
             <ProjectProvider>
-            <div className="relative min-h-screen overflow-hidden bg-[#030617] text-slate-100">
-              <BackgroundDecor />
-              <div className="relative z-10 flex h-screen max-h-screen overflow-hidden">
-                <AdminSidebar
-                  open={sidebarOpen}
-                  onClose={() => setSidebarOpen(false)}
-                  locale={locale}
-                />
-                <div className="flex flex-1 min-w-0 flex-col">
-                  <AdminHeader onToggleSidebar={() => setSidebarOpen(true)} />
-                  <main className="dashboard-scroll flex-1 min-h-0 overflow-y-auto px-6 py-8">
-                    {children}
-                  </main>
-                  <AdminFooter />
+              <NotificationProvider>
+                <div className="relative min-h-screen overflow-hidden bg-[#030617] text-slate-100">
+                  <BackgroundDecor />
+                  <div className="relative z-10 flex h-screen max-h-screen overflow-hidden">
+                    <AdminSidebar
+                      open={sidebarOpen}
+                      onClose={() => setSidebarOpen(false)}
+                      locale={locale}
+                    />
+                    <div className="flex flex-1 min-w-0 flex-col">
+                      <AdminHeader
+                        onToggleSidebar={() => setSidebarOpen(true)}
+                      />
+                      <main className="dashboard-scroll flex-1 min-h-0 overflow-y-auto px-6 py-8">
+                        {children}
+                      </main>
+                      <AdminFooter />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </NotificationProvider>
             </ProjectProvider>
           </PortfolioProvider>
         </ServiceProvider>

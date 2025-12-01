@@ -1,11 +1,12 @@
 "use client";
 
-import { Menu, Bell, LogOut } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import Logo from "@/components/ui/logo";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { NotificationDropdown } from "./NotificationDropdown";
 
 export function AdminHeader({
   onToggleSidebar,
@@ -43,10 +44,7 @@ export function AdminHeader({
         >
           {locale === "en" ? "AR" : "EN"}
         </button>
-        <button className="relative rounded-full border border-white/10 bg-white/[0.05] p-2 text-white/80 transition hover:bg-white/10">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-rose-400 animate-pulse" />
-        </button>
+        <NotificationDropdown />
         {admin && (
           <Button
             variant="ghost"

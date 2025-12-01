@@ -90,7 +90,13 @@ export type AdminProject = {
   logo?: string;
   userId:
     | string
-    | { _id: string; name: string; companyName: string; email: string };
+    | {
+        _id: string;
+        name: string;
+        companyName: string;
+        email: string;
+        phone?: string;
+      };
   totalCost: number;
   payments: AdminPayment[] | string[];
   modifications: AdminModification[] | string[];
@@ -120,7 +126,17 @@ interface ProjectContextValue {
   projects: AdminProject[];
   loading: boolean;
   error: string | null;
-  fetchProjects: () => Promise<void>;
+  pagination: {
+    totalCount: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  } | null;
+  fetchProjects: (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }) => Promise<void>;
   getProject: (id: string) => Promise<AdminProject | null>;
   createProject: (payload: ProjectPayload) => Promise<void>;
   updateProject: (
@@ -162,23 +178,38 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const [projects, setProjects] = useState<AdminProject[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<{
+    totalCount: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  } | null>(null);
 
-  const fetchProjectsList = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetchProjects();
-      const projectsData = Array.isArray(response)
-        ? response
-        : response?.data || [];
-      setProjects(Array.isArray(projectsData) ? projectsData : []);
-    } catch (err) {
-      setError(typeof err === "string" ? err : "Failed to load projects");
-      setProjects([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const fetchProjectsList = useCallback(
+    async (params?: { page?: number; limit?: number; search?: string }) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetchProjects(params);
+        const projectsData = Array.isArray(response)
+          ? response
+          : response?.data || [];
+        setProjects(Array.isArray(projectsData) ? projectsData : []);
+        if (response?.pagination) {
+          setPagination(response.pagination);
+        } else {
+          setPagination(null);
+        }
+      } catch (err) {
+        setError(typeof err === "string" ? err : "Failed to load projects");
+        setProjects([]);
+        setPagination(null);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const getProject = useCallback(async (id: string) => {
     setLoading(true);
@@ -469,6 +500,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       projects,
       loading,
       error,
+      pagination,
       fetchProjects: fetchProjectsList,
       getProject,
       createProject,
@@ -491,6 +523,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       projects,
       loading,
       error,
+      pagination,
       fetchProjectsList,
       getProject,
       createProject,

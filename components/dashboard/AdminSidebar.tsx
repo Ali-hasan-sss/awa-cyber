@@ -10,10 +10,12 @@ import {
   Layers,
   Briefcase,
   FileText,
+  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "../ui/logo";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 const navItems = [
   {
@@ -51,6 +53,11 @@ const navItems = [
     icon: FileText,
     label: { en: "Projects", ar: "المشاريع" },
   },
+  {
+    href: "/admin/dashboard/revenue",
+    icon: DollarSign,
+    label: { en: "Revenue & Expenses", ar: "الإيرادات والمصاريف" },
+  },
 ];
 
 export function AdminSidebar({
@@ -64,11 +71,20 @@ export function AdminSidebar({
 }) {
   const pathname = usePathname();
   const { admin } = useAuth();
+  const { notifications } = useNotifications();
   const isEmployee = admin?.role === "employee";
+
+  const hasUnreadQuoteNotifications = notifications.some(
+    (n) => n.data?.type === "quotation_request" && !n.read
+  );
 
   // Filter nav items based on role
   const filteredNavItems = isEmployee
-    ? navItems.filter((item) => item.href === "/admin/dashboard/projects")
+    ? navItems.filter(
+        (item) =>
+          item.href === "/admin/dashboard/projects" ||
+          item.href === "/admin/dashboard/revenue"
+      )
     : navItems;
 
   const content = (
@@ -98,6 +114,7 @@ export function AdminSidebar({
           {filteredNavItems.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href; // Exact match for other pages
+            const isQuotesTab = item.href === "/admin/dashboard/quotes";
             return (
               <Link
                 key={item.href}
@@ -119,8 +136,16 @@ export function AdminSidebar({
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/10 text-white">
                   <Icon className={cn("h-4 w-4", active && "text-slate-900")} />
                 </span>
-                <span className={cn(active && "text-slate-900")}>
-                  {item.label[locale]}
+                <span
+                  className={cn(
+                    "flex items-center gap-2",
+                    active && "text-slate-900"
+                  )}
+                >
+                  <span>{item.label[locale]}</span>
+                  {isQuotesTab && hasUnreadQuoteNotifications && (
+                    <span className="inline-flex h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_0_4px_rgba(248,113,113,0.35)] ltr:ml-1 rtl:mr-1" />
+                  )}
                 </span>
               </Link>
             );

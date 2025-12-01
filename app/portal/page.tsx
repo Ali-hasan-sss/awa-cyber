@@ -27,6 +27,7 @@ function PortalContent() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     loadProject();
@@ -72,6 +73,8 @@ function PortalContent() {
         // Update project ID to trigger re-fetch in child components
         // The components will re-fetch data via useEffect when projectId changes
         setSelectedProjectId(project._id);
+        // Force re-render of child components by updating refresh key
+        setRefreshKey((prev) => prev + 1);
 
         // Restore scroll position after a brief delay to ensure DOM has updated
         setTimeout(() => {
@@ -126,9 +129,16 @@ function PortalContent() {
       <PortalHeader />
       <PortalHero />
       <PortalFeatures />
-      <PortalPayments projectId={selectedProjectId} />
-      <PortalFiles projectId={selectedProjectId} />
-      <PortalModifications projectId={selectedProjectId} />
+      <PortalPayments
+        key={`payments-${refreshKey}`}
+        projectId={selectedProjectId}
+      />
+      <PortalFiles key={`files-${refreshKey}`} projectId={selectedProjectId} />
+      <PortalModifications
+        key={`modifications-${refreshKey}`}
+        projectId={selectedProjectId}
+        refreshKey={refreshKey}
+      />
       <PortalFooter />
       {/* Floating Refresh Button */}
       <Button

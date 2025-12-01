@@ -34,6 +34,7 @@ import { API_BASE_URL } from "@/lib/config/api";
 
 interface ModificationsProps {
   projectId: string;
+  refreshKey?: number;
 }
 
 const formatDate = (date: string, isArabic: boolean) => {
@@ -86,7 +87,10 @@ const getStatusBadge = (status: string, isArabic: boolean) => {
   return statusMap[status] || statusMap.pending;
 };
 
-export default function Modifications({ projectId }: ModificationsProps) {
+export default function Modifications({
+  projectId,
+  refreshKey,
+}: ModificationsProps) {
   const { locale, messages } = useLanguage();
   const isArabic = locale === "ar";
   const { createModification, getProject, updateModification } = useProjects();
@@ -105,7 +109,7 @@ export default function Modifications({ projectId }: ModificationsProps) {
 
   useEffect(() => {
     loadModifications();
-  }, [projectId]);
+  }, [projectId, refreshKey]);
 
   const loadModifications = async () => {
     if (!projectId) return;

@@ -71,8 +71,12 @@ export type ProjectPayload = {
 };
 
 // Project APIs
-export const fetchProjects = async () => {
-  const { data } = await apiClient.get("/api/projects");
+export const fetchProjects = async (params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}) => {
+  const { data } = await apiClient.get("/api/projects", { params });
   return data;
 };
 
@@ -96,6 +100,19 @@ export const updateProjectApi = async (
 
 export const deleteProjectApi = async (id: string) => {
   await apiClient.delete(`/api/projects/${id}`);
+};
+
+// Get all payments
+export const getAllPaymentsApi = async (params?: {
+  projectId?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: "due" | "due_soon" | "paid" | "upcoming";
+  page?: number;
+  limit?: number;
+}) => {
+  const { data } = await apiClient.get("/api/projects/payments/all", { params });
+  return data;
 };
 
 // Payment APIs
