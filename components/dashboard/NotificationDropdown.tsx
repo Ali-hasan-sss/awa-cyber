@@ -75,15 +75,15 @@ export function NotificationDropdown() {
 
   const dropdownContent = (
     <div className="fixed top-16 ltr:right-4 rtl:left-4 z-[2147483647] w-80 rounded-2xl border border-white/10 bg-[#060e1f] shadow-2xl">
-      <div className="flex items-center justify-between border-b border-white/10 p-4">
-        <h3 className="text-sm font-semibold text-white">
-          {isArabic ? "التنبيهات" : "Notifications"}
-        </h3>
-        <div className="flex items-center gap-2">
-          {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
+          <div className="flex items-center justify-between border-b border-white/10 p-4">
+            <h3 className="text-sm font-semibold text-white">
+              {isArabic ? "التنبيهات" : "Notifications"}
+            </h3>
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
               onClick={() => {
                 // Fire-and-forget – لا نوقف الواجهة لو فشل الطلب
                 markAllAsRead().catch((err) => {
@@ -93,33 +93,33 @@ export function NotificationDropdown() {
                   );
                 });
               }}
-              className="text-xs text-white/60 hover:text-white"
-            >
-              {isArabic ? "قراءة الكل" : "Mark all read"}
-            </Button>
-          )}
-          <button
-            onClick={() => setIsOpen(false)}
-            className="rounded-full p-1 text-white/60 hover:bg-white/10 hover:text-white"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="max-h-96 overflow-y-auto">
-        {notifications.length === 0 ? (
-          <div className="p-8 text-center text-sm text-white/60">
-            {isArabic ? "لا توجد تنبيهات" : "No notifications"}
+                  className="text-xs text-white/60 hover:text-white"
+                >
+                  {isArabic ? "قراءة الكل" : "Mark all read"}
+                </Button>
+              )}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="rounded-full p-1 text-white/60 hover:bg-white/10 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
-        ) : (
-          <div className="divide-y divide-white/5">
-            {notifications.map((notification) => (
-              <div
-                key={notification.id}
+
+          <div className="max-h-96 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="p-8 text-center text-sm text-white/60">
+                {isArabic ? "لا توجد تنبيهات" : "No notifications"}
+              </div>
+            ) : (
+              <div className="divide-y divide-white/5">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
                 className={`cursor-pointer p-4 transition hover:bg-white/5 ${
-                  !notification.read ? "bg-white/[0.02]" : ""
-                }`}
+                      !notification.read ? "bg-white/[0.02]" : ""
+                    }`}
                 onClick={() =>
                   handleNotificationClick({
                     id: notification.id,
@@ -127,42 +127,42 @@ export function NotificationDropdown() {
                     data: notification.data,
                   })
                 }
-              >
-                <div className="flex items-start gap-3">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-white">
-                      {notification.title}
-                    </p>
-                    <p className="mt-1 text-xs text-white/60">
-                      {notification.body}
-                    </p>
-                    <p className="mt-1 text-xs text-white/40">
-                      {formatTime(notification.timestamp)}
-                    </p>
-                  </div>
-                  {!notification.read && (
-                    <button
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-white">
+                          {notification.title}
+                        </p>
+                        <p className="mt-1 text-xs text-white/60">
+                          {notification.body}
+                        </p>
+                        <p className="mt-1 text-xs text-white/40">
+                          {formatTime(notification.timestamp)}
+                        </p>
+                      </div>
+                      {!notification.read && (
+                        <button
                       onClick={(e) => {
                         e.stopPropagation();
                         markAsRead(notification.id);
                       }}
-                      className="rounded-full p-1 text-white/40 hover:bg-white/10 hover:text-white"
-                    >
-                      <Check className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
+                          className="rounded-full p-1 text-white/40 hover:bg-white/10 hover:text-white"
+                        >
+                          <Check className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-        )}
-      </div>
 
-      {notifications.length > 0 && (
-        <div className="border-t border-white/10 p-2">
-          <Button
-            variant="ghost"
-            size="sm"
+          {notifications.length > 0 && (
+            <div className="border-t border-white/10 p-2">
+              <Button
+                variant="ghost"
+                size="sm"
             onClick={async () => {
               const confirmed = window.confirm(
                 isArabic
@@ -173,12 +173,12 @@ export function NotificationDropdown() {
               await clearNotifications();
             }}
             className="w-full text-xs text-primary hover:text-white"
-          >
+              >
             {isArabic ? "حذف الكل" : "Delete all"}
-          </Button>
+              </Button>
+            </div>
+          )}
         </div>
-      )}
-    </div>
   );
 
   return (

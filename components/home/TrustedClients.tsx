@@ -6,9 +6,31 @@ import {
   Cloud,
   Server,
   Cpu,
+  LaptopMinimal,
   type LucideIcon,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useState, useEffect, useMemo } from "react";
+import { getSectionsByPage } from "@/lib/api/sections";
+
+// Helper function to strip HTML tags and convert to plain text
+const stripHtml = (html: string): string => {
+  if (typeof window === "undefined") {
+    // Server-side: simple regex approach
+    return html
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .trim();
+  }
+  // Client-side: use DOM
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
 
 const iconMap: Record<string, LucideIcon> = {
   Building2,
@@ -16,30 +38,154 @@ const iconMap: Record<string, LucideIcon> = {
   Cloud,
   Server,
   Cpu,
+  LaptopMinimal,
 };
 
 export default function TrustedClients() {
-  const { messages } = useLanguage();
-  const section = messages?.clientsSection ?? {};
+  const { locale, messages } = useLanguage();
+  const [sections, setSections] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const brands: { name: string; tagline?: string; icon?: string }[] =
-    section.brands ?? [];
+  // Load sections when locale changes
+  useEffect(() => {
+    loadSections();
+  }, [locale]);
+
+  const loadSections = async () => {
+    try {
+      setLoading(true);
+      const data = await getSectionsByPage("home", locale);
+      setSections(data);
+    } catch (error) {
+      console.error("Error loading sections:", error);
+      setSections([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get third section (index 2) or fallback
+  const clientsSection = useMemo(() => {
+    if (sections.length < 3) return null;
+    return sections[2]; // Third section
+  }, [sections]);
+
+  // Get section title
+  const sectionTitle = useMemo(() => {
+    if (clientsSection?.title) {
+      // API returns title as string (already localized) or as object with locale keys
+      const title =
+        typeof clientsSection.title === "string"
+          ? clientsSection.title
+          : clientsSection.title[locale] || clientsSection.title.en || "";
+      // Try to split title for highlight if it contains common patterns
+      const parts = title.split(/(\s+)/);
+      if (parts.length > 2) {
+        // Take first part as line1, last part as highlight
+        const line1 = parts.slice(0, -2).join("");
+        const highlight = parts.slice(-2).join("").trim();
+        return { line1, highlight };
+      }
+      return { line1: title, highlight: "" };
+    }
+    return null;
+  }, [clientsSection, locale]);
+
+  // Get section description (convert HTML to text)
+  const sectionDescription = useMemo(() => {
+    if (clientsSection?.description) {
+      // API returns description as string (already localized) or as object with locale keys
+      const desc =
+        typeof clientsSection.description === "string"
+          ? clientsSection.description
+          : clientsSection.description[locale] ||
+            clientsSection.description.en ||
+            "";
+      return stripHtml(desc);
+    }
+    return null;
+  }, [clientsSection, locale]);
+
+  // Get features as brands
+  const brands = useMemo(() => {
+    if (clientsSection?.features && clientsSection.features.length > 0) {
+      return clientsSection.features
+        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+        .map((feature: any) => ({
+          name:
+            typeof feature.name === "string"
+              ? feature.name
+              : feature.name?.[locale] || feature.name?.en || "",
+          tagline:
+            typeof feature.description === "string"
+              ? feature.description
+              : feature.description?.[locale] || feature.description?.en || "",
+          icon: feature.icon || "Building2",
+        }));
+    }
+    return [];
+  }, [clientsSection, locale]);
+
+  // Fallback to messages if no section data
+  const fallbackSection = messages?.clientsSection ?? {};
+  const fallbackBrands: { name: string; tagline?: string; icon?: string }[] =
+    fallbackSection.brands ?? [];
+
+  // Show loading state
+  if (loading) {
+    return (
+      <section className="relative bg-gradient-to-b from-white to-primary/5 py-20 md:py-28">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-muted-foreground">Loading...</div>
+        </div>
+      </section>
+    );
+  }
+
+  // Determine which data to use: API data or fallback
+  const displayTitle = sectionTitle || fallbackSection.title;
+  const displayDescription = sectionDescription || fallbackSection.description;
+  const displayBrands = brands.length
+    ? brands
+    : fallbackBrands.length
+    ? fallbackBrands
+    : defaultBrands;
 
   return (
     <section className="relative bg-gradient-to-b from-white to-primary/5 py-20 md:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 max-w-3xl mx-auto rtl:text-center">
-          {section.eyebrow && (
-            <p className="text-xs font-semibold tracking-[0.4em] text-primary uppercase">
-              {section.eyebrow}
-            </p>
-          )}
-
-          {section.title ? (
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-              {section.title.line1}{" "}
-              <span className="text-primary">{section.title.highlight}</span>
-            </h2>
+          {displayTitle ? (
+            typeof displayTitle === "object" && "line1" in displayTitle ? (
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                {displayTitle.line1}{" "}
+                {displayTitle.highlight && (
+                  <span className="text-primary">{displayTitle.highlight}</span>
+                )}
+              </h2>
+            ) : (
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                {typeof displayTitle === "string" ? displayTitle : ""}
+              </h2>
+            )
+          ) : fallbackSection.title ? (
+            typeof fallbackSection.title === "object" &&
+            "line1" in fallbackSection.title ? (
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                {fallbackSection.title.line1}{" "}
+                {fallbackSection.title.highlight && (
+                  <span className="text-primary">
+                    {fallbackSection.title.highlight}
+                  </span>
+                )}
+              </h2>
+            ) : (
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                {typeof fallbackSection.title === "string"
+                  ? fallbackSection.title
+                  : ""}
+              </h2>
+            )
           ) : (
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
               Trusted by industry-leading{" "}
@@ -47,35 +193,40 @@ export default function TrustedClients() {
             </h2>
           )}
 
-          {section.description && (
+          {displayDescription && (
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-              {section.description}
+              {displayDescription}
             </p>
           )}
         </div>
 
         <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {(brands.length ? brands : defaultBrands).map((brand) => {
-            const Icon = iconMap[brand.icon ?? "Building2"] ?? Building2;
-            return (
-              <div
-                key={brand.name}
-                className="rounded-2xl border border-border bg-white/80 px-6 py-8 text-center shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg"
-              >
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <Icon className="h-7 w-7" />
-                </div>
-                <p className="font-semibold text-lg text-foreground">
-                  {brand.name}
-                </p>
-                {brand.tagline && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {brand.tagline}
+          {displayBrands.map(
+            (
+              brand: { name: string; tagline?: string; icon?: string },
+              idx: number
+            ) => {
+              const Icon = iconMap[brand.icon ?? "Building2"] ?? Building2;
+              return (
+                <div
+                  key={brand.name || idx}
+                  className="rounded-2xl border border-border bg-white/80 px-6 py-8 text-center shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <Icon className="h-7 w-7" />
+                  </div>
+                  <p className="font-semibold text-lg text-foreground">
+                    {brand.name}
                   </p>
-                )}
-              </div>
-            );
-          })}
+                  {brand.tagline && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {brand.tagline}
+                    </p>
+                  )}
+                </div>
+              );
+            }
+          )}
         </div>
       </div>
     </section>

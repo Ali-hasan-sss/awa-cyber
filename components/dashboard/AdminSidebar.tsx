@@ -11,6 +11,7 @@ import {
   Briefcase,
   FileText,
   DollarSign,
+  FileCode,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "../ui/logo";
@@ -47,6 +48,11 @@ const navItems = [
     href: "/admin/dashboard/portfolios",
     icon: Briefcase,
     label: { en: "Portfolios", ar: "معرض الأعمال" },
+  },
+  {
+    href: "/admin/dashboard/sections",
+    icon: FileCode,
+    label: { en: "Page Sections", ar: "أقسام الصفحات" },
   },
   {
     href: "/admin/dashboard/projects",

@@ -10,6 +10,28 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useState, useEffect, useMemo } from "react";
+import { getSectionsByPage } from "@/lib/api/sections";
+import { serviceIconComponents } from "@/lib/serviceIconOptions";
+
+// Helper function to strip HTML tags and convert to plain text
+const stripHtml = (html: string): string => {
+  if (typeof window === "undefined") {
+    // Server-side: simple regex approach
+    return html
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .trim();
+  }
+  // Client-side: use DOM
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
 
 type Step = {
   number: string;
@@ -31,6 +53,7 @@ type SectionContent = {
 };
 
 const iconMap: Record<string, LucideIcon> = {
+  ...serviceIconComponents,
   MessageCircle,
   Search,
   Settings,
@@ -80,13 +103,121 @@ const fallbackContent: SectionContent = {
 };
 
 export default function HowItWorks() {
-  const { messages } = useLanguage();
-  const section: SectionContent = {
-    ...fallbackContent,
-    ...(messages?.howItWorksSection ?? {}),
+  const { locale, messages } = useLanguage();
+  const fallbackSection = messages?.howItWorksSection ?? {};
+  const [sections, setSections] = useState<any[]>([]);
+  const [sectionsLoading, setSectionsLoading] = useState(true);
+
+  // Load sections when locale changes
+  useEffect(() => {
+    loadSections();
+  }, [locale]);
+
+  const loadSections = async () => {
+    try {
+      setSectionsLoading(true);
+      const data = await getSectionsByPage("home", locale);
+      setSections(data);
+    } catch (error) {
+      console.error("Error loading sections:", error);
+      setSections([]);
+    } finally {
+      setSectionsLoading(false);
+    }
   };
 
-  const steps = section.steps ?? fallbackContent.steps!;
+  // Get seventh section (index 6) or fallback
+  const howItWorksSection = useMemo(() => {
+    if (sections.length < 7) return null;
+    return sections[6]; // Seventh section
+  }, [sections]);
+
+  // Get section title
+  const sectionTitle = useMemo(() => {
+    if (howItWorksSection?.title) {
+      // API returns title as string (already localized) or as object with locale keys
+      const title =
+        typeof howItWorksSection.title === "string"
+          ? howItWorksSection.title
+          : howItWorksSection.title[locale] || howItWorksSection.title.en || "";
+      // Try to split title for highlight if it contains common patterns
+      const parts = title.split(/(\s+)/);
+      if (parts.length > 2) {
+        // Take first part as line1, middle as highlight, last as line2
+        const line1 = parts.slice(0, -2).join("");
+        const highlight = parts.slice(-2, -1).join("").trim();
+        const line2 = parts.slice(-1).join("").trim();
+        return { line1, highlight, line2 };
+      }
+      return { line1: title, highlight: "", line2: "" };
+    }
+    return null;
+  }, [howItWorksSection, locale]);
+
+  // Get section description (convert HTML to text)
+  const sectionDescription = useMemo(() => {
+    if (howItWorksSection?.description) {
+      // API returns description as string (already localized) or as object with locale keys
+      const desc =
+        typeof howItWorksSection.description === "string"
+          ? howItWorksSection.description
+          : howItWorksSection.description[locale] ||
+            howItWorksSection.description.en ||
+            "";
+      return stripHtml(desc);
+    }
+    return null;
+  }, [howItWorksSection, locale]);
+
+  // Get features as steps
+  const steps = useMemo(() => {
+    if (howItWorksSection?.features && howItWorksSection.features.length > 0) {
+      return howItWorksSection.features
+        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+        .map((feature: any, index: number) => ({
+          number: String(feature.order || index + 1),
+          title:
+            typeof feature.name === "string"
+              ? feature.name
+              : feature.name?.[locale] || feature.name?.en || "",
+          description:
+            typeof feature.description === "string"
+              ? feature.description
+              : feature.description?.[locale] || feature.description?.en || "",
+          icon: feature.icon || "MessageCircle",
+        }));
+    }
+    return fallbackContent.steps || [];
+  }, [howItWorksSection, locale]);
+
+  // Build section content
+  const section: SectionContent = useMemo(() => {
+    const content: SectionContent = {
+      ...fallbackContent,
+      ...fallbackSection,
+    };
+
+    // Use section title if available
+    if (sectionTitle) {
+      content.title = sectionTitle;
+    } else if (fallbackSection.title) {
+      content.title = fallbackSection.title;
+    }
+
+    // Use section description if available
+    if (sectionDescription) {
+      content.description = sectionDescription;
+    } else if (fallbackSection.description) {
+      content.description = fallbackSection.description;
+    }
+
+    // Use steps from features
+    if (steps.length > 0) {
+      content.steps = steps;
+    }
+
+    return content;
+  }, [sectionTitle, sectionDescription, steps, fallbackSection]);
 
   return (
     <section className="relative bg-gradient-to-b from-gray-900 to-black py-20 md:py-28 text-white overflow-hidden">
@@ -96,17 +227,27 @@ export default function HowItWorks() {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-          {section.eyebrow && (
-            <p className="text-xs font-semibold tracking-[0.4em] text-primary uppercase">
-              {section.eyebrow}
-            </p>
-          )}
-
           {section.title ? (
             <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-              {section.title.line1}{" "}
-              <span className="text-primary">{section.title.highlight}</span>{" "}
-              {section.title.line2}
+              {typeof section.title === "object" && "line1" in section.title ? (
+                <>
+                  {section.title.line1}{" "}
+                  {section.title.highlight && (
+                    <span className="text-primary">
+                      {section.title.highlight}
+                    </span>
+                  )}{" "}
+                  {section.title.line2}
+                </>
+              ) : typeof section.title === "string" ? (
+                section.title
+              ) : (
+                fallbackContent.title?.line1 +
+                " " +
+                fallbackContent.title?.highlight +
+                " " +
+                fallbackContent.title?.line2
+              )}
             </h2>
           ) : (
             <h2 className="text-4xl md:text-5xl font-bold leading-tight">
@@ -124,7 +265,7 @@ export default function HowItWorks() {
         {/* Steps Grid */}
         <div className="relative">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((step, idx) => {
+            {steps.map((step: Step, idx: number) => {
               const Icon =
                 iconMap[step.icon ?? "MessageCircle"] ?? MessageCircle;
               const isLast = idx === steps.length - 1;
@@ -167,10 +308,10 @@ export default function HowItWorks() {
         </div>
 
         {/* CTA Button */}
-        {section.cta && (
+        {fallbackSection.cta && (
           <div className="mt-12 flex justify-center">
             <Button className="inline-flex items-center gap-2 rounded-full bg-primary text-black px-8 py-4 text-sm font-semibold hover:bg-primary/90 shadow-lg">
-              {section.cta}
+              {fallbackSection.cta}
               <ArrowRight className="h-4 w-4 rtl:rotate-180" />
             </Button>
           </div>

@@ -12,6 +12,28 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useState, useEffect, useMemo } from "react";
+import { getSectionsByPage } from "@/lib/api/sections";
+import { serviceIconComponents } from "@/lib/serviceIconOptions";
+
+// Helper function to strip HTML tags and convert to plain text
+const stripHtml = (html: string): string => {
+  if (typeof window === "undefined") {
+    // Server-side: simple regex approach
+    return html
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .trim();
+  }
+  // Client-side: use DOM
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
 
 type Tool = {
   name: string;
@@ -39,6 +61,7 @@ type SectionContent = {
 };
 
 const iconMap: Record<string, LucideIcon> = {
+  ...serviceIconComponents,
   Command,
   Terminal,
   Globe,
@@ -118,28 +141,182 @@ const fallbackContent: SectionContent = {
 };
 
 export default function SecurityTechnologies() {
-  const { messages } = useLanguage();
-  const section: SectionContent = {
-    ...fallbackContent,
-    ...(messages?.technologiesSection ?? {}),
+  const { locale, messages } = useLanguage();
+  const fallbackSection = messages?.technologiesSection ?? {};
+  const [sections, setSections] = useState<any[]>([]);
+  const [sectionsLoading, setSectionsLoading] = useState(true);
+
+  // Load sections when locale changes
+  useEffect(() => {
+    loadSections();
+  }, [locale]);
+
+  const loadSections = async () => {
+    try {
+      setSectionsLoading(true);
+      const data = await getSectionsByPage("home", locale);
+      setSections(data);
+    } catch (error) {
+      console.error("Error loading sections:", error);
+      setSections([]);
+    } finally {
+      setSectionsLoading(false);
+    }
   };
 
-  const tools = section.tools ?? fallbackContent.tools!;
-  const stats = section.stats ?? fallbackContent.stats!;
+  // Get second section (index 1) for stats
+  const secondSection = useMemo(() => {
+    if (sections.length < 2) return null;
+    return sections[1]; // Second section
+  }, [sections]);
+
+  // Get eighth section (index 7) or fallback
+  const technologiesSection = useMemo(() => {
+    if (sections.length < 8) return null;
+    return sections[7]; // Eighth section
+  }, [sections]);
+
+  // Get section title
+  const sectionTitle = useMemo(() => {
+    if (technologiesSection?.title) {
+      // API returns title as string (already localized) or as object with locale keys
+      const title =
+        typeof technologiesSection.title === "string"
+          ? technologiesSection.title
+          : technologiesSection.title[locale] ||
+            technologiesSection.title.en ||
+            "";
+      // Try to split title for highlight if it contains common patterns
+      const parts = title.split(/(\s+)/);
+      if (parts.length > 2) {
+        // Take first part as line1, last part as highlight
+        const line1 = parts.slice(0, -2).join("");
+        const highlight = parts.slice(-2).join("").trim();
+        return { line1, highlight };
+      }
+      return { line1: title, highlight: "" };
+    }
+    return null;
+  }, [technologiesSection, locale]);
+
+  // Get section description (convert HTML to text)
+  const sectionDescription = useMemo(() => {
+    if (technologiesSection?.description) {
+      // API returns description as string (already localized) or as object with locale keys
+      const desc =
+        typeof technologiesSection.description === "string"
+          ? technologiesSection.description
+          : technologiesSection.description[locale] ||
+            technologiesSection.description.en ||
+            "";
+      return stripHtml(desc);
+    }
+    return null;
+  }, [technologiesSection, locale]);
+
+  // Get features as tools
+  const tools = useMemo(() => {
+    if (
+      technologiesSection?.features &&
+      technologiesSection.features.length > 0
+    ) {
+      return technologiesSection.features
+        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+        .map((feature: any) => ({
+          name:
+            typeof feature.name === "string"
+              ? feature.name
+              : feature.name?.[locale] || feature.name?.en || "",
+          description:
+            typeof feature.description === "string"
+              ? feature.description
+              : feature.description?.[locale] || feature.description?.en || "",
+          category: undefined, // No category from API
+          icon: feature.icon || "Shield",
+        }));
+    }
+    return fallbackContent.tools || [];
+  }, [technologiesSection, locale]);
+
+  // Get features from second section as stats
+  const stats = useMemo(() => {
+    if (secondSection?.features && secondSection.features.length > 0) {
+      return secondSection.features
+        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+        .map((feature: any) => ({
+          value:
+            typeof feature.name === "string"
+              ? feature.name
+              : feature.name?.[locale] || feature.name?.en || "",
+          label:
+            typeof feature.description === "string"
+              ? feature.description
+              : feature.description?.[locale] || feature.description?.en || "",
+        }));
+    }
+    return fallbackContent.stats || [];
+  }, [secondSection, locale]);
+
+  // Build section content
+  const section: SectionContent = useMemo(() => {
+    const content: SectionContent = {
+      ...fallbackContent,
+      ...fallbackSection,
+    };
+
+    // Use section title if available
+    if (sectionTitle) {
+      content.title = sectionTitle;
+    } else if (fallbackSection.title) {
+      content.title = fallbackSection.title;
+    }
+
+    // Use section description if available
+    if (sectionDescription) {
+      content.description = sectionDescription;
+    } else if (fallbackSection.description) {
+      content.description = fallbackSection.description;
+    }
+
+    // Use tools from features
+    if (tools.length > 0) {
+      content.tools = tools;
+    }
+
+    return content;
+  }, [sectionTitle, sectionDescription, tools, fallbackSection]);
 
   return (
     <section className="relative bg-white py-20 md:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          {section.eyebrow && (
-            <p className="text-xs font-semibold tracking-[0.4em] text-primary uppercase">
-              {section.eyebrow}
-            </p>
+          {section.title ? (
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+              {typeof section.title === "object" && "line1" in section.title ? (
+                <>
+                  {section.title.line1}{" "}
+                  {section.title.highlight && (
+                    <span className="text-primary">
+                      {section.title.highlight}
+                    </span>
+                  )}
+                </>
+              ) : typeof section.title === "string" ? (
+                section.title
+              ) : (
+                fallbackContent.title?.line1 +
+                " " +
+                fallbackContent.title?.highlight
+              )}
+            </h2>
+          ) : (
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+              {fallbackContent.title?.line1}{" "}
+              <span className="text-primary">
+                {fallbackContent.title?.highlight}
+              </span>
+            </h2>
           )}
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
-            {section.title?.line1}{" "}
-            <span className="text-primary">{section.title?.highlight}</span>
-          </h2>
           {section.description && (
             <p className="text-base md:text-lg text-muted-foreground">
               {section.description}
@@ -148,21 +325,8 @@ export default function SecurityTechnologies() {
         </div>
 
         <div className="mt-12 bg-gradient-to-b from-primary/20 via-white to-white rounded-[36px] p-6 md:p-8 shadow-lg border border-primary/10">
-          <div className="text-center space-y-2 mb-8">
-            {section.toolsTitle && (
-              <h3 className="text-2xl font-semibold text-foreground">
-                {section.toolsTitle}
-              </h3>
-            )}
-            {section.toolsSubtitle && (
-              <p className="text-sm text-muted-foreground">
-                {section.toolsSubtitle}
-              </p>
-            )}
-          </div>
-
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {tools.map((tool, idx) => {
+            {tools.map((tool: Tool, idx: number) => {
               const Icon = iconMap[tool.icon ?? "Shield"] ?? Shield;
               return (
                 <div
@@ -190,7 +354,7 @@ export default function SecurityTechnologies() {
         </div>
 
         <div className="mt-10 rounded-full bg-white shadow-lg border border-border/60 px-6 py-6 md:px-12 flex flex-col gap-6 md:flex-row md:items-center md:justify-between text-center">
-          {stats.map((stat, idx) => (
+          {stats.map((stat: Stat, idx: number) => (
             <div key={`${stat.label}-${idx}`} className="space-y-1">
               <p className="text-3xl font-bold text-primary">{stat.value}</p>
               <p className="text-sm uppercase tracking-wide text-muted-foreground">

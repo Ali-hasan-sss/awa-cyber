@@ -11,6 +11,28 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useState, useEffect, useMemo } from "react";
+import { getSectionsByPage } from "@/lib/api/sections";
+import { serviceIconComponents } from "@/lib/serviceIconOptions";
+
+// Helper function to strip HTML tags and convert to plain text
+const stripHtml = (html: string): string => {
+  if (typeof window === "undefined") {
+    // Server-side: simple regex approach
+    return html
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .trim();
+  }
+  // Client-side: use DOM
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
 
 type Feature = {
   title: string;
@@ -40,6 +62,7 @@ type SectionContent = {
 };
 
 const iconMap: Record<string, LucideIcon> = {
+  ...serviceIconComponents,
   Award,
   ShieldCheck,
   Headphones,
@@ -94,11 +117,152 @@ const fallbackContent: SectionContent = {
 };
 
 export default function WhyChooseUs() {
-  const { messages } = useLanguage();
-  const section: SectionContent = {
-    ...fallbackContent,
-    ...(messages?.whyChooseSection ?? {}),
+  const { locale, messages } = useLanguage();
+  const fallbackSection = messages?.whyChooseSection ?? {};
+  const [sections, setSections] = useState<any[]>([]);
+  const [sectionsLoading, setSectionsLoading] = useState(true);
+
+  // Load sections when locale changes
+  useEffect(() => {
+    loadSections();
+  }, [locale]);
+
+  const loadSections = async () => {
+    try {
+      setSectionsLoading(true);
+      const data = await getSectionsByPage("home", locale);
+      setSections(data);
+    } catch (error) {
+      console.error("Error loading sections:", error);
+      setSections([]);
+    } finally {
+      setSectionsLoading(false);
+    }
   };
+
+  // Get sixth section (index 5) or fallback
+  const whyChooseSection = useMemo(() => {
+    if (sections.length < 6) return null;
+    return sections[5]; // Sixth section
+  }, [sections]);
+
+  // Get section title
+  const sectionTitle = useMemo(() => {
+    if (whyChooseSection?.title) {
+      // API returns title as string (already localized) or as object with locale keys
+      const title =
+        typeof whyChooseSection.title === "string"
+          ? whyChooseSection.title
+          : whyChooseSection.title[locale] || whyChooseSection.title.en || "";
+      // Try to split title for highlight if it contains common patterns
+      const parts = title.split(/(\s+)/);
+      if (parts.length > 2) {
+        // Take first part as line1, last part as highlight
+        const line1 = parts.slice(0, -2).join("");
+        const highlight = parts.slice(-2).join("").trim();
+        return { line1, highlight };
+      }
+      return { line1: title, highlight: "" };
+    }
+    return null;
+  }, [whyChooseSection, locale]);
+
+  // Get section description (convert HTML to text)
+  const sectionDescription = useMemo(() => {
+    if (whyChooseSection?.description) {
+      // API returns description as string (already localized) or as object with locale keys
+      const desc =
+        typeof whyChooseSection.description === "string"
+          ? whyChooseSection.description
+          : whyChooseSection.description[locale] ||
+            whyChooseSection.description.en ||
+            "";
+      return stripHtml(desc);
+    }
+    return null;
+  }, [whyChooseSection, locale]);
+
+  // Get features and split them
+  const allFeatures = useMemo(() => {
+    if (whyChooseSection?.features && whyChooseSection.features.length > 0) {
+      return whyChooseSection.features
+        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+        .map((feature: any) => ({
+          title:
+            typeof feature.name === "string"
+              ? feature.name
+              : feature.name?.[locale] || feature.name?.en || "",
+          description:
+            typeof feature.description === "string"
+              ? feature.description
+              : feature.description?.[locale] || feature.description?.en || "",
+          icon: feature.icon || "ShieldCheck",
+        }));
+    }
+    return [];
+  }, [whyChooseSection, locale]);
+
+  // First two features are for badges, rest for side display
+  const badgeFeature = allFeatures.length > 0 ? allFeatures[0] : null;
+  const experienceFeature = allFeatures.length > 1 ? allFeatures[1] : null;
+  const sideFeatures = allFeatures.length > 2 ? allFeatures.slice(2) : [];
+
+  // Build section content
+  const section: SectionContent = useMemo(() => {
+    const content: SectionContent = {
+      ...fallbackContent,
+      ...fallbackSection,
+    };
+
+    // Use section title if available
+    if (sectionTitle) {
+      content.title = sectionTitle;
+    }
+
+    // Use section description if available
+    if (sectionDescription) {
+      content.description = sectionDescription;
+    }
+
+    // Use badge from first feature
+    if (badgeFeature) {
+      content.badge = {
+        label:
+          badgeFeature.title.split(" ").slice(0, 2).join(" ") || "Certified",
+        value: badgeFeature.description || badgeFeature.title,
+      };
+    }
+
+    // Use experience from second feature
+    if (experienceFeature) {
+      content.experience = {
+        value: experienceFeature.title,
+        label: experienceFeature.description || experienceFeature.title,
+      };
+    }
+
+    // Use remaining features for side display
+    if (sideFeatures.length > 0) {
+      content.features = sideFeatures;
+    } else if (fallbackSection.features) {
+      content.features = fallbackSection.features;
+    }
+
+    // Use section image if available
+    if (whyChooseSection?.images && whyChooseSection.images.length > 0) {
+      content.image = whyChooseSection.images[0];
+    }
+
+    return content;
+  }, [
+    sectionTitle,
+    sectionDescription,
+    badgeFeature,
+    experienceFeature,
+    sideFeatures,
+    whyChooseSection,
+    fallbackSection,
+  ]);
 
   const features = section.features ?? fallbackContent.features!;
 
@@ -123,12 +287,20 @@ export default function WhyChooseUs() {
               {section.badge && (
                 <div className="absolute -top-4 ltr:-left-4 rtl:-right-4 flex items-center gap-3 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-black shadow-xl z-50">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/20 text-primary">
-                    <Award className="h-5 w-5" />
+                    {(() => {
+                      const BadgeIcon =
+                        badgeFeature?.icon && iconMap[badgeFeature.icon]
+                          ? iconMap[badgeFeature.icon]
+                          : Award;
+                      return <BadgeIcon className="h-5 w-5" />;
+                    })()}
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wide">
-                      {section.badge.label}
-                    </p>
+                    {section.badge.label && (
+                      <p className="text-xs uppercase tracking-wide">
+                        {section.badge.label}
+                      </p>
+                    )}
                     <p className="text-base font-bold">{section.badge.value}</p>
                   </div>
                 </div>
@@ -147,18 +319,32 @@ export default function WhyChooseUs() {
           </div>
 
           <div className="space-y-6 rtl:text-right">
-            {section.eyebrow && (
-              <p className="text-xs font-semibold tracking-[0.4em] text-primary uppercase">
-                {section.eyebrow}
+            {section.title && (
+              <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+                {typeof section.title === "object" &&
+                "line1" in section.title ? (
+                  <>
+                    {section.title.line1}{" "}
+                    {section.title.highlight && (
+                      <span className="text-primary">
+                        {section.title.highlight}
+                      </span>
+                    )}
+                  </>
+                ) : typeof section.title === "string" ? (
+                  section.title
+                ) : (
+                  fallbackContent.title?.line1 +
+                  " " +
+                  fallbackContent.title?.highlight
+                )}
+              </h2>
+            )}
+            {section.description && (
+              <p className="text-base md:text-lg text-white/80 leading-relaxed">
+                {section.description}
               </p>
             )}
-            <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-              {section.title?.line1}{" "}
-              <span className="text-primary">{section.title?.highlight}</span>
-            </h2>
-            <p className="text-base md:text-lg text-white/80 leading-relaxed">
-              {section.description}
-            </p>
 
             <div className="grid gap-5">
               {features.map((feature, idx) => {
