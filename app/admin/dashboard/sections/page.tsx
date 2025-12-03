@@ -18,6 +18,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import Image from "next/image";
 import {
   getSections,
   createSection,
@@ -62,6 +63,54 @@ const TrustedClientsSection = dynamic(() => import("./TrustedClients"), {
 });
 
 const SecurityServicesSection = dynamic(() => import("./SecurityServices"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
+const LatestProjectsSection = dynamic(() => import("./LatestProjects"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
+const WhyChooseUsSection = dynamic(() => import("./WhyChooseUs"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
+const HowItWorksSection = dynamic(() => import("./HowItWorks"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
+const SecurityTechnologiesSection = dynamic(
+  () => import("./SecurityTechnologies"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+        <div className="text-center text-white/60">Loading...</div>
+      </div>
+    ),
+  }
+);
+
+const SecurityModalSection = dynamic(() => import("./SecurityModal"), {
   ssr: false,
   loading: () => (
     <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
@@ -495,6 +544,16 @@ export default function SectionsManagementPage() {
     return filtered;
   }, [sections, filterPage]);
 
+  // Get additional sections (from index 9 onwards) for home page - same as SectionRenderer
+  const additionalSections = useMemo(() => {
+    if (filterPage !== "home") return [];
+    const homeSections = sections
+      .filter((s) => s.page === "home")
+      .sort((a, b) => a.order - b.order);
+    if (homeSections.length <= 9) return [];
+    return homeSections.slice(9); // From index 9 onwards
+  }, [sections, filterPage]);
+
   const getIconComponent = (iconName: string) => {
     if (iconName in serviceIconComponents) {
       const Icon = serviceIconComponents[iconName as ServiceIconKey];
@@ -579,120 +638,376 @@ export default function SectionsManagementPage() {
           <WhoWeAreSection />
           <TrustedClientsSection />
           <SecurityServicesSection />
+          <LatestProjectsSection />
+          <WhyChooseUsSection />
+          <HowItWorksSection />
+          <SecurityTechnologiesSection />
+          <SecurityModalSection />
         </>
       )}
 
-      {loading && (
-        <p className="text-sm text-white/60">
-          {isArabic ? "جاري التحميل..." : "Loading sections..."}
-        </p>
-      )}
+      {/* Hide traditional sections display when on home page - only show new section components */}
+      {filterPage !== "home" && (
+        <>
+          {loading && (
+            <p className="text-sm text-white/60">
+              {isArabic ? "جاري التحميل..." : "Loading sections..."}
+            </p>
+          )}
 
-      {!loading && filteredSections.length === 0 ? (
-        <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white/70">
-          {copy.noSections}
-        </p>
-      ) : (
-        <div className="space-y-4">
-          {filteredSections.map((section) => {
-            const pageLabel = pageOptions.find((p) => p.value === section.page);
-            return (
-              <div
-                key={section._id}
-                className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-white">
-                        {section.title[viewLocale]}
-                      </h3>
-                      {!section.isActive && (
-                        <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-300">
-                          {isArabic ? "غير نشط" : "Inactive"}
-                        </span>
+          {!loading && filteredSections.length === 0 ? (
+            <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white/70">
+              {copy.noSections}
+            </p>
+          ) : (
+            !loading &&
+            filteredSections.length > 0 && (
+              <div className="space-y-4">
+                {filteredSections.map((section) => {
+                  const pageLabel = pageOptions.find(
+                    (p) => p.value === section.page
+                  );
+                  return (
+                    <div
+                      key={section._id}
+                      className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-xl font-semibold text-white">
+                              {section.title[viewLocale]}
+                            </h3>
+                            {!section.isActive && (
+                              <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-300">
+                                {isArabic ? "غير نشط" : "Inactive"}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-white/60 mb-2">
+                            {pageLabel?.label[viewLocale]} • {copy.order}:{" "}
+                            {section.order}
+                          </p>
+                          <div
+                            className="text-sm text-white/80 prose prose-invert max-w-none mb-4"
+                            dangerouslySetInnerHTML={{
+                              __html: section.description[viewLocale],
+                            }}
+                          />
+                          {section.images && section.images.length > 0 && (
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
+                              {section.images.slice(0, 3).map((image, idx) => (
+                                <img
+                                  key={idx}
+                                  src={image}
+                                  alt={`Section image ${idx + 1}`}
+                                  className="w-full h-24 object-cover rounded-lg border border-white/10"
+                                />
+                              ))}
+                              {section.images.length > 3 && (
+                                <div className="flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.02] text-white/60 text-sm">
+                                  +{section.images.length - 3}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={() => openModal(section)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary hover:text-primary/80"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={() => handleDelete(section._id)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-400 hover:text-red-300"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {section.features && section.features.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-white/10">
+                          <h4 className="text-sm font-semibold text-white/80 mb-3">
+                            {copy.features} ({section.features.length})
+                          </h4>
+                          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                            {section.features
+                              .sort((a, b) => a.order - b.order)
+                              .map((feature, idx) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3"
+                                >
+                                  <div className="mt-1 text-primary">
+                                    {getIconComponent(feature.icon)}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-white">
+                                      {feature.name[viewLocale]}
+                                    </p>
+                                    <p className="text-xs text-white/60 mt-1">
+                                      {feature.description[viewLocale]}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
                       )}
                     </div>
-                    <p className="text-sm text-white/60 mb-2">
-                      {pageLabel?.label[viewLocale]} • {copy.order}:{" "}
-                      {section.order}
-                    </p>
-                    <div
-                      className="text-sm text-white/80 prose prose-invert max-w-none mb-4"
-                      dangerouslySetInnerHTML={{
-                        __html: section.description[viewLocale],
-                      }}
-                    />
-                    {section.images && section.images.length > 0 && (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
-                        {section.images.slice(0, 3).map((image, idx) => (
-                          <img
-                            key={idx}
-                            src={image}
-                            alt={`Section image ${idx + 1}`}
-                            className="w-full h-24 object-cover rounded-lg border border-white/10"
-                          />
-                        ))}
-                        {section.images.length > 3 && (
-                          <div className="flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.02] text-white/60 text-sm">
-                            +{section.images.length - 3}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => openModal(section)}
-                      variant="ghost"
-                      size="sm"
-                      className="text-primary hover:text-primary/80"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      onClick={() => handleDelete(section._id)}
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-400 hover:text-red-300"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                  );
+                })}
+              </div>
+            )
+          )}
+        </>
+      )}
 
-                {section.features && section.features.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-white/10">
-                    <h4 className="text-sm font-semibold text-white/80 mb-3">
-                      {copy.features} ({section.features.length})
-                    </h4>
-                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                      {section.features
-                        .sort((a, b) => a.order - b.order)
-                        .map((feature, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3"
-                          >
-                            <div className="mt-1 text-primary">
-                              {getIconComponent(feature.icon)}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-white">
-                                {feature.name[viewLocale]}
-                              </p>
-                              <p className="text-xs text-white/60 mt-1">
-                                {feature.description[viewLocale]}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
+      {/* Additional Sections (from index 9 onwards) - Same style as SectionRenderer */}
+      {filterPage === "home" && additionalSections.length > 0 && (
+        <div className="space-y-0">
+          {additionalSections.map((section, sectionIndex) => {
+            const isEven = sectionIndex % 2 === 0;
+            const isStyle1 = isEven; // Style 1 for even indices, Style 2 for odd indices
+
+            const sectionTitle =
+              typeof section.title === "string"
+                ? section.title
+                : section.title[viewLocale] || section.title.en || "";
+            const sectionDescription =
+              typeof section.description === "string"
+                ? section.description
+                : section.description[viewLocale] ||
+                  section.description.en ||
+                  "";
+            const mainImage =
+              section.images && section.images.length > 0
+                ? section.images[0]
+                : null;
+
+            return (
+              <section
+                key={section._id}
+                className={`py-20 md:py-28 rounded-3xl border border-white/10 mb-6 ${
+                  isStyle1
+                    ? "bg-white text-foreground"
+                    : "bg-gradient-to-b from-gray-900 to-black text-white"
+                }`}
+              >
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-white">
+                      {isArabic ? "قسم إضافي" : "Additional Section"}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() => openModal(section)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-primary hover:text-primary/80"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(section._id)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                )}
-              </div>
+                  <div
+                    className={`grid gap-12 lg:grid-cols-2 lg:items-center ${
+                      isStyle1 ? "" : "lg:grid-flow-dense"
+                    }`}
+                  >
+                    {/* Image Section */}
+                    {mainImage && (
+                      <div
+                        className={`relative ${
+                          isStyle1 ? "lg:order-1" : "lg:order-2"
+                        }`}
+                      >
+                        <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-border/20">
+                          <Image
+                            src={mainImage}
+                            alt={sectionTitle}
+                            width={640}
+                            height={480}
+                            className="w-full h-full object-cover"
+                            sizes="(max-width: 1024px) 100vw, 640px"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Content Section */}
+                    <div
+                      className={`space-y-8 ${
+                        isStyle1 ? "lg:order-2" : "lg:order-1"
+                      } ${isStyle1 ? "text-left" : "text-left rtl:text-right"}`}
+                    >
+                      {/* Title */}
+                      <h2
+                        className={`text-4xl md:text-5xl font-bold leading-tight ${
+                          isStyle1 ? "text-foreground" : "text-white"
+                        }`}
+                      >
+                        {sectionTitle}
+                      </h2>
+
+                      {/* Description */}
+                      {sectionDescription && (
+                        <div
+                          className={`text-base md:text-lg leading-relaxed ${
+                            isStyle1 ? "text-muted-foreground" : "text-white/80"
+                          }`}
+                          dangerouslySetInnerHTML={{
+                            __html: sectionDescription,
+                          }}
+                        />
+                      )}
+
+                      {/* Features */}
+                      {section.features && section.features.length > 0 && (
+                        <div className="grid gap-6 sm:grid-cols-2">
+                          {section.features
+                            .sort((a, b) => (a.order || 0) - (b.order || 0))
+                            .map((feature, idx) => {
+                              const featureName =
+                                typeof feature.name === "string"
+                                  ? feature.name
+                                  : feature.name[viewLocale] ||
+                                    feature.name.en ||
+                                    "";
+                              const featureDescription =
+                                typeof feature.description === "string"
+                                  ? feature.description
+                                  : feature.description[viewLocale] ||
+                                    feature.description.en ||
+                                    "";
+                              return (
+                                <div
+                                  key={idx}
+                                  className={`rounded-2xl border p-6 transition hover:shadow-lg ${
+                                    isStyle1
+                                      ? "border-border bg-white shadow-sm hover:border-primary/30"
+                                      : "border-white/10 bg-white/5 hover:bg-white/10"
+                                  }`}
+                                >
+                                  <div className="flex items-start gap-4">
+                                    {feature.icon && (
+                                      <div
+                                        className={`flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl ${
+                                          isStyle1
+                                            ? "bg-primary/10 text-primary"
+                                            : "bg-primary/15 text-primary"
+                                        }`}
+                                      >
+                                        {getIconComponent(feature.icon) || (
+                                          <div className="h-6 w-6" />
+                                        )}
+                                      </div>
+                                    )}
+                                    <div className="flex-1">
+                                      <h3
+                                        className={`text-lg font-semibold mb-2 ${
+                                          isStyle1
+                                            ? "text-foreground"
+                                            : "text-white"
+                                        }`}
+                                      >
+                                        {featureName}
+                                      </h3>
+                                      {featureDescription && (
+                                        <p
+                                          className={`text-sm leading-relaxed ${
+                                            isStyle1
+                                              ? "text-muted-foreground"
+                                              : "text-white/70"
+                                          }`}
+                                        >
+                                          {featureDescription}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      )}
+
+                      {/* Additional Images Grid */}
+                      {section.images && section.images.length > 1 && (
+                        <div className="grid grid-cols-2 gap-4 mt-8">
+                          {section.images.slice(1, 3).map((image, idx) => (
+                            <div
+                              key={idx}
+                              className="relative rounded-2xl overflow-hidden border border-border/20 shadow-lg"
+                            >
+                              <Image
+                                src={image}
+                                alt={`${sectionTitle} - Image ${idx + 2}`}
+                                width={300}
+                                height={200}
+                                className="w-full h-full object-cover"
+                                sizes="(max-width: 640px) 50vw, 300px"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </section>
             );
           })}
+        </div>
+      )}
+
+      {/* Add Section Button - Only show for home page */}
+      {filterPage === "home" && (
+        <div className="flex justify-center pt-8 pb-8">
+          <Button
+            onClick={() => {
+              // Reset form and set page to home
+              const homeSections = sections.filter((s) => s.page === "home");
+              const maxOrder =
+                homeSections.length > 0
+                  ? Math.max(...homeSections.map((s) => s.order))
+                  : 9;
+              setForm({
+                titleEn: "",
+                titleAr: "",
+                descriptionEn: "",
+                descriptionAr: "",
+                page: "home",
+                images: [],
+                features: [],
+                isActive: true,
+                order: maxOrder + 1,
+              });
+              setEditingId(null);
+              setFormModalOpen(true);
+              setFormError(null);
+            }}
+            className="rounded-full bg-primary px-8 py-6 text-black hover:bg-primary/90 text-lg font-semibold shadow-lg"
+            size="lg"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            {isArabic ? "إضافة قسم جديد" : "Add New Section"}
+          </Button>
         </div>
       )}
 
