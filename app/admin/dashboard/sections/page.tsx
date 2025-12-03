@@ -32,6 +32,43 @@ import {
   serviceIconComponents,
   ServiceIconKey,
 } from "@/lib/serviceIconOptions";
+import dynamic from "next/dynamic";
+
+const HeroSection = dynamic(() => import("./Hero"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
+const WhoWeAreSection = dynamic(() => import("./WhoWeAre"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
+const TrustedClientsSection = dynamic(() => import("./TrustedClients"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
+const SecurityServicesSection = dynamic(() => import("./SecurityServices"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
 
 type SectionFormState = {
   titleEn: string;
@@ -445,9 +482,17 @@ export default function SectionsManagementPage() {
   };
 
   const filteredSections = useMemo(() => {
-    return sections
+    let filtered = sections
       .filter((s) => s.page === filterPage)
       .sort((a, b) => a.order - b.order);
+
+    // Exclude the first three sections (hero, who we are, and trusted clients) when filtering by home page
+    // since they're displayed separately in their own components
+    if (filterPage === "home" && filtered.length > 0) {
+      filtered = filtered.slice(3);
+    }
+
+    return filtered;
   }, [sections, filterPage]);
 
   const getIconComponent = (iconName: string) => {
@@ -485,6 +530,7 @@ export default function SectionsManagementPage() {
         )}
       </div>
 
+      {/* Page Filter Tabs - Above Hero Section */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-3">
           <span className="text-sm text-white/70">{copy.filterByPage}</span>
@@ -525,6 +571,16 @@ export default function SectionsManagementPage() {
           </div>
         </div>
       </div>
+
+      {/* Hero Section - Only show when filtering by home page */}
+      {filterPage === "home" && (
+        <>
+          <HeroSection />
+          <WhoWeAreSection />
+          <TrustedClientsSection />
+          <SecurityServicesSection />
+        </>
+      )}
 
       {loading && (
         <p className="text-sm text-white/60">
