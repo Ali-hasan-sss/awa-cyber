@@ -9,6 +9,16 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          "var(--font-inter)",
+          "var(--font-cairo)",
+          "system-ui",
+          "sans-serif",
+        ],
+        cairo: ["var(--font-cairo)", "sans-serif"],
+        inter: ["var(--font-inter)", "sans-serif"],
+      },
       colors: {
         // AWA CYBER Brand Colors from the design
         primary: {

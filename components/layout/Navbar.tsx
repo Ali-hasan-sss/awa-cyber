@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -11,14 +12,80 @@ import Logo from "../ui/logo";
 export default function Navbar() {
   const { locale, setLocale, t } = useLanguage();
   const { user, admin, logout } = useAuth();
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDarkBackground, setIsDarkBackground] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
 
   const navLinks = [
+    { key: "nav.home", href: "/" },
     { key: "nav.services", href: "/services" },
     { key: "nav.portfolio", href: "/portfolio" },
     { key: "nav.about", href: "/about" },
     { key: "nav.contact", href: "/contact" },
   ];
+
+  // Detect background color behind navbar
+  useEffect(() => {
+    const checkBackgroundColor = () => {
+      if (!navRef.current) return;
+
+      const navRect = navRef.current.getBoundingClientRect();
+      // Check multiple points to get better accuracy
+      const checkPoints = [
+        { x: navRect.left + navRect.width / 2, y: navRect.bottom + 5 },
+        { x: navRect.left + navRect.width / 4, y: navRect.bottom + 5 },
+        { x: navRect.left + (navRect.width * 3) / 4, y: navRect.bottom + 5 },
+      ];
+
+      let totalLuminance = 0;
+      let validChecks = 0;
+
+      for (const point of checkPoints) {
+        const element = document.elementFromPoint(point.x, point.y);
+        if (element) {
+          const computedStyle = window.getComputedStyle(element);
+          const bgColor = computedStyle.backgroundColor;
+
+          // Extract RGB values
+          const rgbMatch = bgColor.match(/\d+/g);
+          if (rgbMatch && rgbMatch.length >= 3) {
+            const r = parseInt(rgbMatch[0]);
+            const g = parseInt(rgbMatch[1]);
+            const b = parseInt(rgbMatch[2]);
+
+            // Calculate luminance
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            totalLuminance += luminance;
+            validChecks++;
+          }
+        }
+      }
+
+      if (validChecks > 0) {
+        const avgLuminance = totalLuminance / validChecks;
+        // If average luminance is less than 0.5, it's a dark background
+        setIsDarkBackground(avgLuminance < 0.5);
+      }
+    };
+
+    // Check on mount and scroll
+    checkBackgroundColor();
+    const handleScroll = () => checkBackgroundColor();
+    const handleResize = () => checkBackgroundColor();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize);
+
+    // Also check after a short delay to ensure page is loaded
+    const timeout = setTimeout(checkBackgroundColor, 100);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(timeout);
+    };
+  }, [pathname]);
 
   const toggleLocale = () => {
     const newLocale = locale === "en" ? "ar" : "en";
@@ -45,9 +112,37 @@ export default function Navbar() {
     };
   }, [isMobileMenuOpen]);
 
+  const isActive = (href: string) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+    return pathname.startsWith(href);
+  };
+
+  const linkClassName = (href: string) => {
+    const active = isActive(href);
+    const baseClasses = "relative transition-colors font-medium";
+    const colorClasses = isDarkBackground
+      ? active
+        ? "text-primary"
+        : "text-white/90 hover:text-primary"
+      : active
+      ? "text-primary"
+      : "text-foreground hover:text-primary";
+
+    return `${baseClasses} ${colorClasses}`;
+  };
+
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/10 dark:bg-black/10 backdrop-blur-xl ">
+      <nav
+        ref={navRef}
+        className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl transition-colors ${
+          isDarkBackground
+            ? "bg-black/20 text-white"
+            : "bg-white/10 text-foreground"
+        }`}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
@@ -65,9 +160,12 @@ export default function Navbar() {
                 <Link
                   key={link.key}
                   href={link.href}
-                  className="text-foreground hover:text-primary transition-colors font-medium"
+                  className={linkClassName(link.href)}
                 >
                   {t(link.key)}
+                  {isActive(link.href) && (
+                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary" />
+                  )}
                 </Link>
               ))}
             </div>
@@ -76,7 +174,11 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-3">
               <button
                 onClick={toggleLocale}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-semibold transition-colors ${
+                  isDarkBackground
+                    ? "text-white/90 hover:text-primary"
+                    : "text-foreground hover:text-primary"
+                }`}
               >
                 <Globe className="h-4 w-4" />
                 <span className="uppercase">{nextLocaleLabel}</span>
@@ -119,7 +221,11 @@ export default function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-foreground hover:text-primary transition-colors"
+              className={`md:hidden p-2 transition-colors ${
+                isDarkBackground
+                  ? "text-white/90 hover:text-primary"
+                  : "text-foreground hover:text-primary"
+              }`}
               aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? (
@@ -185,9 +291,16 @@ export default function Navbar() {
                     key={link.key}
                     href={link.href}
                     onClick={closeMobileMenu}
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2"
+                    className={`text-lg font-medium transition-colors py-2 relative ${
+                      isActive(link.href)
+                        ? "text-primary"
+                        : "text-foreground hover:text-primary"
+                    }`}
                   >
                     {t(link.key)}
+                    {isActive(link.href) && (
+                      <span className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-full" />
+                    )}
                   </Link>
                 ))}
 

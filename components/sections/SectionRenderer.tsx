@@ -49,7 +49,11 @@ export default function SectionRenderer({
       setLoading(true);
       setError(null);
       const data = await getSectionsByPage(page, locale);
-      setSections(data);
+      // Sort sections by order to ensure correct indexing
+      const sortedData = data.sort(
+        (a: any, b: any) => (a.order || 0) - (b.order || 0)
+      );
+      setSections(sortedData);
     } catch (err: any) {
       setError(err.message || "Failed to load sections");
       console.error("Error loading sections:", err);
@@ -58,10 +62,16 @@ export default function SectionRenderer({
     }
   };
 
-  // Get sections from index 9 onwards (tenth section and above)
+  // Get sections from order 11 onwards (eleventh section and above)
+  // Skip order 10 (tenth section) as it's handled by Testimonials component
   const sectionsToRender = useMemo(() => {
-    if (sections.length <= 9) return [];
-    return sections.slice(9); // From index 9 onwards
+    if (sections.length === 0) return [];
+    // Filter out section with order 10 (tenth section - Testimonials)
+    // and get all sections with order > 10
+    return sections.filter((section: any) => {
+      const order = section.order || 0;
+      return order > 10; // Only sections after order 10
+    });
   }, [sections]);
 
   const getIconComponent = (iconName: string) => {

@@ -119,6 +119,60 @@ const SecurityModalSection = dynamic(() => import("./SecurityModal"), {
   ),
 });
 
+const TestimonialsSection = dynamic(() => import("./Testimonials"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
+const AboutHeroSection = dynamic(() => import("./AboutHero"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
+const PortfolioHeroSection = dynamic(() => import("./PortfolioHero"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
+const WhatWeOfferSection = dynamic(() => import("./WhatWeOffer"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
+const CallToActionSection = dynamic(() => import("./CallToAction"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
+const VideoSection = dynamic(() => import("./VideoSection"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
 type SectionFormState = {
   titleEn: string;
   titleAr: string;
@@ -643,132 +697,154 @@ export default function SectionsManagementPage() {
           <HowItWorksSection />
           <SecurityTechnologiesSection />
           <SecurityModalSection />
+          <TestimonialsSection />
         </>
       )}
 
-      {/* Hide traditional sections display when on home page - only show new section components */}
-      {filterPage !== "home" && (
+      {/* About Hero Section - Only show when filtering by about page */}
+      {filterPage === "about" && (
         <>
-          {loading && (
-            <p className="text-sm text-white/60">
-              {isArabic ? "جاري التحميل..." : "Loading sections..."}
-            </p>
-          )}
+          <AboutHeroSection />
+          <WhatWeOfferSection />
+          <CallToActionSection />
+          <VideoSection />
+        </>
+      )}
 
-          {!loading && filteredSections.length === 0 ? (
-            <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white/70">
-              {copy.noSections}
-            </p>
-          ) : (
-            !loading &&
-            filteredSections.length > 0 && (
-              <div className="space-y-4">
-                {filteredSections.map((section) => {
-                  const pageLabel = pageOptions.find(
-                    (p) => p.value === section.page
-                  );
-                  return (
-                    <div
-                      key={section._id}
-                      className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-xl font-semibold text-white">
-                              {section.title[viewLocale]}
-                            </h3>
-                            {!section.isActive && (
-                              <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-300">
-                                {isArabic ? "غير نشط" : "Inactive"}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-white/60 mb-2">
-                            {pageLabel?.label[viewLocale]} • {copy.order}:{" "}
-                            {section.order}
-                          </p>
-                          <div
-                            className="text-sm text-white/80 prose prose-invert max-w-none mb-4"
-                            dangerouslySetInnerHTML={{
-                              __html: section.description[viewLocale],
-                            }}
-                          />
-                          {section.images && section.images.length > 0 && (
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
-                              {section.images.slice(0, 3).map((image, idx) => (
-                                <img
-                                  key={idx}
-                                  src={image}
-                                  alt={`Section image ${idx + 1}`}
-                                  className="w-full h-24 object-cover rounded-lg border border-white/10"
-                                />
-                              ))}
-                              {section.images.length > 3 && (
-                                <div className="flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.02] text-white/60 text-sm">
-                                  +{section.images.length - 3}
-                                </div>
+      {/* Portfolio Hero Section - Only show when filtering by portfolio page */}
+      {filterPage === "portfolio" && (
+        <>
+          <PortfolioHeroSection />
+        </>
+      )}
+
+      {/* Hide traditional sections display when on home, about, or portfolio page - only show new section components */}
+      {filterPage !== "home" &&
+        filterPage !== "about" &&
+        filterPage !== "portfolio" && (
+          <>
+            {loading && (
+              <p className="text-sm text-white/60">
+                {isArabic ? "جاري التحميل..." : "Loading sections..."}
+              </p>
+            )}
+
+            {!loading && filteredSections.length === 0 ? (
+              <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white/70">
+                {copy.noSections}
+              </p>
+            ) : (
+              !loading &&
+              filteredSections.length > 0 && (
+                <div className="space-y-4">
+                  {filteredSections.map((section) => {
+                    const pageLabel = pageOptions.find(
+                      (p) => p.value === section.page
+                    );
+                    return (
+                      <div
+                        key={section._id}
+                        className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-xl font-semibold text-white">
+                                {section.title[viewLocale]}
+                              </h3>
+                              {!section.isActive && (
+                                <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-300">
+                                  {isArabic ? "غير نشط" : "Inactive"}
+                                </span>
                               )}
                             </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            onClick={() => openModal(section)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-primary hover:text-primary/80"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            onClick={() => handleDelete(section._id)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-400 hover:text-red-300"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {section.features && section.features.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-white/10">
-                          <h4 className="text-sm font-semibold text-white/80 mb-3">
-                            {copy.features} ({section.features.length})
-                          </h4>
-                          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                            {section.features
-                              .sort((a, b) => a.order - b.order)
-                              .map((feature, idx) => (
-                                <div
-                                  key={idx}
-                                  className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3"
-                                >
-                                  <div className="mt-1 text-primary">
-                                    {getIconComponent(feature.icon)}
+                            <p className="text-sm text-white/60 mb-2">
+                              {pageLabel?.label[viewLocale]} • {copy.order}:{" "}
+                              {section.order}
+                            </p>
+                            <div
+                              className="text-sm text-white/80 prose prose-invert max-w-none mb-4"
+                              dangerouslySetInnerHTML={{
+                                __html: section.description[viewLocale],
+                              }}
+                            />
+                            {section.images && section.images.length > 0 && (
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
+                                {section.images
+                                  .slice(0, 3)
+                                  .map((image, idx) => (
+                                    <img
+                                      key={idx}
+                                      src={image}
+                                      alt={`Section image ${idx + 1}`}
+                                      className="w-full h-24 object-cover rounded-lg border border-white/10"
+                                    />
+                                  ))}
+                                {section.images.length > 3 && (
+                                  <div className="flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.02] text-white/60 text-sm">
+                                    +{section.images.length - 3}
                                   </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-white">
-                                      {feature.name[viewLocale]}
-                                    </p>
-                                    <p className="text-xs text-white/60 mt-1">
-                                      {feature.description[viewLocale]}
-                                    </p>
-                                  </div>
-                                </div>
-                              ))}
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              onClick={() => openModal(section)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-primary hover:text-primary/80"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              onClick={() => handleDelete(section._id)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-400 hover:text-red-300"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )
-          )}
-        </>
-      )}
+
+                        {section.features && section.features.length > 0 && (
+                          <div className="mt-4 pt-4 border-t border-white/10">
+                            <h4 className="text-sm font-semibold text-white/80 mb-3">
+                              {copy.features} ({section.features.length})
+                            </h4>
+                            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                              {section.features
+                                .sort((a, b) => a.order - b.order)
+                                .map((feature, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3"
+                                  >
+                                    <div className="mt-1 text-primary">
+                                      {getIconComponent(feature.icon)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-white">
+                                        {feature.name[viewLocale]}
+                                      </p>
+                                      <p className="text-xs text-white/60 mt-1">
+                                        {feature.description[viewLocale]}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )
+            )}
+          </>
+        )}
 
       {/* Additional Sections (from index 9 onwards) - Same style as SectionRenderer */}
       {filterPage === "home" && additionalSections.length > 0 && (

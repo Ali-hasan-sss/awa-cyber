@@ -1,5 +1,6 @@
 {
   "nav": {
+    "home": "Home",
     "services": "Services",
     "portfolio": "Portfolio",
     "about": "About",
@@ -504,5 +505,30 @@
     "payments": "Payment Schedule",
     "files": "File Management",
     "modifications": "Modification Requests"
+  },
+  "aboutPage": {
+    "hero": {
+      "subtitle": "Leading Cybersecurity Company",
+      "title": "About Us",
+      "description": "We are a team of seasoned cybersecurity experts dedicated to protecting your business from evolving digital threats. With years of experience and deep expertise, we help organizations build strong defenses against cyber attacks.",
+      "stats": {
+        "projects": {
+          "value": "500+",
+          "label": "Completed Projects"
+        },
+        "clients": {
+          "value": "200+",
+          "label": "Satisfied Clients"
+        },
+        "experience": {
+          "value": "10+",
+          "label": "Years Experience"
+        },
+        "support": {
+          "value": "24/7",
+          "label": "Continuous Support"
+        }
+      }
+    }
   }
 }
