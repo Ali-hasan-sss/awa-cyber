@@ -24,7 +24,7 @@ const messages = {
 };
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+  const [locale, setLocaleState] = useState<Locale>("ar");
   const [isMounted, setIsMounted] = useState(false);
 
   // Load locale from localStorage on mount
@@ -35,9 +35,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (stored && (stored === "en" || stored === "ar")) {
       setLocaleState(stored);
     } else {
-      // Detect browser language
-      const browserLang = navigator.language.split("-")[0];
-      const defaultLang = browserLang === "ar" ? "ar" : "en";
+      // Default to Arabic if no language is stored
+      const defaultLang: Locale = "ar";
       setLocaleState(defaultLang);
       localStorage.setItem("locale", defaultLang);
     }

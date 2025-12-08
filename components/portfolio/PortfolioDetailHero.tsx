@@ -14,7 +14,7 @@ export default function PortfolioDetailHero({ portfolio }: { portfolio: any }) {
   const heroImage = portfolio.images?.[0] || "/images/publicContain.jpg";
 
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative h-[75vh] flex items-center justify-center overflow-hidden">
       {/* Background Image with overlay */}
       <div className="fixed inset-0 -z-10">
         <Image
@@ -43,7 +43,7 @@ export default function PortfolioDetailHero({ portfolio }: { portfolio: any }) {
       <div className="relative z-30 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-5xl mx-auto">
           {/* Main Title - Large, bold, white, split into lines */}
-          <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-tight">
+          <h1 className="text-5xl md:text-6xl text-center lg:text-7xl xl:text-8xl font-bold text-white leading-tight">
             {title
               .split(/\s+/)
               .map((word: string, index: number, array: string[]) => (
@@ -57,4 +57,3 @@ export default function PortfolioDetailHero({ portfolio }: { portfolio: any }) {
     </section>
   );
 }
-

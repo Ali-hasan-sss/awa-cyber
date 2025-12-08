@@ -118,16 +118,18 @@ export default function PortfolioDetail({
   return (
     <div className="relative min-h-screen">
       {/* Navigation Buttons with Preview */}
-      <PortfolioNavigation
-        prevPortfolio={prevPortfolio}
-        nextPortfolio={null}
-        direction="left"
-      />
-      <PortfolioNavigation
-        prevPortfolio={null}
-        nextPortfolio={nextPortfolio}
-        direction="right"
-      />
+      <div className="hidden md:block">
+        <PortfolioNavigation
+          prevPortfolio={prevPortfolio}
+          nextPortfolio={null}
+          direction="left"
+        />
+        <PortfolioNavigation
+          prevPortfolio={null}
+          nextPortfolio={nextPortfolio}
+          direction="right"
+        />
+      </div>
 
       {/* Hero Section */}
       <PortfolioDetailHero portfolio={currentPortfolio} />

@@ -5,13 +5,18 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import RichTextEditor from "@/components/ui/RichTextEditor";
-import { Pencil, Save, X, Trash2, Plus, ChevronUp, ChevronDown } from "lucide-react";
-import { getSections, updateSection, Section } from "@/lib/api/sections";
+import FileUpload from "@/components/ui/FileUpload";
 import {
-  serviceIconOptions,
-  serviceIconComponents,
-  ServiceIconKey,
-} from "@/lib/serviceIconOptions";
+  Pencil,
+  Save,
+  X,
+  Trash2,
+  Plus,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
+import { getSections, updateSection, Section } from "@/lib/api/sections";
+import Image from "next/image";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -35,8 +40,9 @@ export default function SecurityTechnologiesSection() {
   const [isEditing, setIsEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [iconPickerIndex, setIconPickerIndex] = useState<number | string | null>(null);
-  const [activeFeatureIndex, setActiveFeatureIndex] = useState<number | null>(null);
+  const [activeFeatureIndex, setActiveFeatureIndex] = useState<number | null>(
+    null
+  );
   const [draftFeature, setDraftFeature] = useState<{
     icon: string;
     nameEn: string;
@@ -173,7 +179,8 @@ export default function SecurityTechnologiesSection() {
             : [],
       });
       setActiveFeatureIndex(
-        securityTechnologiesSection.features && securityTechnologiesSection.features.length > 0
+        securityTechnologiesSection.features &&
+          securityTechnologiesSection.features.length > 0
           ? 0
           : null
       );
@@ -181,7 +188,6 @@ export default function SecurityTechnologiesSection() {
     setIsEditing(false);
     setError(null);
     setDraftFeature(null);
-    setIconPickerIndex(null);
   };
 
   const updateFeature = (
@@ -212,7 +218,6 @@ export default function SecurityTechnologiesSection() {
       descriptionAr: "",
       order: maxOrder + 1,
     });
-    setIconPickerIndex(null);
   };
 
   const saveDraftFeature = () => {
@@ -235,12 +240,10 @@ export default function SecurityTechnologiesSection() {
     }));
 
     setDraftFeature(null);
-    setIconPickerIndex(null);
   };
 
   const cancelDraftFeature = () => {
     setDraftFeature(null);
-    setIconPickerIndex(null);
   };
 
   const updateDraftFeature = (
@@ -260,9 +263,6 @@ export default function SecurityTechnologiesSection() {
   const removeFeature = (index: number) => {
     setForm((prev) => {
       const features = prev.features.filter((_, idx) => idx !== index);
-      setIconPickerIndex((prevIdx) =>
-        prevIdx !== null && prevIdx === index ? null : prevIdx
-      );
       setActiveFeatureIndex((prevIdx) => {
         if (prevIdx === null) return prevIdx;
         if (prevIdx === index) return null;
@@ -288,14 +288,6 @@ export default function SecurityTechnologiesSection() {
     });
   };
 
-  const getIconComponent = (iconName: string) => {
-    if (iconName in serviceIconComponents) {
-      const Icon = serviceIconComponents[iconName as ServiceIconKey];
-      return <Icon className="h-5 w-5" />;
-    }
-    return null;
-  };
-
   const inputStyles =
     "rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-cyan-400 focus:border-transparent focus:bg-white/[0.05] transition";
 
@@ -317,7 +309,9 @@ export default function SecurityTechnologiesSection() {
     return (
       <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
         <div className="text-center text-white/60">
-          {isArabic ? "جاري التحميل..." : "Loading Security Technologies section..."}
+          {isArabic
+            ? "جاري التحميل..."
+            : "Loading Security Technologies section..."}
         </div>
       </div>
     );
@@ -541,61 +535,24 @@ export default function SecurityTechnologiesSection() {
                       <div className="space-y-3">
                         <div>
                           <label className="block text-xs text-white/70 mb-1">
-                            {isArabic ? "الأيقونة" : "Icon"}
+                            {isArabic ? "صورة التقنية" : "Technology Image"}
                           </label>
-                          <div className="relative">
-                            <Input
-                              value={draftFeature.icon}
-                              onChange={(e) =>
-                                updateDraftFeature("icon", e.target.value)
-                              }
-                              className={inputStyles}
-                              placeholder="ShieldCheck"
+                          <FileUpload
+                            accept="image/*"
+                            maxSize={5}
+                            hideUploadedFiles={true}
+                            onUploadComplete={(url: string) => {
+                              updateDraftFeature("icon", url);
+                            }}
                             />
-                            {draftFeature.icon &&
-                              getIconComponent(draftFeature.icon) && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
-                                  {getIconComponent(draftFeature.icon)}
-                                </div>
-                              )}
-                          </div>
-                          <Button
-                            type="button"
-                            onClick={() =>
-                              setIconPickerIndex(
-                                iconPickerIndex === "draft" ? null : "draft"
-                              )
-                            }
-                            variant="outline"
-                            size="sm"
-                            className="mt-2 rounded-full w-full"
-                          >
-                            {iconPickerIndex === "draft"
-                              ? isArabic
-                                ? "إغلاق"
-                                : "Close"
-                              : isArabic
-                              ? "اختر الأيقونة"
-                              : "Choose Icon"}
-                          </Button>
-                          {iconPickerIndex === "draft" && (
-                            <div className="mt-2 grid grid-cols-6 gap-2 p-3 rounded-xl border border-white/10 bg-white/[0.02]">
-                              {serviceIconOptions.map((option) => {
-                                const Icon = option.Icon;
-                                return (
-                                  <button
-                                    key={option.value}
-                                    type="button"
-                                    onClick={() => {
-                                      updateDraftFeature("icon", option.value);
-                                      setIconPickerIndex(null);
-                                    }}
-                                    className="p-2 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-white/[0.05] transition"
-                                  >
-                                    <Icon className="h-5 w-5 text-white/70" />
-                                  </button>
-                                );
-                              })}
+                          {draftFeature.icon && (
+                            <div className="mt-2 relative w-20 h-20 rounded-lg overflow-hidden border border-white/20">
+                              <Image
+                                src={draftFeature.icon}
+                                alt="Technology"
+                                fill
+                                className="object-contain"
+                              />
                             </div>
                           )}
                         </div>
@@ -698,8 +655,15 @@ export default function SecurityTechnologiesSection() {
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="text-primary">
-                                {getIconComponent(feature.icon) || (
+                              <div className="text-primary relative w-10 h-10 flex items-center justify-center">
+                                {feature.icon ? (
+                                  <Image
+                                    src={feature.icon}
+                                    alt={feature.nameEn || feature.nameAr}
+                                    fill
+                                    className="object-contain rounded"
+                                  />
+                                ) : (
                                   <div className="h-5 w-5" />
                                 )}
                               </div>
@@ -708,16 +672,15 @@ export default function SecurityTechnologiesSection() {
                                   {feature.nameEn || feature.nameAr}
                                 </p>
                                 <p className="text-xs text-white/60">
-                                  {isArabic ? "الترتيب" : "Order"}: {feature.order}
+                                  {isArabic ? "الترتيب" : "Order"}:{" "}
+                                  {feature.order}
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-1">
                               <Button
                                 type="button"
-                                onClick={() =>
-                                  moveFeature(originalIndex, "up")
-                                }
+                                onClick={() => moveFeature(originalIndex, "up")}
                                 variant="ghost"
                                 size="sm"
                                 disabled={originalIndex === 0}
@@ -755,73 +718,33 @@ export default function SecurityTechnologiesSection() {
                             <div className="space-y-3 pt-3 border-t border-white/10">
                               <div>
                                 <label className="block text-xs text-white/70 mb-1">
-                                  {isArabic ? "الأيقونة" : "Icon"}
+                                  {isArabic
+                                    ? "صورة التقنية"
+                                    : "Technology Image"}
                                 </label>
-                                <div className="relative">
-                                  <Input
-                                    value={feature.icon}
-                                    onChange={(e) =>
-                                      updateFeature(
-                                        originalIndex,
-                                        "icon",
-                                        e.target.value
-                                      )
-                                    }
-                                    className={inputStyles}
-                                    placeholder="Icon name"
+                                <FileUpload
+                                  accept="image/*"
+                                  maxSize={5}
+                                  hideUploadedFiles={true}
+                                  onUploadComplete={(url: string) => {
+                                    updateFeature(originalIndex, "icon", url);
+                                  }}
                                   />
-                                  {feature.icon &&
-                                    getIconComponent(feature.icon) && (
-                                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
-                                        {getIconComponent(feature.icon)}
+                                {feature.icon && (
+                                  <div className="mt-2 relative w-20 h-20 rounded-lg overflow-hidden border border-white/20">
+                                    <Image
+                                      src={feature.icon}
+                                      alt="Technology"
+                                      fill
+                                      className="object-contain"
+                                    />
                                       </div>
                                     )}
-                                </div>
-                                <Button
-                                  type="button"
-                                  onClick={() =>
-                                    setIconPickerIndex(
-                                      iconPickerIndex === originalIndex
-                                        ? null
-                                        : originalIndex
-                                    )
-                                  }
-                                  variant="outline"
-                                  size="sm"
-                                  className="mt-2 rounded-full w-full"
-                                >
-                                  {iconPickerIndex === originalIndex
-                                    ? isArabic
-                                      ? "إغلاق"
-                                      : "Close"
-                                    : isArabic
-                                    ? "اختر الأيقونة"
-                                    : "Choose Icon"}
-                                </Button>
-                                {iconPickerIndex === originalIndex && (
-                                  <div className="mt-2 grid grid-cols-6 gap-2 p-3 rounded-xl border border-white/10 bg-white/[0.02]">
-                                    {serviceIconOptions.map((option) => {
-                                      const Icon = option.Icon;
-                                      return (
-                                        <button
-                                          key={option.value}
-                                          type="button"
-                                          onClick={() => {
-                                            updateFeature(
-                                              originalIndex,
-                                              "icon",
-                                              option.value
-                                            );
-                                            setIconPickerIndex(null);
-                                          }}
-                                          className="p-2 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-white/[0.05] transition"
-                                        >
-                                          <Icon className="h-5 w-5 text-white/70" />
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                )}
+                                <p className="text-xs text-white/50 mt-2">
+                                  {isArabic
+                                    ? "يمكنك رفع صورة للتقنية أو استخدام أيقونة أدناه"
+                                    : "You can upload an image or use an icon below"}
+                                </p>
                               </div>
 
                               <div className="grid gap-3 md:grid-cols-2">
@@ -961,20 +884,23 @@ export default function SecurityTechnologiesSection() {
                 <div className="mt-12 bg-gradient-to-b from-primary/20 via-white to-white rounded-[36px] p-6 md:p-8 shadow-lg border border-primary/10">
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {sortedFeatures.map((tool, idx) => {
-                      const Icon =
-                        tool.icon &&
-                        tool.icon in serviceIconComponents
-                          ? serviceIconComponents[
-                              tool.icon as ServiceIconKey
-                            ]
-                          : serviceIconComponents["ShieldCheck"];
                       return (
                         <div
                           key={idx}
                           className="rounded-2xl border border-white/60 bg-white/80 p-5 text-center shadow-sm hover:-translate-y-1 transition-transform"
                         >
-                          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-                            <Icon className="h-6 w-6" />
+                          <div className="mx-auto mb-4 flex items-center justify-center">
+                            {tool.icon ? (
+                              <Image
+                                src={tool.icon}
+                                alt={tool.nameEn || tool.nameAr || ""}
+                                width={80}
+                                height={80}
+                                className="object-contain"
+                              />
+                            ) : (
+                              <div className="h-6 w-6" />
+                            )}
                           </div>
                           <p className="text-lg font-semibold text-foreground">
                             {tool.nameEn || tool.nameAr || ""}
@@ -995,4 +921,3 @@ export default function SecurityTechnologiesSection() {
     </div>
   );
 }
-

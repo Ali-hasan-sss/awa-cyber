@@ -6,8 +6,17 @@ import { usePathname } from "next/navigation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Globe, LogOut, User, ArrowRight } from "lucide-react";
+import {
+  Menu,
+  X,
+  Globe,
+  LogOut,
+  User,
+  ArrowRight,
+  ChevronDown,
+} from "lucide-react";
 import Logo from "../ui/logo";
+import { fetchPublicServices } from "@/lib/actions/serviceActions";
 
 export default function Navbar() {
   const { locale, setLocale, t } = useLanguage();
@@ -15,6 +24,9 @@ export default function Navbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDarkBackground, setIsDarkBackground] = useState(false);
+  const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
+  const [services, setServices] = useState<any[]>([]);
+  const servicesDropdownRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
 
   const navLinks = [
@@ -100,6 +112,40 @@ export default function Navbar() {
 
   const isLoggedIn = !!user || !!admin;
 
+  // Load services for dropdown
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const data = await fetchPublicServices(locale);
+        setServices(Array.isArray(data) ? data : data?.data || []);
+      } catch (error) {
+        console.error("Error loading services:", error);
+        setServices([]);
+      }
+    };
+    loadServices();
+  }, [locale]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        servicesDropdownRef.current &&
+        !servicesDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsServicesDropdownOpen(false);
+      }
+    };
+
+    if (isServicesDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isServicesDropdownOpen]);
+
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -155,19 +201,77 @@ export default function Navbar() {
             </Link>
 
             {/* Navigation Links - Desktop */}
-            <div className="hidden md:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.key}
-                  href={link.href}
-                  className={linkClassName(link.href)}
-                >
-                  {t(link.key)}
-                  {isActive(link.href) && (
-                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary" />
-                  )}
-                </Link>
-              ))}
+            <div className="hidden sm:flex items-center gap-8">
+              {navLinks.map((link) => {
+                if (link.href === "/services") {
+                  return (
+                    <div
+                      key={link.key}
+                      ref={servicesDropdownRef}
+                      className="relative"
+                      onMouseEnter={() => setIsServicesDropdownOpen(true)}
+                      onMouseLeave={() => setIsServicesDropdownOpen(false)}
+                    >
+                      <Link
+                        href={link.href}
+                        className={`${linkClassName(
+                          link.href
+                        )} flex items-center gap-1`}
+                      >
+                        {t(link.key)}
+                        <ChevronDown className="h-4 w-4" />
+                        {isActive(link.href) && (
+                          <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary" />
+                        )}
+                      </Link>
+
+                      {/* Services Dropdown */}
+                      {isServicesDropdownOpen && services.length > 0 && (
+                        <div
+                          className={`absolute top-full mt-2 max-w-[calc(100vw-2rem)] w-[500px] bg-gradient-to-br from-white via-primary/5 to-primary/10 shadow-2xl border border-primary/20 overflow-hidden z-50 ${
+                            locale === "ar" ? "right-0" : "left-0"
+                          }`}
+                        >
+                          <div className="p-4">
+                            <div className="grid grid-cols-2 gap-2">
+                              {services.map((service: any) => {
+                                const serviceTitle =
+                                  typeof service.title === "string"
+                                    ? service.title
+                                    : service.title?.[locale] || "";
+                                return (
+                                  <Link
+                                    key={service._id}
+                                    href={`/services/${service._id}`}
+                                    className="block px-4 py-3 text-foreground hover:bg-primary/20 hover:text-white transition-all rounded-lg bg-white/50 backdrop-blur-sm border border-white/30"
+                                    onClick={() =>
+                                      setIsServicesDropdownOpen(false)
+                                    }
+                                  >
+                                    {serviceTitle}
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                return (
+                  <Link
+                    key={link.key}
+                    href={link.href}
+                    className={linkClassName(link.href)}
+                  >
+                    {t(link.key)}
+                    {isActive(link.href) && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary" />
+                    )}
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Desktop CTA Button and Language Toggle */}

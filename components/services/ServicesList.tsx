@@ -5,7 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { fetchPublicServices } from "@/lib/actions/serviceActions";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import {
   serviceIconComponents,
   ServiceIconKey,
@@ -56,15 +56,31 @@ export default function ServicesList() {
 
   if (loading) {
     return (
-      <section className="relative bg-white py-20 md:py-28">
+      <section className="relative bg-gradient-to-b from-white to-primary/5 py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(6)].map((_, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="rounded-3xl overflow-hidden bg-gray-200 animate-pulse"
-                style={{ aspectRatio: "4/3" }}
-              />
+                className="rounded-2xl bg-white border border-border/60 shadow-sm p-6 animate-pulse"
+              >
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="h-14 w-14 rounded-2xl bg-gray-200" />
+                  <div className="h-8 bg-gray-200 rounded flex-1" />
+                </div>
+                <div className="space-y-2 mb-6">
+                  <div className="h-4 bg-gray-200 rounded w-full" />
+                  <div className="h-4 bg-gray-200 rounded w-5/6" />
+                </div>
+                <div className="space-y-3">
+                  {[...Array(3)].map((_, j) => (
+                    <div key={j} className="flex items-center gap-3">
+                      <div className="h-5 w-5 rounded bg-gray-200" />
+                      <div className="h-4 bg-gray-200 rounded flex-1" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -74,7 +90,7 @@ export default function ServicesList() {
 
   if (services.length === 0) {
     return (
-      <section className="relative bg-white py-20 md:py-28">
+      <section className="relative bg-gradient-to-b from-white to-primary/5 py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-muted-foreground text-lg">
@@ -89,9 +105,9 @@ export default function ServicesList() {
   }
 
   return (
-    <section className="relative bg-white py-20 md:py-28">
+    <section className="relative bg-gradient-to-b from-white to-primary/5 py-20 md:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {services.map((service: any) => {
             const title =
               typeof service.title === "string"
@@ -101,7 +117,6 @@ export default function ServicesList() {
               typeof service.description === "string"
                 ? service.description
                 : service.description?.[locale] || "";
-            const image = service.images?.[0] || "/images/publicContain.jpg";
             const features = service.features || [];
             const IconComponent =
               features.length > 0 ? getIconComponent(features[0].icon) : null;
@@ -110,75 +125,53 @@ export default function ServicesList() {
               <Link
                 key={service._id}
                 href={`/services/${service._id}`}
-                className="group relative rounded-3xl overflow-hidden bg-white border border-border/60 shadow-sm hover:shadow-2xl transition-all duration-300"
+                className="group relative rounded-2xl bg-white border border-border/60 shadow-sm hover:shadow-2xl transition-all duration-300 p-6"
               >
-                {/* Service Image */}
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image
-                    src={image}
-                    alt={title}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-
-                  {/* Icon Overlay */}
+                {/* Icon and Title Section */}
+                <div className="flex items-start gap-4 mb-4">
+                  {/* Icon Block */}
                   {IconComponent && (
-                    <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center">
-                      <IconComponent className="w-6 h-6 text-black" />
+                    <div className="flex-shrink-0 h-14 w-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                      <IconComponent className="h-6 w-6 text-primary" />
                     </div>
                   )}
-                </div>
-
-                {/* Service Content */}
-                <div className="p-6">
-                  <h3 className="text-2xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
+                  {/* Title */}
+                  <h3 className="text-3xl md:text-4xl font-bold text-foreground flex-1">
                     {title}
                   </h3>
+                </div>
 
-                  {description && (
-                    <p className="text-muted-foreground mb-4 line-clamp-3">
-                      {stripHtml(description)}
-                    </p>
-                  )}
+                {/* Description */}
+                {description && (
+                  <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-6">
+                    {stripHtml(description)}
+                  </p>
+                )}
 
-                  {/* Features Preview */}
-                  {features.length > 0 && (
-                    <div className="mb-4">
-                      <div className="flex flex-wrap gap-2">
-                        {features
-                          .slice(0, 3)
-                          .map((feature: any, idx: number) => {
-                            const featureName =
-                              typeof feature.name === "string"
-                                ? feature.name
-                                : feature.name?.[locale] || "";
-                            return (
-                              <span
-                                key={idx}
-                                className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium"
-                              >
-                                {featureName}
-                              </span>
-                            );
-                          })}
-                        {features.length > 3 && (
-                          <span className="px-3 py-1 rounded-full bg-gray-100 text-muted-foreground text-xs font-medium">
-                            +{features.length - 3}
+                {/* Features List */}
+                {features.length > 0 && (
+                  <ul className="space-y-3 mb-6">
+                    {features.map((feature: any, idx: number) => {
+                      const featureName =
+                        typeof feature.name === "string"
+                          ? feature.name
+                          : feature.name?.[locale] || "";
+                      return (
+                        <li key={idx} className="flex items-start gap-3">
+                          <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                          <span className="text-foreground text-sm md:text-base">
+                            {featureName}
                           </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
 
-                  {/* View Details Link */}
-                  <div className="flex items-center text-primary font-semibold text-sm group-hover:gap-2 transition-all">
-                    <span>
-                      {locale === "ar" ? "عرض التفاصيل" : "View Details"}
-                    </span>
-                    <ArrowRight className="h-4 w-4 ml-2 rtl:mr-2 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                  </div>
+                {/* Learn More Link */}
+                <div className="flex items-center text-primary font-semibold text-sm md:text-base group-hover:gap-2 transition-all">
+                  <span>{locale === "ar" ? "اعرف المزيد" : "Learn More"}</span>
+                  <ArrowRight className="h-4 w-4 ml-2 rtl:mr-2 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
                 </div>
               </Link>
             );

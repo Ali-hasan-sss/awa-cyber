@@ -1,7 +1,8 @@
 "use client";
 
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Calendar, Tag } from "lucide-react";
+import { Calendar, Tag, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Helper function to strip HTML tags
 const stripHtml = (html: string): string => {
@@ -73,6 +74,26 @@ export default function PortfolioInfo({ portfolio }: { portfolio: any }) {
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
                 {stripHtml(description)}
               </p>
+            </div>
+          )}
+
+          {/* Visit Project Button */}
+          {portfolio.url && (
+            <div className="mb-8">
+              <Button
+                asChild
+                className="rounded-full bg-primary text-black hover:bg-primary/90 px-6 py-3 text-base font-semibold"
+              >
+                <a
+                  href={portfolio.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2"
+                >
+                  {locale === "ar" ? "زيارة العمل" : "Visit Project"}
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
             </div>
           )}
 

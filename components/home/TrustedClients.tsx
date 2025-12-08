@@ -12,6 +12,7 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect, useMemo } from "react";
 import { getSectionsByPage } from "@/lib/api/sections";
+import Image from "next/image";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -41,7 +42,11 @@ const iconMap: Record<string, LucideIcon> = {
   LaptopMinimal,
 };
 
-export default function TrustedClients({ sections: sectionsProp }: { sections?: any[] }) {
+export default function TrustedClients({
+  sections: sectionsProp,
+}: {
+  sections?: any[];
+}) {
   const { locale, messages } = useLanguage();
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,7 +130,7 @@ export default function TrustedClients({ sections: sectionsProp }: { sections?: 
             typeof feature.description === "string"
               ? feature.description
               : feature.description?.[locale] || feature.description?.en || "",
-          icon: feature.icon || "Building2",
+          icon: feature.icon || "",
         }));
     }
     return [];
@@ -147,11 +152,11 @@ export default function TrustedClients({ sections: sectionsProp }: { sections?: 
               <div className="h-12 bg-gray-200 rounded-lg w-1/3 mx-auto animate-pulse" />
             </div>
             {/* Logos Grid Skeleton */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
+            <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6">
               {[...Array(12)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-20 bg-gray-200 rounded-lg animate-pulse"
+                  className="h-20 w-32 bg-gray-200 rounded-lg animate-pulse"
                 />
               ))}
             </div>
@@ -219,7 +224,7 @@ export default function TrustedClients({ sections: sectionsProp }: { sections?: 
           )}
         </div>
 
-        <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="mt-12 flex flex-wrap justify-center items-center gap-4 md:gap-6">
           {displayBrands.map(
             (
               brand: { name: string; tagline?: string; icon?: string },
@@ -229,19 +234,34 @@ export default function TrustedClients({ sections: sectionsProp }: { sections?: 
               return (
                 <div
                   key={brand.name || idx}
-                  className="rounded-2xl border border-border bg-white/80 px-6 py-8 text-center shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg"
+                  className="rounded-2xl border border-border bg-white/80 p-6 text-center shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg w-[250px] h-[250px] flex flex-col"
                 >
-                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <div className="mx-auto mb-4 flex items-center justify-center h-32 w-full">
+                    {brand.icon && brand.icon.startsWith("http") ? (
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={brand.icon}
+                          alt={brand.name}
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                     <Icon className="h-7 w-7" />
                   </div>
-                  <p className="font-semibold text-lg text-foreground">
+                    )}
+                  </div>
+                  <div className="flex-1 flex flex-col justify-center">
+                    <p className="font-semibold text-lg text-foreground mb-1">
                     {brand.name}
                   </p>
                   {brand.tagline && (
-                    <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-sm text-muted-foreground">
                       {brand.tagline}
                     </p>
                   )}
+                  </div>
                 </div>
               );
             }

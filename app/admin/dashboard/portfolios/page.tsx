@@ -31,6 +31,7 @@ type PortfolioFormState = {
   serviceId: string;
   completionDate: string;
   images: string[];
+  url: string;
   features: Array<{
     icon: string;
     nameEn: string;
@@ -48,6 +49,7 @@ const emptyForm: PortfolioFormState = {
   serviceId: "",
   completionDate: "",
   images: [],
+  url: "",
   features: [],
 };
 
@@ -162,6 +164,7 @@ export default function PortfoliosManagementPage() {
           portfolio.images && portfolio.images.length > 0
             ? portfolio.images
             : [],
+        url: portfolio.url || "",
         features:
           portfolio.features?.map((feature) => ({
             icon: feature.icon,
@@ -339,6 +342,7 @@ export default function PortfoliosManagementPage() {
       serviceId: form.serviceId.trim(),
       completionDate: form.completionDate,
       images: cleanImages,
+      url: form.url.trim() || undefined,
       features:
         form.features.length > 0
           ? form.features
@@ -745,6 +749,26 @@ export default function PortfoliosManagementPage() {
                   required
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm text-white/80">
+                {isArabic ? "رابط العمل" : "Project URL"}
+              </label>
+              <Input
+                type="url"
+                className={inputStyles}
+                value={form.url}
+                onChange={(e) => updateFormField("url", e.target.value)}
+                placeholder={
+                  isArabic ? "https://example.com" : "https://example.com"
+                }
+              />
+              <p className="mt-1 text-xs text-white/50">
+                {isArabic
+                  ? "رابط اختياري للعمل (مثل موقع الويب أو المشروع)"
+                  : "Optional URL for the project (e.g., website or project link)"}
+              </p>
             </div>
 
             <div className="space-y-4">

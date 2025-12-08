@@ -91,9 +91,9 @@ export default function AboutHero() {
   // Show loading state
   if (loading) {
     return (
-      <section className="relative h-screen flex items-center justify-center overflow-hidden pt-20">
+      <section className="relative h-[50vh] flex items-center justify-center overflow-hidden w-full">
         {/* Background Image Skeleton */}
-        <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 -z-10">
           <div className="w-full h-full bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 animate-pulse" />
           <div className="absolute inset-0 bg-black/25 z-10" />
         </div>
@@ -136,9 +136,9 @@ export default function AboutHero() {
   }
 
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden pt-20">
-      {/* Background Image with fixed positioning - stays in place on scroll */}
-      <div className="fixed inset-0 -z-10">
+    <section className="relative h-[75vh] flex items-center justify-center overflow-hidden w-full">
+      {/* Background Image */}
+      <div className="absolute inset-0 -z-10">
         <Image
           src={heroImage}
           alt="About Us"

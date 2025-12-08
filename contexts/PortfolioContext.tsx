@@ -32,6 +32,7 @@ export type AdminPortfolio = {
   }>;
   images: string[];
   completionDate: string;
+  url?: string;
 };
 
 interface PortfolioContextValue {

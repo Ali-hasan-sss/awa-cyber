@@ -63,7 +63,7 @@ export default function ServicesHero() {
 
   if (loading) {
     return (
-      <section className="relative h-screen flex items-center justify-center overflow-hidden pt-20">
+      <section className="relative h-[50VH] flex items-center justify-center overflow-hidden w-full">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 animate-pulse" />
         <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="max-w-5xl mx-auto space-y-6">
@@ -76,9 +76,9 @@ export default function ServicesHero() {
   }
 
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden pt-20">
-      {/* Background Image with fixed positioning */}
-      <div className="fixed inset-0 -z-10">
+    <section className="relative h-[50vh] flex items-center justify-center overflow-hidden w-full">
+      {/* Background Image */}
+      <div className="absolute inset-0 -z-10">
         <Image
           src={heroImage}
           alt="Services"

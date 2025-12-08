@@ -15,6 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect, useMemo } from "react";
 import { getSectionsByPage } from "@/lib/api/sections";
 import { serviceIconComponents } from "@/lib/serviceIconOptions";
+import Image from "next/image";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -40,6 +41,7 @@ type Tool = {
   description: string;
   category?: string;
   icon?: string;
+  image?: string;
 };
 
 type Stat = {
@@ -241,7 +243,7 @@ export default function SecurityTechnologies({
               ? feature.description
               : feature.description?.[locale] || feature.description?.en || "",
           category: undefined, // No category from API
-          icon: feature.icon || "Shield",
+          icon: feature.icon || "",
         }));
     }
     return fallbackContent.tools || [];
@@ -342,8 +344,20 @@ export default function SecurityTechnologies({
                   key={`${tool.name}-${idx}`}
                   className="rounded-2xl border border-white/60 bg-white/80 p-5 text-center shadow-sm hover:-translate-y-1 transition-transform"
                 >
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                  <div className="mx-auto mb-4 flex items-center justify-center">
+                    {tool.icon && tool.icon.startsWith("http") ? (
+                      <Image
+                        src={tool.icon}
+                        alt={tool.name}
+                        width={80}
+                        height={80}
+                        className="object-contain"
+                      />
+                    ) : (
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
                     <Icon className="h-6 w-6" />
+                      </div>
+                    )}
                   </div>
                   <p className="text-lg font-semibold text-foreground">
                     {tool.name}

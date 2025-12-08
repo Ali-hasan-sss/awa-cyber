@@ -15,11 +15,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { getSections, updateSection, Section } from "@/lib/api/sections";
-import {
-  serviceIconOptions,
-  serviceIconComponents,
-  ServiceIconKey,
-} from "@/lib/serviceIconOptions";
+import FileUpload from "@/components/ui/FileUpload";
+import Image from "next/image";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -43,7 +40,6 @@ export default function TrustedClientsSection() {
   const [isEditing, setIsEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [iconPickerIndex, setIconPickerIndex] = useState<number | null>(null);
   const [activeFeatureIndex, setActiveFeatureIndex] = useState<number | null>(
     null
   );
@@ -192,7 +188,6 @@ export default function TrustedClientsSection() {
     setIsEditing(false);
     setError(null);
     setDraftFeature(null);
-    setIconPickerIndex(null);
   };
 
   const updateFeature = (
@@ -223,7 +218,6 @@ export default function TrustedClientsSection() {
       descriptionAr: "",
       order: maxOrder + 1,
     });
-    setIconPickerIndex(null);
   };
 
   const saveDraftFeature = () => {
@@ -246,12 +240,10 @@ export default function TrustedClientsSection() {
     }));
 
     setDraftFeature(null);
-    setIconPickerIndex(null);
   };
 
   const cancelDraftFeature = () => {
     setDraftFeature(null);
-    setIconPickerIndex(null);
   };
 
   const updateDraftFeature = (
@@ -271,9 +263,6 @@ export default function TrustedClientsSection() {
   const removeFeature = (index: number) => {
     setForm((prev) => {
       const features = prev.features.filter((_, idx) => idx !== index);
-      setIconPickerIndex((prevIdx) =>
-        prevIdx !== null && prevIdx === index ? null : prevIdx
-      );
       setActiveFeatureIndex((prevIdx) => {
         if (prevIdx === null) return prevIdx;
         if (prevIdx === index) return null;
@@ -297,14 +286,6 @@ export default function TrustedClientsSection() {
       features.sort((a, b) => a.order - b.order);
       return { ...prev, features };
     });
-  };
-
-  const getIconComponent = (iconName: string) => {
-    if (iconName in serviceIconComponents) {
-      const Icon = serviceIconComponents[iconName as ServiceIconKey];
-      return <Icon className="h-5 w-5" />;
-    }
-    return null;
   };
 
   const inputStyles =
@@ -572,61 +553,24 @@ export default function TrustedClientsSection() {
                       <div className="space-y-3">
                         <div>
                           <label className="block text-xs text-white/70 mb-1">
-                            {isArabic ? "الأيقونة" : "Icon"}
+                            {isArabic ? "صورة الشعار" : "Brand Logo"}
                           </label>
-                          <div className="relative">
-                            <Input
-                              value={draftFeature.icon}
-                              onChange={(e) =>
-                                updateDraftFeature("icon", e.target.value)
-                              }
-                              className={inputStyles}
-                              placeholder="Icon name"
-                            />
-                            {draftFeature.icon &&
-                              getIconComponent(draftFeature.icon) && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
-                                  {getIconComponent(draftFeature.icon)}
-                                </div>
-                              )}
-                          </div>
-                          <Button
-                            type="button"
-                            onClick={() =>
-                              setIconPickerIndex(
-                                iconPickerIndex === -1 ? null : -1
-                              )
-                            }
-                            variant="outline"
-                            size="sm"
-                            className="mt-2 rounded-full w-full"
-                          >
-                            {iconPickerIndex === -1
-                              ? isArabic
-                                ? "إغلاق"
-                                : "Close"
-                              : isArabic
-                              ? "اختر الأيقونة"
-                              : "Choose Icon"}
-                          </Button>
-                          {iconPickerIndex === -1 && (
-                            <div className="mt-2 grid grid-cols-6 gap-2 p-3 rounded-xl border border-white/10 bg-white/[0.02]">
-                              {serviceIconOptions.map((option) => {
-                                const Icon = option.Icon;
-                                return (
-                                  <button
-                                    key={option.value}
-                                    type="button"
-                                    onClick={() => {
-                                      updateDraftFeature("icon", option.value);
-                                      setIconPickerIndex(null);
-                                    }}
-                                    className="p-2 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-white/[0.05] transition"
-                                  >
-                                    <Icon className="h-5 w-5 text-white/70" />
-                                  </button>
-                                );
-                              })}
+                          <FileUpload
+                            accept="image/*"
+                            maxSize={5}
+                            hideUploadedFiles={true}
+                            onUploadComplete={(url: string) => {
+                              updateDraftFeature("icon", url);
+                            }}
+                          />
+                          {draftFeature.icon && (
+                            <div className="mt-2 relative w-20 h-20 rounded-lg overflow-hidden border border-white/20">
+                              <Image
+                                src={draftFeature.icon}
+                                alt="Brand Logo"
+                                fill
+                                className="object-contain"
+                              />
                             </div>
                           )}
                         </div>
@@ -714,8 +658,15 @@ export default function TrustedClientsSection() {
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                <div className="text-primary">
-                                  {getIconComponent(feature.icon) || (
+                                <div className="text-primary relative w-10 h-10 flex items-center justify-center">
+                                  {feature.icon ? (
+                                    <Image
+                                      src={feature.icon}
+                                      alt={feature.nameEn || feature.nameAr}
+                                      fill
+                                      className="object-contain rounded"
+                                    />
+                                  ) : (
                                     <div className="h-5 w-5" />
                                   )}
                                 </div>
@@ -771,71 +722,24 @@ export default function TrustedClientsSection() {
                             <div className="space-y-3">
                               <div>
                                 <label className="block text-xs text-white/70 mb-1">
-                                  {isArabic ? "الأيقونة" : "Icon"}
+                                  {isArabic ? "صورة الشعار" : "Brand Logo"}
                                 </label>
-                                <div className="relative">
-                                  <Input
-                                    value={feature.icon}
-                                    onChange={(e) =>
-                                      updateFeature(
-                                        originalIndex,
-                                        "icon",
-                                        e.target.value
-                                      )
-                                    }
-                                    className={inputStyles}
-                                    placeholder="Icon name"
-                                  />
-                                  {feature.icon &&
-                                    getIconComponent(feature.icon) && (
-                                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
-                                        {getIconComponent(feature.icon)}
-                                      </div>
-                                    )}
-                                </div>
-                                <Button
-                                  type="button"
-                                  onClick={() =>
-                                    setIconPickerIndex(
-                                      iconPickerIndex === originalIndex
-                                        ? null
-                                        : originalIndex
-                                    )
-                                  }
-                                  variant="outline"
-                                  size="sm"
-                                  className="mt-2 rounded-full w-full"
-                                >
-                                  {iconPickerIndex === originalIndex
-                                    ? isArabic
-                                      ? "إغلاق"
-                                      : "Close"
-                                    : isArabic
-                                    ? "اختر الأيقونة"
-                                    : "Choose Icon"}
-                                </Button>
-                                {iconPickerIndex === originalIndex && (
-                                  <div className="mt-2 grid grid-cols-6 gap-2 p-3 rounded-xl border border-white/10 bg-white/[0.02]">
-                                    {serviceIconOptions.map((option) => {
-                                      const Icon = option.Icon;
-                                      return (
-                                        <button
-                                          key={option.value}
-                                          type="button"
-                                          onClick={() => {
-                                            updateFeature(
-                                              originalIndex,
-                                              "icon",
-                                              option.value
-                                            );
-                                            setIconPickerIndex(null);
-                                          }}
-                                          className="p-2 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-white/[0.05] transition"
-                                        >
-                                          <Icon className="h-5 w-5 text-white/70" />
-                                        </button>
-                                      );
-                                    })}
+                                <FileUpload
+                                  accept="image/*"
+                                  maxSize={5}
+                                  hideUploadedFiles={true}
+                                  onUploadComplete={(url: string) => {
+                                    updateFeature(originalIndex, "icon", url);
+                                  }}
+                                />
+                                {feature.icon && (
+                                  <div className="mt-2 relative w-20 h-20 rounded-lg overflow-hidden border border-white/20">
+                                    <Image
+                                      src={feature.icon}
+                                      alt="Brand Logo"
+                                      fill
+                                      className="object-contain"
+                                    />
                                   </div>
                                 )}
                               </div>
@@ -938,28 +842,37 @@ export default function TrustedClientsSection() {
             </div>
 
             {brands.length > 0 && (
-              <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="mt-12 flex flex-wrap justify-center items-center gap-4">
                 {brands.map((brand, idx) => {
-                  const Icon =
-                    (brand.icon in serviceIconComponents
-                      ? serviceIconComponents[brand.icon as ServiceIconKey]
-                      : null) || serviceIconComponents["ShieldCheck"];
                   return (
                     <div
                       key={idx}
-                      className="rounded-2xl border border-gray-200 bg-white/80 px-6 py-8 text-center shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg"
+                      className="rounded-2xl border border-gray-200 bg-white/80 p-6 text-center shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg w-[250px] h-[250px] flex flex-col"
                     >
-                      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                        <Icon className="h-7 w-7" />
+                      <div className="mx-auto mb-4 flex items-center justify-center h-32 w-full">
+                        {brand.icon ? (
+                          <div className="relative w-full h-full">
+                            <Image
+                              src={brand.icon}
+                              alt={brand.name || ""}
+                              fill
+                              className="object-contain"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-14 w-14" />
+                        )}
                       </div>
-                      <p className="font-semibold text-lg text-gray-900">
-                        {brand.name}
-                      </p>
-                      {brand.tagline && (
-                        <p className="text-sm text-gray-600 mt-1">
-                          {brand.tagline}
+                      <div className="flex-1 flex flex-col justify-center">
+                        <p className="font-semibold text-lg text-gray-900 mb-1">
+                          {brand.name}
                         </p>
-                      )}
+                        {brand.tagline && (
+                          <p className="text-sm text-gray-600">
+                            {brand.tagline}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
