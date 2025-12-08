@@ -28,16 +28,22 @@ const stripHtml = (html: string): string => {
   return tmp.textContent || tmp.innerText || "";
 };
 
-export default function Hero() {
+export default function Hero({ sections: sectionsProp }: { sections?: any[] }) {
   const { locale } = useLanguage();
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Load sections when locale changes
+  // Use provided sections or load them
   useEffect(() => {
-    loadSections();
-  }, [locale]);
+    if (sectionsProp && sectionsProp.length > 0) {
+      setSections(sectionsProp);
+      setLoading(false);
+      setCurrentSlide(0);
+    } else {
+      loadSections();
+    }
+  }, [sectionsProp, locale]);
 
   const loadSections = async () => {
     try {
@@ -117,7 +123,30 @@ export default function Hero() {
     return (
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
-        <div className="relative z-10 text-white text-xl">Loading...</div>
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto md:mx-0 md:ltr:mr-auto md:rtl:ml-auto px-4 sm:px-0 space-y-6">
+            {/* Accent Bar Skeleton */}
+            <div className="mb-6 flex justify-center md:justify-start">
+              <div className="h-1.5 w-24 bg-primary/30 rounded-full animate-pulse" />
+            </div>
+            {/* Title Skeleton */}
+            <div className="space-y-3">
+              <div className="h-16 md:h-20 lg:h-24 bg-white/10 rounded-lg w-3/4 animate-pulse" />
+              <div className="h-16 md:h-20 lg:h-24 bg-white/10 rounded-lg w-1/2 animate-pulse" />
+            </div>
+            {/* Description Skeleton */}
+            <div className="space-y-2">
+              <div className="h-4 bg-white/10 rounded w-full animate-pulse" />
+              <div className="h-4 bg-white/10 rounded w-5/6 animate-pulse" />
+              <div className="h-4 bg-white/10 rounded w-4/6 animate-pulse" />
+            </div>
+            {/* Buttons Skeleton */}
+            <div className="flex flex-col sm:flex-row gap-4 mt-8">
+              <div className="h-14 bg-primary/30 rounded-lg w-48 animate-pulse" />
+              <div className="h-14 bg-white/10 rounded-lg w-48 animate-pulse" />
+            </div>
+          </div>
+        </div>
       </section>
     );
   }
@@ -198,7 +227,7 @@ export default function Hero() {
               className="text-base px-8 py-6 border-2 border-primary text-primary hover:bg-primary hover:text-black"
               asChild
             >
-              <Link href="#services">
+              <Link href="/services">
                 {locale === "ar" ? "استكشف خدماتنا" : "Explore Our Services"}
               </Link>
             </Button>

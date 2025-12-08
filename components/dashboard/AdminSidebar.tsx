@@ -12,6 +12,7 @@ import {
   FileText,
   DollarSign,
   FileCode,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "../ui/logo";
@@ -64,6 +65,11 @@ const navItems = [
     icon: DollarSign,
     label: { en: "Revenue & Expenses", ar: "الإيرادات والمصاريف" },
   },
+  {
+    href: "/admin/dashboard/contact-messages",
+    icon: MessageSquare,
+    label: { en: "Contact Messages", ar: "رسائل اتصل بنا" },
+  },
 ];
 
 export function AdminSidebar({
@@ -82,6 +88,10 @@ export function AdminSidebar({
 
   const hasUnreadQuoteNotifications = notifications.some(
     (n) => n.data?.type === "quotation_request" && !n.read
+  );
+
+  const hasUnreadContactNotifications = notifications.some(
+    (n) => n.data?.type === "contact_message" && !n.read
   );
 
   // Filter nav items based on role
@@ -121,6 +131,7 @@ export function AdminSidebar({
             const Icon = item.icon;
             const active = pathname === item.href; // Exact match for other pages
             const isQuotesTab = item.href === "/admin/dashboard/quotes";
+            const isContactTab = item.href === "/admin/dashboard/contact-messages";
             return (
               <Link
                 key={item.href}
@@ -150,6 +161,9 @@ export function AdminSidebar({
                 >
                   <span>{item.label[locale]}</span>
                   {isQuotesTab && hasUnreadQuoteNotifications && (
+                    <span className="inline-flex h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_0_4px_rgba(248,113,113,0.35)] ltr:ml-1 rtl:mr-1" />
+                  )}
+                  {isContactTab && hasUnreadContactNotifications && (
                     <span className="inline-flex h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_0_4px_rgba(248,113,113,0.35)] ltr:ml-1 rtl:mr-1" />
                   )}
                 </span>

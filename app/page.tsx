@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { getSectionsByPage } from "@/lib/api/sections";
 import Navbar from "@/components/layout/Navbar";
 import Hero from "@/components/home/Hero";
 import WhoWeAre from "@/components/home/WhoWeAre";
@@ -17,7 +19,28 @@ import SectionRenderer from "@/components/sections/SectionRenderer";
 import HomePageLoader from "@/components/home/HomePageLoader";
 
 export default function Home() {
+  const { locale } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
+  const [sections, setSections] = useState<any[]>([]);
+  const [sectionsLoading, setSectionsLoading] = useState(true);
+
+  // Load all sections once when locale changes
+  useEffect(() => {
+    loadSections();
+  }, [locale]);
+
+  const loadSections = async () => {
+    try {
+      setSectionsLoading(true);
+      const data = await getSectionsByPage("home", locale);
+      setSections(data);
+    } catch (error) {
+      console.error("Error loading home sections:", error);
+      setSections([]);
+    } finally {
+      setSectionsLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Show loader for minimum time to ensure smooth transition
@@ -49,7 +72,7 @@ export default function Home() {
     };
   }, []);
 
-  if (isLoading) {
+  if (isLoading || sectionsLoading) {
     return (
       <>
         <Navbar />
@@ -62,17 +85,17 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <Navbar />
-      <Hero />
-      <WhoWeAre />
-      <TrustedClients />
-      <SecurityServices />
-      <LatestProjects />
-      <WhyChooseUs />
-      <Testimonials />
-      <HowItWorks />
-      <SecurityTechnologies />
-      <SecurityModal />
-      <SectionRenderer page="home" />
+      <Hero sections={sections} />
+      <WhoWeAre sections={sections} />
+      <TrustedClients sections={sections} />
+      <SecurityServices sections={sections} />
+      <LatestProjects sections={sections} />
+      <WhyChooseUs sections={sections} />
+      <Testimonials sections={sections} />
+      <HowItWorks sections={sections} />
+      <SecurityTechnologies sections={sections} />
+      <SecurityModal sections={sections} />
+      <SectionRenderer page="home" sections={sections} />
       <Footer />
     </main>
   );

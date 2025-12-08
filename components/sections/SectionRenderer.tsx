@@ -29,20 +29,31 @@ interface SectionData {
 interface SectionRendererProps {
   page: PageType;
   className?: string;
+  sections?: any[];
 }
 
 export default function SectionRenderer({
   page,
   className = "",
-}: SectionRendererProps) {
+  sections: sectionsProp,
+}: SectionRendererProps & { sections?: any[] }) {
   const { locale } = useLanguage();
   const [sections, setSections] = useState<SectionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadSections();
-  }, [page, locale]);
+    if (sectionsProp && sectionsProp.length > 0 && page === "home") {
+      // Sort sections by order to ensure correct indexing
+      const sortedData = [...sectionsProp].sort(
+        (a: any, b: any) => (a.order || 0) - (b.order || 0)
+      );
+      setSections(sortedData);
+      setLoading(false);
+    } else {
+      loadSections();
+    }
+  }, [sectionsProp, page, locale]);
 
   const loadSections = async () => {
     try {
@@ -94,7 +105,25 @@ export default function SectionRenderer({
   if (loading) {
     return (
       <div className={`py-12 ${className}`}>
-        <div className="text-center text-white/60">Loading sections...</div>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto space-y-8">
+            {/* Title Skeleton */}
+            <div className="text-center space-y-4">
+              <div className="h-10 bg-white/10 rounded-lg w-1/3 mx-auto animate-pulse" />
+              <div className="h-6 bg-white/10 rounded w-1/2 mx-auto animate-pulse" />
+            </div>
+            {/* Content Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="space-y-3 p-6 bg-white/5 rounded-lg">
+                  <div className="h-6 bg-white/10 rounded w-3/4 animate-pulse" />
+                  <div className="h-4 bg-white/10 rounded w-full animate-pulse" />
+                  <div className="h-4 bg-white/10 rounded w-5/6 animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

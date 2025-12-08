@@ -13,6 +13,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect, useMemo } from "react";
 import { getSectionsByPage } from "@/lib/api/sections";
 import { serviceIconComponents } from "@/lib/serviceIconOptions";
+import Link from "next/link";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -102,16 +103,25 @@ const fallbackContent: SectionContent = {
   cta: "Start Your Security Journey",
 };
 
-export default function HowItWorks() {
+export default function HowItWorks({
+  sections: sectionsProp,
+}: {
+  sections?: any[];
+}) {
   const { locale, messages } = useLanguage();
   const fallbackSection = messages?.howItWorksSection ?? {};
   const [sections, setSections] = useState<any[]>([]);
   const [sectionsLoading, setSectionsLoading] = useState(true);
 
-  // Load sections when locale changes
+  // Use provided sections or load them
   useEffect(() => {
-    loadSections();
-  }, [locale]);
+    if (sectionsProp && sectionsProp.length > 0) {
+      setSections(sectionsProp);
+      setSectionsLoading(false);
+    } else {
+      loadSections();
+    }
+  }, [sectionsProp, locale]);
 
   const loadSections = async () => {
     try {
@@ -310,9 +320,14 @@ export default function HowItWorks() {
         {/* CTA Button */}
         {fallbackSection.cta && (
           <div className="mt-12 flex justify-center">
-            <Button className="inline-flex items-center gap-2 rounded-full bg-primary text-black px-8 py-4 text-sm font-semibold hover:bg-primary/90 shadow-lg">
-              {fallbackSection.cta}
-              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+            <Button
+              className="inline-flex items-center gap-2 rounded-full bg-primary text-black px-8 py-4 text-sm font-semibold hover:bg-primary/90 shadow-lg"
+              asChild
+            >
+              <Link href="/quote">
+                {fallbackSection.cta}
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+              </Link>
             </Button>
           </div>
         )}

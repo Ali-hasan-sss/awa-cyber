@@ -41,15 +41,20 @@ const iconMap: Record<string, LucideIcon> = {
   LaptopMinimal,
 };
 
-export default function TrustedClients() {
+export default function TrustedClients({ sections: sectionsProp }: { sections?: any[] }) {
   const { locale, messages } = useLanguage();
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load sections when locale changes
+  // Use provided sections or load them
   useEffect(() => {
-    loadSections();
-  }, [locale]);
+    if (sectionsProp && sectionsProp.length > 0) {
+      setSections(sectionsProp);
+      setLoading(false);
+    } else {
+      loadSections();
+    }
+  }, [sectionsProp, locale]);
 
   const loadSections = async () => {
     try {
@@ -136,7 +141,21 @@ export default function TrustedClients() {
     return (
       <section className="relative bg-gradient-to-b from-white to-primary/5 py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-muted-foreground">Loading...</div>
+          <div className="max-w-6xl mx-auto space-y-12">
+            {/* Title Skeleton */}
+            <div className="text-center">
+              <div className="h-12 bg-gray-200 rounded-lg w-1/3 mx-auto animate-pulse" />
+            </div>
+            {/* Logos Grid Skeleton */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
+              {[...Array(12)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-20 bg-gray-200 rounded-lg animate-pulse"
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
     );

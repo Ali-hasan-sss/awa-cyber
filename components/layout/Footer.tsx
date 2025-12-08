@@ -1,19 +1,13 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Facebook,
-  Twitter,
-  Linkedin,
-  Instagram,
-  MapPin,
-  Mail,
-  Phone,
-  MessageCircle,
-} from "lucide-react";
+import { MapPin, Mail, Phone } from "lucide-react";
 import Logo from "../ui/logo";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getSectionsByPage } from "@/lib/api/sections";
+import { socialIconComponents, SocialIconKey } from "@/lib/socialIconOptions";
 
 type FooterContent = {
   tagline?: string;
@@ -72,23 +66,78 @@ const fallbackContent: FooterContent = {
   },
 };
 
-const socialLinks = [
-  { icon: Facebook, href: "#", label: "Facebook" },
-  { icon: Twitter, href: "#", label: "Twitter" },
-  { icon: Linkedin, href: "#", label: "LinkedIn" },
-  { icon: Instagram, href: "#", label: "Instagram" },
-];
+const getIconComponent = (iconName: string) => {
+  if (socialIconComponents[iconName as SocialIconKey]) {
+    return socialIconComponents[iconName as SocialIconKey];
+  }
+  return null;
+};
 
 export default function Footer() {
-  const { messages } = useLanguage();
+  const { locale, messages } = useLanguage();
+  const [contactSection, setContactSection] = useState<any>(null);
+  const [loadingContact, setLoadingContact] = useState(true);
+
   const content: FooterContent = {
     ...fallbackContent,
     ...(messages?.footer ?? {}),
   };
 
+  // Load contact section data
+  useEffect(() => {
+    loadContactSection();
+  }, [locale]);
+
+  const loadContactSection = async () => {
+    try {
+      setLoadingContact(true);
+      const data = await getSectionsByPage("contact", locale);
+      const sections = Array.isArray(data) ? data : (data as any)?.data || [];
+      const firstSection =
+        sections.find((s: any) => s.order === 1) || sections[0];
+      setContactSection(firstSection);
+    } catch (error) {
+      console.error("Error loading contact section:", error);
+    } finally {
+      setLoadingContact(false);
+    }
+  };
+
+  // Extract contact information from section features
+  const features = contactSection?.features || [];
+  const addressFeature = features[0];
+  const phoneFeature = features[1];
+  const socialFeatures = features.slice(2);
+
+  const address =
+    addressFeature &&
+    (typeof addressFeature.name === "string"
+      ? addressFeature.name
+      : addressFeature.name?.[locale] || "");
+
+  const phone =
+    phoneFeature &&
+    (typeof phoneFeature.name === "string"
+      ? phoneFeature.name
+      : phoneFeature.name?.[locale] || "");
+
+  // Quick Links mapping
+  const quickLinksMap: Record<string, string> = {
+    Home: "/",
+    "About Us": "/about",
+    About: "/about",
+    Services: "/services",
+    Portfolio: "/portfolio",
+    Contact: "/contact",
+    "اتصل بنا": "/contact",
+    "من نحن": "/about",
+    الخدمات: "/services",
+    الأعمال: "/portfolio",
+    الرئيسية: "/",
+  };
+
   const quickLinks =
     content.quickLinks?.links ?? fallbackContent.quickLinks!.links!;
-  const services = content.services?.items ?? fallbackContent.services!.items!;
 
   return (
     <footer className="relative bg-gray-900 text-white overflow-hidden">
@@ -105,28 +154,40 @@ export default function Footer() {
       </div>
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 mb-12">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12">
           {/* Company Info & Social Media */}
           <div className="space-y-6">
             <Logo />
             <p className="text-sm text-gray-300 leading-relaxed max-w-xs">
               {content.tagline}
             </p>
-            <div className="flex gap-3">
-              {socialLinks.map((social) => {
-                const Icon = social.icon;
-                return (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-black hover:bg-primary/90 transition-colors"
-                    aria-label={social.label}
-                  >
-                    <Icon className="h-5 w-5" />
-                  </a>
-                );
-              })}
-            </div>
+            {!loadingContact && socialFeatures.length > 0 && (
+              <div className="flex gap-3">
+                {socialFeatures.map((feature: any, index: number) => {
+                  const iconName = feature.icon;
+                  const link =
+                    typeof feature.description === "string"
+                      ? feature.description
+                      : feature.description?.[locale] || "";
+                  const IconComponent = getIconComponent(iconName);
+
+                  if (!IconComponent || !link) return null;
+
+                  return (
+                    <a
+                      key={index}
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-black hover:bg-primary/90 transition-colors"
+                      aria-label={iconName}
+                    >
+                      <IconComponent className="h-5 w-5" />
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Quick Links */}
@@ -135,38 +196,22 @@ export default function Footer() {
               {content.quickLinks?.title}
             </h3>
             <ul className="space-y-3">
-              {quickLinks.map((link, idx) => (
-                <li key={idx}>
-                  <Link
-                    href={
-                      link === "Home"
-                        ? "/"
-                        : `/${link.toLowerCase().replace(/\s+/g, "-")}`
-                    }
-                    className="flex items-center gap-2 text-sm text-gray-300 hover:text-primary transition-colors group"
-                  >
-                    <span className="h-1.5 w-1.5 rounded bg-gray-500 group-hover:bg-primary transition-colors" />
-                    {link}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Our Services */}
-          <div>
-            <h3 className="text-lg font-semibold text-primary mb-6">
-              {content.services?.title}
-            </h3>
-            <ul className="space-y-3">
-              {services.map((service, idx) => (
-                <li key={idx}>
-                  <span className="flex items-center gap-2 text-sm text-gray-300 group cursor-pointer">
-                    <span className="h-1.5 w-1.5 rounded bg-gray-500 group-hover:bg-primary transition-colors" />
-                    {service}
-                  </span>
-                </li>
-              ))}
+              {quickLinks.map((link, idx) => {
+                const href =
+                  quickLinksMap[link] ||
+                  `/${link.toLowerCase().replace(/\s+/g, "-")}`;
+                return (
+                  <li key={idx}>
+                    <Link
+                      href={href}
+                      className="flex items-center gap-2 text-sm text-gray-300 hover:text-primary transition-colors group"
+                    >
+                      <span className="h-1.5 w-1.5 rounded bg-gray-500 group-hover:bg-primary transition-colors" />
+                      {link}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
@@ -176,34 +221,40 @@ export default function Footer() {
               {content.contact?.title}
             </h3>
             <ul className="space-y-4">
-              <li className="flex items-start gap-3 text-sm text-gray-300">
-                <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                <span>{content.contact?.address}</span>
-              </li>
-              <li className="flex items-center gap-3 text-sm text-gray-300">
-                <Mail className="h-5 w-5 text-primary shrink-0" />
-                <a
-                  href={`mailto:${content.contact?.email}`}
-                  className="hover:text-primary transition-colors"
-                >
-                  {content.contact?.email}
-                </a>
-              </li>
-              <li className="flex items-center gap-3 text-sm text-gray-300">
-                <Phone className="h-5 w-5 text-primary shrink-0" />
-                <a
-                  href={`tel:${content.contact?.phone}`}
-                  className="hover:text-primary transition-colors"
-                >
-                  {content.contact?.phone}
-                </a>
-              </li>
-              <li className="flex items-center gap-3 text-sm text-gray-300">
-                <MessageCircle className="h-5 w-5 text-primary shrink-0" />
-                <a href="#" className="hover:text-primary transition-colors">
-                  {content.contact?.whatsapp}
-                </a>
-              </li>
+              {address && (
+                <li className="flex items-start gap-3 text-sm text-gray-300">
+                  <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <span>{address}</span>
+                </li>
+              )}
+              {phone && (
+                <li className="flex items-center gap-3 text-sm text-gray-300">
+                  <Phone className="h-5 w-5 text-primary shrink-0" />
+                  <a
+                    href={`tel:${phone}`}
+                    className="hover:text-primary transition-colors"
+                  >
+                    {phone}
+                  </a>
+                </li>
+              )}
+              {!address && !phone && !loadingContact && (
+                <>
+                  <li className="flex items-start gap-3 text-sm text-gray-300">
+                    <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                    <span>{content.contact?.address}</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-gray-300">
+                    <Phone className="h-5 w-5 text-primary shrink-0" />
+                    <a
+                      href={`tel:${content.contact?.phone}`}
+                      className="hover:text-primary transition-colors"
+                    >
+                      {content.contact?.phone}
+                    </a>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         </div>
@@ -224,12 +275,6 @@ export default function Footer() {
                 className="hover:text-primary transition-colors"
               >
                 {content.policies?.terms}
-              </Link>
-              <Link
-                href="/cookies"
-                className="hover:text-primary transition-colors"
-              >
-                {content.policies?.cookies}
               </Link>
             </div>
           </div>

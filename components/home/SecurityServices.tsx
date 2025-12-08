@@ -1,10 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState, useMemo } from "react";
 import { fetchPublicServices } from "@/lib/actions/serviceActions";
 import { getSectionsByPage } from "@/lib/api/sections";
+import { ArrowRight } from "lucide-react";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -26,6 +28,7 @@ const stripHtml = (html: string): string => {
 };
 
 type ServiceCard = {
+  _id?: string;
   title: string;
   description: string;
   image?: string;
@@ -33,7 +36,11 @@ type ServiceCard = {
   linkLabel?: string;
 };
 
-export default function SecurityServices() {
+export default function SecurityServices({
+  sections: sectionsProp,
+}: {
+  sections?: any[];
+}) {
   const { locale, messages } = useLanguage();
   const fallbackSection = messages?.servicesSection ?? {};
   const [sections, setSections] = useState<any[]>([]);
@@ -41,10 +48,15 @@ export default function SecurityServices() {
   const [remoteCards, setRemoteCards] = useState<ServiceCard[] | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Load sections when locale changes
+  // Use provided sections or load them
   useEffect(() => {
-    loadSections();
-  }, [locale]);
+    if (sectionsProp && sectionsProp.length > 0) {
+      setSections(sectionsProp);
+      setSectionsLoading(false);
+    } else {
+      loadSections();
+    }
+  }, [sectionsProp, locale]);
 
   const loadSections = async () => {
     try {
@@ -109,16 +121,18 @@ export default function SecurityServices() {
     fetchPublicServices(lang)
       .then((data) => {
         if (cancelled) return;
-        const mapped: ServiceCard[] = Array.isArray(data)
-          ? data.slice(0, 4).map((service: any) => ({
-              title: service.title || "",
-              description: service.description || "",
-              image:
-                service.images && service.images.length > 0
-                  ? service.images[0]
-                  : undefined,
-            }))
-          : [];
+        const servicesList = Array.isArray(data) ? data : data?.data || [];
+        const mapped: ServiceCard[] = servicesList
+          .slice(0, 4)
+          .map((service: any) => ({
+            _id: service._id,
+            title: service.title || "",
+            description: service.description || "",
+            image:
+              service.images && service.images.length > 0
+                ? service.images[0]
+                : undefined,
+          }));
         setRemoteCards(mapped.length ? mapped : null);
       })
       .catch(() => {
@@ -197,18 +211,25 @@ export default function SecurityServices() {
 
         <div className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {cards.map((card: ServiceCard, idx: number) => {
+            // Find the service ID from remoteCards
+            const serviceId =
+              remoteCards && remoteCards[idx]
+                ? (remoteCards[idx] as any)._id
+                : null;
+
             return (
-              <div
+              <Link
                 key={`${card.title}-${idx}`}
-                className="rounded-3xl border border-border/60 bg-white shadow-sm overflow-hidden h-full flex flex-col"
+                href={serviceId ? `/services/${serviceId}` : "/services"}
+                className="group rounded-3xl border border-border/60 bg-white shadow-sm overflow-hidden h-full flex flex-col hover:shadow-xl hover:border-primary/30 transition-all duration-300"
               >
                 {card.image ? (
-                  <div className="relative w-full aspect-video">
+                  <div className="relative w-full aspect-video overflow-hidden">
                     <Image
                       src={card.image}
                       alt={card.title}
                       fill
-                      className="object-cover"
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
                       sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
                     />
                   </div>
@@ -216,14 +237,20 @@ export default function SecurityServices() {
                   <div className="relative w-full aspect-video bg-gradient-to-br from-primary/10 to-primary/5" />
                 )}
                 <div className="p-6 md:p-8 flex flex-col flex-grow">
-                  <h3 className="text-2xl font-semibold text-foreground mb-3">
+                  <h3 className="text-2xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
                     {card.title}
                   </h3>
-                  <p className="text-base text-muted-foreground leading-relaxed flex-grow">
+                  <p className="text-base text-muted-foreground leading-relaxed flex-grow mb-4">
                     {card.description}
                   </p>
+                  <div className="flex items-center text-primary font-semibold text-sm mt-auto">
+                    <span>
+                      {locale === "ar" ? "عرض التفاصيل" : "View Details"}
+                    </span>
+                    <ArrowRight className="h-4 w-4 ml-2 rtl:mr-2 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                  </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>

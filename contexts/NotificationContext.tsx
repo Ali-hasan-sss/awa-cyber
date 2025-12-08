@@ -126,6 +126,18 @@ export function NotificationProvider({
                 : `${clientName} added a new modification for project ${projectName}`;
             }
 
+            // Contact message notifications
+            if (data.type === "contact_message") {
+              const senderName = data.name || "";
+              const senderEmail = data.email || "";
+
+              title = isArabic ? "رسالة جديدة" : "New Contact Message";
+
+              body = isArabic
+                ? `رسالة جديدة من ${senderName} (${senderEmail})`
+                : `New message from ${senderName} (${senderEmail})`;
+            }
+
             return {
               id: log._id || log.id,
               title: title || log.title,

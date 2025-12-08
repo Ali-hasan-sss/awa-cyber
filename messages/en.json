@@ -344,7 +344,7 @@
         "icon": "Activity"
       }
     ],
-    "cta": "Start Your Security Journey"
+    "cta": "Start Your Journey"
   },
   "securityModal": {
     "title": "Ready to Secure Your Business?",
@@ -357,7 +357,7 @@
     "privacy": "Your information is secure and confidential"
   },
   "footer": {
-    "tagline": "Protecting businesses from cyber threats with cutting-edge security solutions and expert guidance.",
+    "tagline": "We build the technology that drives your success",
     "quickLinks": {
       "title": "Quick Links",
       "links": ["Home", "About Us", "Services", "Portfolio", "Contact"]

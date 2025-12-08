@@ -146,6 +146,24 @@ const PortfolioHeroSection = dynamic(() => import("./PortfolioHero"), {
   ),
 });
 
+const ServicesHeroSection = dynamic(() => import("./ServicesHero"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
+const ContactHeroSection = dynamic(() => import("./ContactHero"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="text-center text-white/60">Loading...</div>
+    </div>
+  ),
+});
+
 const WhatWeOfferSection = dynamic(() => import("./WhatWeOffer"), {
   ssr: false,
   loading: () => (
@@ -718,10 +736,26 @@ export default function SectionsManagementPage() {
         </>
       )}
 
-      {/* Hide traditional sections display when on home, about, or portfolio page - only show new section components */}
+      {/* Services Hero Section - Only show when filtering by services page */}
+      {filterPage === "services" && (
+        <>
+          <ServicesHeroSection />
+        </>
+      )}
+
+      {/* Contact Hero Section - Only show when filtering by contact page */}
+      {filterPage === "contact" && (
+        <>
+          <ContactHeroSection />
+        </>
+      )}
+
+      {/* Hide traditional sections display when on home, about, portfolio, services, or contact page - only show new section components */}
       {filterPage !== "home" &&
         filterPage !== "about" &&
-        filterPage !== "portfolio" && (
+        filterPage !== "portfolio" &&
+        filterPage !== "services" &&
+        filterPage !== "contact" && (
           <>
             {loading && (
               <p className="text-sm text-white/60">

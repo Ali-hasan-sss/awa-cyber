@@ -52,17 +52,26 @@ const fallbackContent: SectionContent = {
   privacy: "Your information is secure and confidential",
 };
 
-export default function SecurityModal() {
+export default function SecurityModal({
+  sections: sectionsProp,
+}: {
+  sections?: any[];
+}) {
   const { locale, messages } = useLanguage();
   const router = useRouter();
   const fallbackSection = messages?.securityModal ?? {};
   const [sections, setSections] = useState<any[]>([]);
   const [sectionsLoading, setSectionsLoading] = useState(true);
 
-  // Load sections when locale changes
+  // Use provided sections or load them
   useEffect(() => {
-    loadSections();
-  }, [locale]);
+    if (sectionsProp && sectionsProp.length > 0) {
+      setSections(sectionsProp);
+      setSectionsLoading(false);
+    } else {
+      loadSections();
+    }
+  }, [sectionsProp, locale]);
 
   const loadSections = async () => {
     try {

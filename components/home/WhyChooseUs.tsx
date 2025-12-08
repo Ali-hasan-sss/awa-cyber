@@ -14,6 +14,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect, useMemo } from "react";
 import { getSectionsByPage } from "@/lib/api/sections";
 import { serviceIconComponents } from "@/lib/serviceIconOptions";
+import Link from "next/link";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -116,16 +117,25 @@ const fallbackContent: SectionContent = {
   imageAlt: "Cybersecurity professional holding a digital lock hologram",
 };
 
-export default function WhyChooseUs() {
+export default function WhyChooseUs({
+  sections: sectionsProp,
+}: {
+  sections?: any[];
+}) {
   const { locale, messages } = useLanguage();
   const fallbackSection = messages?.whyChooseSection ?? {};
   const [sections, setSections] = useState<any[]>([]);
   const [sectionsLoading, setSectionsLoading] = useState(true);
 
-  // Load sections when locale changes
+  // Use provided sections or load them
   useEffect(() => {
-    loadSections();
-  }, [locale]);
+    if (sectionsProp && sectionsProp.length > 0) {
+      setSections(sectionsProp);
+      setSectionsLoading(false);
+    } else {
+      loadSections();
+    }
+  }, [sectionsProp, locale]);
 
   const loadSections = async () => {
     try {
@@ -372,9 +382,14 @@ export default function WhyChooseUs() {
             </div>
 
             {section.cta && (
-              <Button className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary text-black px-6 py-3 text-sm font-semibold hover:bg-primary/90">
-                {section.cta}
-                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+              <Button
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary text-black px-6 py-3 text-sm font-semibold hover:bg-primary/90"
+                asChild
+              >
+                <Link href="/about">
+                  {section.cta}
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                </Link>
               </Button>
             )}
           </div>

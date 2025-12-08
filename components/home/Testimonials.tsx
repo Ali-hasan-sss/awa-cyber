@@ -28,14 +28,27 @@ const getInitials = (name: string): string => {
     .slice(0, 2);
 };
 
-export default function Testimonials() {
+export default function Testimonials({
+  sections: sectionsProp,
+}: {
+  sections?: any[];
+}) {
   const { locale } = useLanguage();
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadSections();
-  }, [locale]);
+    if (sectionsProp && sectionsProp.length > 0) {
+      // Sort sections by order to ensure correct indexing
+      const sortedData = [...sectionsProp].sort(
+        (a: any, b: any) => (a.order || 0) - (b.order || 0)
+      );
+      setSections(sortedData);
+      setLoading(false);
+    } else {
+      loadSections();
+    }
+  }, [sectionsProp, locale]);
 
   const loadSections = async () => {
     try {
@@ -120,7 +133,37 @@ export default function Testimonials() {
     return (
       <section className="relative bg-white py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-muted-foreground">Loading...</div>
+          <div className="max-w-6xl mx-auto space-y-12">
+            {/* Title and Description Skeleton */}
+            <div className="text-center space-y-4">
+              <div className="h-12 bg-gray-200 rounded-lg w-1/3 mx-auto animate-pulse" />
+              <div className="h-6 bg-gray-200 rounded w-1/2 mx-auto animate-pulse" />
+            </div>
+            {/* Testimonials Grid Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="p-6 bg-gray-50 rounded-2xl space-y-4">
+                  {/* Stars Skeleton */}
+                  <div className="flex gap-1">
+                    {[...Array(5)].map((_, j) => (
+                      <div
+                        key={j}
+                        className="w-5 h-5 bg-gray-200 rounded animate-pulse"
+                      />
+                    ))}
+                  </div>
+                  {/* Text Skeleton */}
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+                    <div className="h-4 bg-gray-200 rounded w-5/6 animate-pulse" />
+                    <div className="h-4 bg-gray-200 rounded w-4/6 animate-pulse" />
+                  </div>
+                  {/* Name Skeleton */}
+                  <div className="h-5 bg-gray-200 rounded w-1/2 animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
     );

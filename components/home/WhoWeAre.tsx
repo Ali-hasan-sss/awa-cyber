@@ -25,15 +25,24 @@ const stripHtml = (html: string): string => {
   return tmp.textContent || tmp.innerText || "";
 };
 
-export default function WhoWeAre() {
+export default function WhoWeAre({
+  sections: sectionsProp,
+}: {
+  sections?: any[];
+}) {
   const { locale } = useLanguage();
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load sections when locale changes
+  // Use provided sections or load them
   useEffect(() => {
-    loadSections();
-  }, [locale]);
+    if (sectionsProp && sectionsProp.length > 0) {
+      setSections(sectionsProp);
+      setLoading(false);
+    } else {
+      loadSections();
+    }
+  }, [sectionsProp, locale]);
 
   const loadSections = async () => {
     try {
@@ -106,7 +115,30 @@ export default function WhoWeAre() {
     return (
       <section className="relative bg-white py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-muted-foreground">Loading...</div>
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+            {/* Left Side - Content Skeleton */}
+            <div className="space-y-6">
+              <div className="h-12 bg-gray-200 rounded-lg w-3/4 animate-pulse" />
+              <div className="space-y-3">
+                <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+                <div className="h-4 bg-gray-200 rounded w-5/6 animate-pulse" />
+                <div className="h-4 bg-gray-200 rounded w-4/6 animate-pulse" />
+              </div>
+              {/* Stats Skeleton */}
+              <div className="grid grid-cols-2 gap-6 pt-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-8 bg-gray-200 rounded w-20 animate-pulse" />
+                    <div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Right Side - Image Skeleton */}
+            <div className="relative">
+              <div className="aspect-video bg-gray-200 rounded-3xl shadow-2xl animate-pulse" />
+            </div>
+          </div>
         </div>
       </section>
     );

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   ShieldCheck,
   Target,
@@ -77,7 +78,7 @@ const fallbackProject: ProjectContent = {
   imageAlt: "Security specialists reviewing e-commerce dashboards",
 };
 
-export default function LatestProjects() {
+export default function LatestProjects({ sections: sectionsProp }: { sections?: any[] }) {
   const { locale, messages } = useLanguage();
   const fallbackSection = messages?.projectsSection ?? {};
   const [sections, setSections] = useState<any[]>([]);
@@ -85,10 +86,15 @@ export default function LatestProjects() {
   const [portfolios, setPortfolios] = useState<any[]>([]);
   const [portfoliosLoading, setPortfoliosLoading] = useState(true);
 
-  // Load sections when locale changes
+  // Use provided sections or load them
   useEffect(() => {
-    loadSections();
-  }, [locale]);
+    if (sectionsProp && sectionsProp.length > 0) {
+      setSections(sectionsProp);
+      setSectionsLoading(false);
+    } else {
+      loadSections();
+    }
+  }, [sectionsProp, locale]);
 
   const loadSections = async () => {
     try {
@@ -349,11 +355,14 @@ export default function LatestProjects() {
                   );
                 })}
               </ul>
-              {project.linkLabel && (
-                <button className="inline-flex items-center gap-2 text-sm font-semibold text-primary justify-center md:justify-start">
+              {project.linkLabel && latestPortfolio && (
+                <Link
+                  href={`/portfolio/${latestPortfolio._id}`}
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 justify-center md:justify-start transition-colors"
+                >
                   {project.linkLabel}
                   <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-                </button>
+                </Link>
               )}
             </div>
           </div>
@@ -361,9 +370,14 @@ export default function LatestProjects() {
 
         {fallbackSection.cta && (
           <div className="mt-12 flex justify-center">
-            <Button className="bg-muted text-foreground hover:bg-muted/90 px-8 py-6 text-base font-semibold rounded-full">
-              {fallbackSection.cta}
-              <ArrowRight className="h-4 w-4 ltr:ml-2 rtl:mr-2 rtl:rotate-180" />
+            <Button
+              className="bg-muted text-foreground hover:bg-muted/90 px-8 py-6 text-base font-semibold rounded-full"
+              asChild
+            >
+              <Link href="/portfolio">
+                {fallbackSection.cta}
+                <ArrowRight className="h-4 w-4 ltr:ml-2 rtl:mr-2 rtl:rotate-180" />
+              </Link>
             </Button>
           </div>
         )}

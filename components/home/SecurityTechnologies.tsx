@@ -140,16 +140,25 @@ const fallbackContent: SectionContent = {
   ],
 };
 
-export default function SecurityTechnologies() {
+export default function SecurityTechnologies({
+  sections: sectionsProp,
+}: {
+  sections?: any[];
+}) {
   const { locale, messages } = useLanguage();
   const fallbackSection = messages?.technologiesSection ?? {};
   const [sections, setSections] = useState<any[]>([]);
   const [sectionsLoading, setSectionsLoading] = useState(true);
 
-  // Load sections when locale changes
+  // Use provided sections or load them
   useEffect(() => {
-    loadSections();
-  }, [locale]);
+    if (sectionsProp && sectionsProp.length > 0) {
+      setSections(sectionsProp);
+      setSectionsLoading(false);
+    } else {
+      loadSections();
+    }
+  }, [sectionsProp, locale]);
 
   const loadSections = async () => {
     try {
