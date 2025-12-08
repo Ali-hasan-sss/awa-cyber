@@ -466,8 +466,8 @@ export default function ContactHeroSection() {
                 </div>
                 <p className="text-xs text-white/50 mb-4">
                   {isArabic
-                    ? "اختر الأيقونة وأدخل الرابط في الوصف"
-                    : "Select icon and enter link in description"}
+                    ? "اختر الأيقونة وأدخل الرابط"
+                    : "Select icon and enter link"}
                 </p>
                 {socialFeatures.map((feature, index) => {
                   const actualIndex = index + 2;
@@ -600,34 +600,20 @@ export default function ContactHeroSection() {
                         </div>
                         <div>
                           <label className="text-xs text-white/70 block mb-1">
-                            {isArabic ? "الرابط (إنجليزي)" : "Link (English)"}
+                            {isArabic ? "الرابط" : "Link"}
                           </label>
                           <Input
-                            value={feature.descriptionEn}
-                            onChange={(e) =>
-                              updateFeature(
-                                actualIndex,
-                                "descriptionEn",
-                                e.target.value
-                              )
+                            value={
+                              feature.descriptionEn || feature.nameEn || ""
                             }
-                            className="bg-white/5 border-white/10 text-white text-sm"
-                            placeholder="https://facebook.com/yourpage"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-white/70 block mb-1">
-                            {isArabic ? "الرابط (عربي)" : "Link (Arabic)"}
-                          </label>
-                          <Input
-                            value={feature.descriptionAr}
-                            onChange={(e) =>
-                              updateFeature(
-                                actualIndex,
-                                "descriptionAr",
-                                e.target.value
-                              )
-                            }
+                            onChange={(e) => {
+                              const link = e.target.value;
+                              // Update name and description in both languages with the same link
+                              updateFeature(actualIndex, "nameEn", link);
+                              updateFeature(actualIndex, "nameAr", link);
+                              updateFeature(actualIndex, "descriptionEn", link);
+                              updateFeature(actualIndex, "descriptionAr", link);
+                            }}
                             className="bg-white/5 border-white/10 text-white text-sm"
                             placeholder="https://facebook.com/yourpage"
                           />
