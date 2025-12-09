@@ -45,6 +45,7 @@ export interface CreateSectionPayload {
     ar: string;
   };
   page: PageType;
+  serviceId?: string; // معرف الخدمة المرتبطة
   images?: string[];
   features?: Feature[];
   order?: number;

@@ -1,37 +1,51 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { fetchPublicServices } from "@/lib/actions/serviceActions";
+import {
+  fetchServiceById,
+  fetchPublicServices,
+} from "@/lib/actions/serviceActions";
 import ServiceHero from "./ServiceHero";
 import ServiceFeatures from "./ServiceFeatures";
+import ServiceSections from "./ServiceSections";
+import ServiceFirstSection from "./ServiceFirstSection";
+import ServiceSecondSection from "./ServiceSecondSection";
+import ServiceThirdSection from "./ServiceThirdSection";
+import ServiceFourthSection from "./ServiceFourthSection";
+import ServiceFifthSection from "./ServiceFifthSection";
 import RelatedServices from "./RelatedServices";
 
 export default function ServiceDetail({ serviceId }: { serviceId: string }) {
   const { locale } = useLanguage();
-  const [services, setServices] = useState<any[]>([]);
+  const [currentService, setCurrentService] = useState<any>(null);
+  const [relatedServices, setRelatedServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadServices();
-  }, [locale]);
+    loadService();
+  }, [serviceId, locale]);
 
-  const loadServices = async () => {
+  const loadService = async () => {
     try {
       setLoading(true);
-      const data = await fetchPublicServices(locale);
-      setServices(Array.isArray(data) ? data : data?.data || []);
+      // جلب الخدمة المطلوبة حسب المعرف مع الأقسام
+      const serviceData = await fetchServiceById(serviceId, locale);
+      setCurrentService(serviceData);
+
+      // جلب جميع الخدمات للعرض في RelatedServices
+      const allServicesData = await fetchPublicServices(locale);
+      const allServices = Array.isArray(allServicesData)
+        ? allServicesData
+        : allServicesData?.data || [];
+      setRelatedServices(allServices);
     } catch (error) {
-      console.error("Error loading services:", error);
-      setServices([]);
+      console.error("Error loading service:", error);
+      setCurrentService(null);
     } finally {
       setLoading(false);
     }
   };
-
-  const currentService = useMemo(() => {
-    return services.find((s: any) => s._id === serviceId);
-  }, [services, serviceId]);
 
   if (loading) {
     return (
@@ -92,10 +106,57 @@ export default function ServiceDetail({ serviceId }: { serviceId: string }) {
       {/* Hero Section */}
       <ServiceHero service={currentService} />
 
+      {/* First Section - Two Column Layout */}
+      {currentService.sections &&
+        currentService.sections.length > 0 &&
+        currentService.sections[0] && (
+          <ServiceFirstSection section={currentService.sections[0]} />
+        )}
+
       {/* Content Section */}
       <div className="relative z-10 bg-white">
         <ServiceFeatures service={currentService} />
-        <RelatedServices currentServiceId={serviceId} services={services} />
+
+        {/* Second Section - Key Features & Benefits */}
+        {currentService.sections &&
+          currentService.sections.length > 1 &&
+          currentService.sections[1] && (
+            <ServiceSecondSection section={currentService.sections[1]} />
+          )}
+
+        {/* Third Section - Our Process */}
+        {currentService.sections &&
+          currentService.sections.length > 2 &&
+          currentService.sections[2] && (
+            <ServiceThirdSection section={currentService.sections[2]} />
+          )}
+
+        {/* Fourth Section - Recent Projects */}
+        {currentService.sections &&
+          currentService.sections.length > 3 &&
+          currentService.sections[3] && (
+            <ServiceFourthSection
+              section={currentService.sections[3]}
+              serviceId={serviceId}
+            />
+          )}
+
+        {/* Fifth Section - Call to Action */}
+        {currentService.sections &&
+          currentService.sections.length > 4 &&
+          currentService.sections[4] && (
+            <ServiceFifthSection section={currentService.sections[4]} />
+          )}
+
+        {/* Other Sections */}
+        {currentService.sections && currentService.sections.length > 5 && (
+          <ServiceSections sections={currentService.sections.slice(5)} />
+        )}
+
+        <RelatedServices
+          currentServiceId={serviceId}
+          services={relatedServices}
+        />
       </div>
     </div>
   );

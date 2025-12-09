@@ -5,7 +5,15 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import RichTextEditor from "@/components/ui/RichTextEditor";
-import { Pencil, Save, X, Trash2, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Pencil,
+  Save,
+  X,
+  Trash2,
+  Plus,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { getSections, updateSection, Section } from "@/lib/api/sections";
 import FileUpload from "@/components/ui/FileUpload";
 import Image from "next/image";
@@ -31,14 +39,19 @@ const stripHtml = (html: string): string => {
 export default function WhyChooseUsSection() {
   const { locale } = useLanguage();
   const isArabic = locale === "ar";
-  const [whyChooseUsSection, setWhyChooseUsSection] =
-    useState<Section | null>(null);
+  const [whyChooseUsSection, setWhyChooseUsSection] = useState<Section | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [iconPickerIndex, setIconPickerIndex] = useState<number | string | null>(null);
-  const [activeFeatureIndex, setActiveFeatureIndex] = useState<number | null>(null);
+  const [iconPickerIndex, setIconPickerIndex] = useState<
+    number | string | null
+  >(null);
+  const [activeFeatureIndex, setActiveFeatureIndex] = useState<number | null>(
+    null
+  );
   const [draftFeature, setDraftFeature] = useState<{
     icon: string;
     nameEn: string;
@@ -166,8 +179,7 @@ export default function WhyChooseUsSection() {
         descriptionAr: whyChooseUsSection.description?.ar || "",
         images: whyChooseUsSection.images || [],
         features:
-          whyChooseUsSection.features &&
-          whyChooseUsSection.features.length > 0
+          whyChooseUsSection.features && whyChooseUsSection.features.length > 0
             ? whyChooseUsSection.features.map((feature) => ({
                 icon: feature.icon || "",
                 nameEn: feature.name?.en || "",
@@ -321,15 +333,17 @@ export default function WhyChooseUsSection() {
 
   // First two features are for badges, rest for side display
   const badgeFeature = sortedFeatures.length > 0 ? sortedFeatures[0] : null;
-  const experienceFeature = sortedFeatures.length > 1 ? sortedFeatures[1] : null;
+  const experienceFeature =
+    sortedFeatures.length > 1 ? sortedFeatures[1] : null;
   const sideFeatures = sortedFeatures.length > 2 ? sortedFeatures.slice(2) : [];
 
   // Get section image
-  const sectionImage = form.images.length > 0 
-    ? form.images[0] 
-    : whyChooseUsSection?.images && whyChooseUsSection.images.length > 0
-    ? whyChooseUsSection.images[0]
-    : "/images/cyberhand.jpg";
+  const sectionImage =
+    form.images.length > 0
+      ? form.images[0]
+      : whyChooseUsSection?.images && whyChooseUsSection.images.length > 0
+      ? whyChooseUsSection.images[0]
+      : "/images/cyberhand.jpg";
 
   if (loading) {
     return (
@@ -512,10 +526,10 @@ export default function WhyChooseUsSection() {
                       accept="image/*"
                       maxSize={10}
                       hideUploadedFiles={true}
-                      onMultipleUploadComplete={(urls) => {
+                      onUploadComplete={(url) => {
                         setForm((prev) => ({
                           ...prev,
-                          images: urls.length > 0 ? [urls[0]] : [],
+                          images: [url],
                         }));
                       }}
                     />
@@ -773,21 +787,24 @@ export default function WhyChooseUsSection() {
                                   {feature.nameEn || feature.nameAr}
                                   {isBadgeFeature && (
                                     <span className="ml-2 text-xs text-yellow-300">
-                                      ({index === 0 ? "Badge Top" : "Badge Bottom"})
+                                      (
+                                      {index === 0
+                                        ? "Badge Top"
+                                        : "Badge Bottom"}
+                                      )
                                     </span>
                                   )}
                                 </p>
                                 <p className="text-xs text-white/60">
-                                  {isArabic ? "الترتيب" : "Order"}: {feature.order}
+                                  {isArabic ? "الترتيب" : "Order"}:{" "}
+                                  {feature.order}
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-1">
                               <Button
                                 type="button"
-                                onClick={() =>
-                                  moveFeature(originalIndex, "up")
-                                }
+                                onClick={() => moveFeature(originalIndex, "up")}
                                 variant="ghost"
                                 size="sm"
                                 disabled={originalIndex === 0}
@@ -1060,7 +1077,9 @@ export default function WhyChooseUsSection() {
                     {experienceFeature && (
                       <div className="absolute -bottom-6 ltr:-right-6 rtl:-left-6 rounded-3xl bg-primary text-black px-6 py-4 text-center shadow-xl z-20">
                         <p className="text-3xl font-bold">
-                          {experienceFeature.nameEn || experienceFeature.nameAr || ""}
+                          {experienceFeature.nameEn ||
+                            experienceFeature.nameAr ||
+                            ""}
                         </p>
                         <p className="text-xs font-semibold uppercase tracking-wide">
                           {experienceFeature.descriptionEn ||
@@ -1090,8 +1109,7 @@ export default function WhyChooseUsSection() {
                     <div className="grid gap-5">
                       {sideFeatures.map((feature, idx) => {
                         const Icon =
-                          feature.icon &&
-                          feature.icon in serviceIconComponents
+                          feature.icon && feature.icon in serviceIconComponents
                             ? serviceIconComponents[
                                 feature.icon as ServiceIconKey
                               ]
@@ -1128,4 +1146,3 @@ export default function WhyChooseUsSection() {
     </div>
   );
 }
-

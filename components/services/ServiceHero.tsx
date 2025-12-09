@@ -50,30 +50,14 @@ export default function ServiceHero({ service }: { service: any }) {
     features.length > 0 ? getIconComponent(features[0].icon) : null;
 
   return (
-    <section className="relative min-h-[70vh] flex items-center overflow-hidden">
-      {/* Background Image with overlay */}
-      <div className="absolute inset-0 -z-10">
-        <Image
-          src={heroImage}
-          alt={title}
-          fill
-          priority
-          className="object-cover"
-          style={{
-            filter: "blur(4px)",
-          }}
-        />
-        {/* Dark blue overlay */}
-        <div className="absolute inset-0 bg-primary/70 z-10" />
-      </div>
-
+    <section className="relative min-h-[70vh] flex items-center overflow-hidden bg-gradient-to-br from-yellow-400 via-amber-300 to-amber-200">
       {/* Content Container */}
       <div className="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="max-w-4xl">
           {/* Back to Services Link */}
           <Link
             href="/services"
-            className="inline-flex items-center gap-2 text-white hover:text-primary transition-colors mb-8"
+            className="inline-flex items-center gap-2 text-gray-900 hover:text-gray-700 transition-colors mb-8"
           >
             <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
             <span className="text-base font-medium">
@@ -85,32 +69,48 @@ export default function ServiceHero({ service }: { service: any }) {
           <div className="flex items-start gap-4 mb-6">
             {/* Icon Block */}
             {IconComponent && (
-              <div className="flex-shrink-0 h-16 w-16 rounded-2xl bg-white border border-primary/20 flex items-center justify-center">
-                <IconComponent className="h-8 w-8 text-primary" />
+              <div className="flex-shrink-0 h-16 w-16 rounded-2xl bg-white border border-gray-900/20 flex items-center justify-center shadow-lg">
+                <IconComponent className="h-8 w-8 text-gray-900" />
               </div>
             )}
             {/* Title */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight flex-1">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight flex-1">
               {title}
             </h1>
           </div>
 
           {/* Description */}
           {description && (
-            <p className="text-lg md:text-xl text-white/90 leading-relaxed mb-8 max-w-3xl">
+            <p className="text-lg md:text-xl text-gray-800 leading-relaxed mb-8 max-w-3xl">
               {stripHtml(description)}
             </p>
           )}
 
-          {/* Get Started Button */}
-          <Button
-            asChild
-            className="rounded-full bg-white text-primary hover:bg-white/90 px-8 py-6 text-base font-semibold shadow-lg"
-          >
-            <Link href="/quote">
-              {locale === "ar" ? "ابدأ الآن" : "Get Started"}
-            </Link>
-          </Button>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-start gap-4">
+            {/* Get Started Button */}
+            <Button
+              asChild
+              size="lg"
+              className="bg-gray-900 text-white hover:bg-gray-800 font-semibold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <Link href="/quote">
+                {locale === "ar" ? "طلب عرض سعر" : "Get a Free Quote"}
+              </Link>
+            </Button>
+
+            {/* Contact Us Button */}
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="bg-transparent border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white font-semibold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <Link href="/contact">
+                {locale === "ar" ? "اتصل بنا" : "Contact Us"}
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </section>

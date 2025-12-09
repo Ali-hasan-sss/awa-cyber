@@ -187,10 +187,13 @@ export default function ContactHero() {
             <div className="flex items-center justify-center gap-4">
               {socialFeatures.map((feature: any, index: number) => {
                 const iconName = feature.icon;
+                // Use description for full URL, fallback to name if description is empty
                 const link =
                   typeof feature.description === "string"
-                    ? feature.description
-                    : feature.description?.[locale] || "";
+                    ? feature.description || feature.name
+                    : feature.description?.[locale] ||
+                      feature.name?.[locale] ||
+                      "";
                 const IconComponent = getIconComponent(iconName);
 
                 if (!link) return null;

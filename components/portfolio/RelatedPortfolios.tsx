@@ -14,10 +14,41 @@ export default function RelatedPortfolios({
 }) {
   const { locale } = useLanguage();
 
-  // Get related portfolios (exclude current, take 3)
+  // Find current portfolio to get its serviceId
+  const currentPortfolio = portfolios.find(
+    (p: any) => p._id === currentPortfolioId
+  );
+  const currentServiceId =
+    currentPortfolio?.serviceId ||
+    (currentPortfolio?.service?._id
+      ? String(currentPortfolio.service._id)
+      : null) ||
+    (currentPortfolio?.service ? String(currentPortfolio.service) : null);
+
+  // Get related portfolios with priority for same service
   const relatedPortfolios = portfolios
     .filter((p: any) => p._id !== currentPortfolioId)
-    .slice(0, 3);
+    .sort((a: any, b: any) => {
+      // Get serviceId for each portfolio
+      const aServiceId =
+        a.serviceId ||
+        (a.service?._id ? String(a.service._id) : null) ||
+        (a.service ? String(a.service) : null);
+      const bServiceId =
+        b.serviceId ||
+        (b.service?._id ? String(b.service._id) : null) ||
+        (b.service ? String(b.service) : null);
+
+      // Prioritize portfolios with same serviceId
+      if (currentServiceId) {
+        const aMatches = aServiceId === currentServiceId;
+        const bMatches = bServiceId === currentServiceId;
+        if (aMatches && !bMatches) return -1;
+        if (!aMatches && bMatches) return 1;
+      }
+      return 0;
+    })
+    .slice(0, 5);
 
   if (relatedPortfolios.length === 0) {
     return null;

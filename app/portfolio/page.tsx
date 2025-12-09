@@ -11,8 +11,8 @@ export default function PortfolioPage() {
       {/* Content that appears above the fixed background */}
       <div className="relative z-10 bg-white">
         <PortfolioGrid />
-        <Footer />
       </div>
+      <Footer />
     </main>
   );
 }

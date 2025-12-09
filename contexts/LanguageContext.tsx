@@ -11,6 +11,7 @@ interface LanguageContextType {
   setLocale: (locale: Locale) => void;
   t: (key: string) => string;
   messages: Record<string, any>;
+  isArabic: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -81,6 +82,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         setLocale,
         t,
         messages: messages[locale],
+        isArabic: locale === "ar",
       }}
     >
       {children}

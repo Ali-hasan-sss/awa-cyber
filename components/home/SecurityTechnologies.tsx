@@ -249,25 +249,6 @@ export default function SecurityTechnologies({
     return fallbackContent.tools || [];
   }, [technologiesSection, locale]);
 
-  // Get features from second section as stats
-  const stats = useMemo(() => {
-    if (secondSection?.features && secondSection.features.length > 0) {
-      return secondSection.features
-        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
-        .map((feature: any) => ({
-          value:
-            typeof feature.name === "string"
-              ? feature.name
-              : feature.name?.[locale] || feature.name?.en || "",
-          label:
-            typeof feature.description === "string"
-              ? feature.description
-              : feature.description?.[locale] || feature.description?.en || "",
-        }));
-    }
-    return fallbackContent.stats || [];
-  }, [secondSection, locale]);
-
   // Build section content
   const section: SectionContent = useMemo(() => {
     const content: SectionContent = {
@@ -355,7 +336,7 @@ export default function SecurityTechnologies({
                       />
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-                    <Icon className="h-6 w-6" />
+                        <Icon className="h-6 w-6" />
                       </div>
                     )}
                   </div>
@@ -374,17 +355,6 @@ export default function SecurityTechnologies({
               );
             })}
           </div>
-        </div>
-
-        <div className="mt-10 rounded-full bg-white shadow-lg border border-border/60 px-6 py-6 md:px-12 flex flex-col gap-6 md:flex-row md:items-center md:justify-between text-center">
-          {stats.map((stat: Stat, idx: number) => (
-            <div key={`${stat.label}-${idx}`} className="space-y-1">
-              <p className="text-3xl font-bold text-primary">{stat.value}</p>
-              <p className="text-sm uppercase tracking-wide text-muted-foreground">
-                {stat.label}
-              </p>
-            </div>
-          ))}
         </div>
       </div>
     </section>

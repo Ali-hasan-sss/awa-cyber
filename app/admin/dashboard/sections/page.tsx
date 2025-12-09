@@ -616,14 +616,13 @@ export default function SectionsManagementPage() {
     return filtered;
   }, [sections, filterPage]);
 
-  // Get additional sections (from index 9 onwards) for home page - same as SectionRenderer
+  // Get additional sections with order > 10 for home page - exclude sections 1-10 which have their own components
   const additionalSections = useMemo(() => {
     if (filterPage !== "home") return [];
     const homeSections = sections
-      .filter((s) => s.page === "home")
+      .filter((s) => s.page === "home" && s.order > 10)
       .sort((a, b) => a.order - b.order);
-    if (homeSections.length <= 9) return [];
-    return homeSections.slice(9); // From index 9 onwards
+    return homeSections;
   }, [sections, filterPage]);
 
   const getIconComponent = (iconName: string) => {

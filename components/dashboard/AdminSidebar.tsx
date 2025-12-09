@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   Users,
   UserCog,
@@ -13,13 +14,23 @@ import {
   DollarSign,
   FileCode,
   MessageSquare,
+  ChevronDown,
+  ChevronUp,
+  FileStack,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "../ui/logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 
-const navItems = [
+type NavItem = {
+  href?: string;
+  icon: any;
+  label: { en: string; ar: string };
+  children?: NavItem[];
+};
+
+const navItems: NavItem[] = [
   {
     href: "/admin/dashboard/home",
     icon: LayoutDashboard,
@@ -41,19 +52,25 @@ const navItems = [
     label: { en: "Quotations", ar: "طلبات التسعير" },
   },
   {
-    href: "/admin/dashboard/services",
-    icon: Layers,
-    label: { en: "Services", ar: "الخدمات" },
-  },
-  {
-    href: "/admin/dashboard/portfolios",
-    icon: Briefcase,
-    label: { en: "Portfolios", ar: "معرض الأعمال" },
-  },
-  {
-    href: "/admin/dashboard/sections",
-    icon: FileCode,
-    label: { en: "Page Sections", ar: "أقسام الصفحات" },
+    icon: FileStack,
+    label: { en: "Pages", ar: "الصفحات" },
+    children: [
+      {
+        href: "/admin/dashboard/sections",
+        icon: FileCode,
+        label: { en: "Page Sections", ar: "إدارة الصفحات" },
+      },
+      {
+        href: "/admin/dashboard/services",
+        icon: Layers,
+        label: { en: "Services", ar: "الخدمات" },
+      },
+      {
+        href: "/admin/dashboard/portfolios",
+        icon: Briefcase,
+        label: { en: "Portfolios", ar: "معرض الأعمال" },
+      },
+    ],
   },
   {
     href: "/admin/dashboard/projects",
@@ -85,6 +102,7 @@ export function AdminSidebar({
   const { admin } = useAuth();
   const { notifications } = useNotifications();
   const isEmployee = admin?.role === "employee";
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   const hasUnreadQuoteNotifications = notifications.some(
     (n) => n.data?.type === "quotation_request" && !n.read
@@ -102,6 +120,54 @@ export function AdminSidebar({
           item.href === "/admin/dashboard/revenue"
       )
     : navItems;
+
+  // Check if any child is active
+  const isParentActive = (item: NavItem): boolean => {
+    if (item.href) {
+      return pathname === item.href;
+    }
+    if (item.children) {
+      return item.children.some((child) => {
+        if (child.href) {
+          return (
+            pathname === child.href || pathname.startsWith(child.href + "/")
+          );
+        }
+        return isParentActive(child);
+      });
+    }
+    return false;
+  };
+
+  // Auto-expand parent if any child is active
+  const shouldBeExpanded = (item: NavItem): boolean => {
+    if (expandedItems.has(item.label.en)) {
+      return true;
+    }
+    if (item.children) {
+      return item.children.some((child) => {
+        if (child.href) {
+          return (
+            pathname === child.href || pathname.startsWith(child.href + "/")
+          );
+        }
+        return false;
+      });
+    }
+    return false;
+  };
+
+  const toggleExpand = (itemLabel: string) => {
+    setExpandedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemLabel)) {
+        newSet.delete(itemLabel);
+      } else {
+        newSet.add(itemLabel);
+      }
+      return newSet;
+    });
+  };
 
   const content = (
     <div className="relative flex h-full flex-col gap-8 overflow-hidden rounded-[28px] border border-white/10 bg-[#060e1f] px-5 py-6 text-slate-100 shadow-[0_25px_80px_rgba(2,6,23,0.65)]">
@@ -129,13 +195,102 @@ export function AdminSidebar({
         <nav className="admin-sidebar-nav flex-1 space-y-2 overflow-y-auto pr-1">
           {filteredNavItems.map((item) => {
             const Icon = item.icon;
-            const active = pathname === item.href; // Exact match for other pages
+            const hasChildren = item.children && item.children.length > 0;
+            const isExpanded = hasChildren && shouldBeExpanded(item);
+            const parentActive = isParentActive(item);
             const isQuotesTab = item.href === "/admin/dashboard/quotes";
-            const isContactTab = item.href === "/admin/dashboard/contact-messages";
+            const isContactTab =
+              item.href === "/admin/dashboard/contact-messages";
+
+            if (hasChildren) {
+              return (
+                <div key={item.label.en} className="space-y-1">
+                  <button
+                    onClick={() => toggleExpand(item.label.en)}
+                    className={cn(
+                      "group relative flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300",
+                      parentActive
+                        ? "bg-white text-slate-900 shadow-[0_20px_45px_rgba(14,165,233,0.4)]"
+                        : "text-slate-200/80 hover:bg-white/10"
+                    )}
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <span
+                        className={cn(
+                          "absolute inset-y-3 w-[2px] rounded-full bg-white/20 transition-opacity duration-300",
+                          parentActive
+                            ? "opacity-60 ltr:left-2 rtl:right-2"
+                            : "opacity-0"
+                        )}
+                      />
+                      <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/10 text-white">
+                        <Icon
+                          className={cn(
+                            "h-4 w-4",
+                            parentActive && "text-slate-900"
+                          )}
+                        />
+                      </span>
+                      <span className={cn(parentActive && "text-slate-900")}>
+                        {item.label[locale]}
+                      </span>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronUp
+                        className={cn(
+                          "h-4 w-4",
+                          parentActive && "text-slate-900"
+                        )}
+                      />
+                    ) : (
+                      <ChevronDown
+                        className={cn(
+                          "h-4 w-4",
+                          parentActive && "text-slate-900"
+                        )}
+                      />
+                    )}
+                  </button>
+                  {isExpanded && (
+                    <div className="ltr:ml-4 rtl:mr-4 space-y-1 mt-1 border-l-2 border-white/10 ltr:pl-4 rtl:pr-4">
+                      {item.children!.map((child) => {
+                        if (!child.href) return null;
+                        const ChildIcon = child.icon;
+                        const childActive =
+                          pathname === child.href ||
+                          pathname.startsWith(child.href + "/");
+                        return (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            onClick={onClose}
+                            className={cn(
+                              "group relative flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-300",
+                              childActive
+                                ? "bg-white/20 text-white shadow-sm"
+                                : "text-slate-300/70 hover:bg-white/5 hover:text-slate-200"
+                            )}
+                          >
+                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/5">
+                              <ChildIcon className="h-3.5 w-3.5" />
+                            </span>
+                            <span>{child.label[locale]}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            const active =
+              pathname === item.href ||
+              (item.href && pathname.startsWith(item.href + "/"));
             return (
               <Link
                 key={item.href}
-                href={item.href}
+                href={item.href || "#"}
                 onClick={onClose}
                 className={cn(
                   "group relative flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300",

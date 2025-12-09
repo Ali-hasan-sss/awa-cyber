@@ -48,3 +48,13 @@ export const fetchPublicServices = async (lang: "en" | "ar") => {
   });
   return data;
 };
+
+export const fetchServiceById = async (
+  id: string,
+  lang: "en" | "ar" = "en"
+) => {
+  const { data } = await apiClient.get(`/api/services/public/${id}`, {
+    headers: { "x-lang": lang },
+  });
+  return data;
+};

@@ -25,6 +25,7 @@ import {
   socialIconComponents,
   SocialIconKey,
 } from "@/lib/socialIconOptions";
+import InteractiveMap from "@/components/ui/InteractiveMap";
 
 // Helper function to strip HTML tags
 const stripHtml = (html: string): string => {
@@ -72,6 +73,10 @@ export default function ContactHeroSection() {
       order: number;
     }>,
   });
+  const [mapLocation, setMapLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   useEffect(() => {
     loadHeroSection();
@@ -100,21 +105,37 @@ export default function ContactHeroSection() {
       if (sortedData && sortedData.length > 0) {
         const section = sortedData[0];
         setHeroSection(section);
+        const features =
+          section.features?.map((feature) => ({
+            icon: feature.icon,
+            nameEn: feature.name?.en || "",
+            nameAr: feature.name?.ar || "",
+            descriptionEn: feature.description?.en || "",
+            descriptionAr: feature.description?.ar || "",
+            order: feature.order,
+          })) || [];
+
+        // Extract location from third feature (index 2)
+        const locationFeature = features[2];
+        if (locationFeature) {
+          const lat = parseFloat(
+            locationFeature.nameEn || locationFeature.descriptionEn || ""
+          );
+          const lng = parseFloat(
+            locationFeature.nameAr || locationFeature.descriptionAr || ""
+          );
+          if (!isNaN(lat) && !isNaN(lng)) {
+            setMapLocation({ lat, lng });
+          }
+        }
+
         setForm({
           titleEn: section.title?.en || "",
           titleAr: section.title?.ar || "",
           descriptionEn: section.description?.en || "",
           descriptionAr: section.description?.ar || "",
           image: section.images?.[0] || "",
-          features:
-            section.features?.map((feature) => ({
-              icon: feature.icon,
-              nameEn: feature.name?.en || "",
-              nameAr: feature.name?.ar || "",
-              descriptionEn: feature.description?.en || "",
-              descriptionAr: feature.description?.ar || "",
-              order: feature.order,
-            })) || [],
+          features,
         });
       }
     } catch (err: any) {
@@ -133,20 +154,63 @@ export default function ContactHeroSection() {
         throw new Error("Section not found");
       }
 
-      const features = form.features.map((feature) => ({
-        icon: feature.icon,
-        name: {
-          en: feature.nameEn,
-          ar: feature.nameAr,
-        },
-        description: {
-          en: feature.descriptionEn,
-          ar: feature.descriptionAr,
-        },
-        order: feature.order,
-      }));
+      // Prepare features with location in third feature
+      const features = form.features.map((feature, index) => {
+        // Third feature (index 2) stores location coordinates
+        if (index === 2 && mapLocation) {
+          return {
+            icon: feature.icon || "MapPin",
+            name: {
+              en: mapLocation.lat.toString(),
+              ar: mapLocation.lng.toString(),
+            },
+            description: {
+              en: mapLocation.lat.toString(),
+              ar: mapLocation.lng.toString(),
+            },
+            order: feature.order,
+          };
+        }
+        return {
+          icon: feature.icon,
+          name: {
+            en: feature.nameEn,
+            ar: feature.nameAr,
+          },
+          description: {
+            en: feature.descriptionEn,
+            ar: feature.descriptionAr,
+          },
+          order: feature.order,
+        };
+      });
 
-      const payload = {
+      // Ensure third feature exists for location
+      if (mapLocation && features.length < 3) {
+        // Add location feature if it doesn't exist
+        while (features.length < 2) {
+          features.push({
+            icon: "",
+            name: { en: "", ar: "" },
+            description: { en: "", ar: "" },
+            order: features.length,
+          });
+        }
+        features.push({
+          icon: "MapPin",
+          name: {
+            en: mapLocation.lat.toString(),
+            ar: mapLocation.lng.toString(),
+          },
+          description: {
+            en: mapLocation.lat.toString(),
+            ar: mapLocation.lng.toString(),
+          },
+          order: 2,
+        });
+      }
+
+      const payload: any = {
         title: {
           en: form.titleEn,
           ar: form.titleAr,
@@ -242,7 +306,8 @@ export default function ContactHeroSection() {
 
   const addressFeature = form.features[0];
   const phoneFeature = form.features[1];
-  const socialFeatures = form.features.slice(2);
+  const locationFeature = form.features[2];
+  const socialFeatures = form.features.slice(3);
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 space-y-6">
@@ -341,8 +406,8 @@ export default function ContactHeroSection() {
             <div className="bg-white/5 p-4 rounded-lg space-y-4">
               <p className="text-sm text-white/70">
                 {isArabic
-                  ? "الميزة الأولى: العنوان | الميزة الثانية: رقم الهاتف | الميزات من 3 فما فوق: روابط التواصل الاجتماعي"
-                  : "First Feature: Address | Second Feature: Phone | Features 3+: Social Media Links"}
+                  ? "الميزة الأولى: العنوان | الميزة الثانية: رقم الهاتف | الميزة الثالثة: موقع الشركة | الميزات من 4 فما فوق: روابط التواصل الاجتماعي"
+                  : "First Feature: Address | Second Feature: Phone | Third Feature: Company Location | Features 4+: Social Media Links"}
               </p>
 
               {/* Address Feature (First) */}
@@ -447,13 +512,131 @@ export default function ContactHeroSection() {
                 )}
               </div>
 
-              {/* Social Media Features (3+) */}
+              {/* Location Feature (Third) */}
+              <div className="bg-primary/10 p-4 rounded-lg border border-primary/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <MapPin className="w-5 h-5 text-primary" />
+                  <h4 className="font-semibold text-white">
+                    {isArabic ? "3. موقع الشركة" : "3. Company Location"}
+                  </h4>
+                </div>
+                {form.features[2] ? (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-white/70 block mb-1">
+                          {isArabic ? "خط العرض (Latitude)" : "Latitude"}
+                        </label>
+                        <Input
+                          type="number"
+                          step="any"
+                          value={mapLocation?.lat || ""}
+                          onChange={(e) => {
+                            const lat = parseFloat(e.target.value);
+                            if (!isNaN(lat)) {
+                              setMapLocation((prev) => ({
+                                lat,
+                                lng: prev?.lng || 46.6753,
+                              }));
+                              updateFeature(2, "nameEn", lat.toString());
+                              updateFeature(2, "descriptionEn", lat.toString());
+                            }
+                          }}
+                          className="bg-white/5 border-white/10 text-white text-sm"
+                          placeholder="24.7136"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-white/70 block mb-1">
+                          {isArabic ? "خط الطول (Longitude)" : "Longitude"}
+                        </label>
+                        <Input
+                          type="number"
+                          step="any"
+                          value={mapLocation?.lng || ""}
+                          onChange={(e) => {
+                            const lng = parseFloat(e.target.value);
+                            if (!isNaN(lng)) {
+                              setMapLocation((prev) => ({
+                                lat: prev?.lat || 24.7136,
+                                lng,
+                              }));
+                              updateFeature(2, "nameAr", lng.toString());
+                              updateFeature(2, "descriptionAr", lng.toString());
+                            }
+                          }}
+                          className="bg-white/5 border-white/10 text-white text-sm"
+                          placeholder="46.6753"
+                        />
+                      </div>
+                    </div>
+                    <InteractiveMap
+                      lat={mapLocation?.lat || 24.7136}
+                      lng={mapLocation?.lng || 46.6753}
+                      onLocationChange={(newLat, newLng) => {
+                        setMapLocation({ lat: newLat, lng: newLng });
+                        updateFeature(2, "nameEn", newLat.toString());
+                        updateFeature(2, "descriptionEn", newLat.toString());
+                        updateFeature(2, "nameAr", newLng.toString());
+                        updateFeature(2, "descriptionAr", newLng.toString());
+                      }}
+                      height="400px"
+                    />
+                    <p className="text-xs text-white/50">
+                      {isArabic
+                        ? "💡 انقر على الخريطة أو اسحب العلامة لتحديد الموقع، أو يمكنك تعديل الإحداثيات يدوياً"
+                        : "💡 Click on map or drag marker to select location, or edit coordinates manually"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-white/50">
+                      {isArabic
+                        ? "أضف ميزة ثالثة للموقع"
+                        : "Add third feature for location"}
+                    </p>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        const newFeatures = [...form.features];
+                        while (newFeatures.length < 2) {
+                          newFeatures.push({
+                            icon: "",
+                            nameEn: "",
+                            nameAr: "",
+                            descriptionEn: "",
+                            descriptionAr: "",
+                            order: newFeatures.length,
+                          });
+                        }
+                        newFeatures.push({
+                          icon: "MapPin",
+                          nameEn: "24.7136",
+                          nameAr: "46.6753",
+                          descriptionEn: "24.7136",
+                          descriptionAr: "46.6753",
+                          order: 2,
+                        });
+                        setForm({ ...form, features: newFeatures });
+                        setMapLocation({ lat: 24.7136, lng: 46.6753 });
+                      }}
+                      className="bg-primary/20 text-primary hover:bg-primary/30"
+                      size="sm"
+                    >
+                      <Plus className="w-4 h-4 ltr:mr-1 rtl:ml-1" />
+                      {isArabic ? "إضافة ميزة الموقع" : "Add Location Feature"}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Social Media Features (4+) */}
               <div className="bg-white/5 p-4 rounded-lg">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-semibold text-white">
                     {isArabic
-                      ? "3+. روابط التواصل الاجتماعي"
-                      : "3+. Social Media Links"}
+                      ? "4+. روابط التواصل الاجتماعي"
+                      : "4+. Social Media Links"}
                   </h4>
                   <Button
                     onClick={addFeature}
@@ -470,7 +653,7 @@ export default function ContactHeroSection() {
                     : "Select icon and enter link"}
                 </p>
                 {socialFeatures.map((feature, index) => {
-                  const actualIndex = index + 2;
+                  const actualIndex = index + 3;
                   return (
                     <div
                       key={actualIndex}
@@ -608,11 +791,32 @@ export default function ContactHeroSection() {
                             }
                             onChange={(e) => {
                               const link = e.target.value;
-                              // Update name and description in both languages with the same link
-                              updateFeature(actualIndex, "nameEn", link);
-                              updateFeature(actualIndex, "nameAr", link);
-                              updateFeature(actualIndex, "descriptionEn", link);
-                              updateFeature(actualIndex, "descriptionAr", link);
+                              // Ensure full URL (add https:// if missing)
+                              let fullLink = link.trim();
+                              if (
+                                fullLink &&
+                                !fullLink.startsWith("http://") &&
+                                !fullLink.startsWith("https://")
+                              ) {
+                                fullLink = `https://${fullLink}`;
+                              }
+                              // Update description with full link (for navigation)
+                              updateFeature(
+                                actualIndex,
+                                "descriptionEn",
+                                fullLink
+                              );
+                              updateFeature(
+                                actualIndex,
+                                "descriptionAr",
+                                fullLink
+                              );
+                              // Keep name as display text (domain only)
+                              const domain = fullLink
+                                .replace(/^https?:\/\//, "")
+                                .split("/")[0];
+                              updateFeature(actualIndex, "nameEn", domain);
+                              updateFeature(actualIndex, "nameAr", domain);
                             }}
                             className="bg-white/5 border-white/10 text-white text-sm"
                             placeholder="https://facebook.com/yourpage"

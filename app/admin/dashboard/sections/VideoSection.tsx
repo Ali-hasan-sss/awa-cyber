@@ -133,8 +133,8 @@ export default function VideoSection() {
     ? form.titleEn || form.titleAr
     : videoSection?.title?.[locale] || "";
   const sectionDescription = isEditing
-    ? stripHtml(form.descriptionEn || form.descriptionAr)
-    : stripHtml(videoSection?.description?.[locale] || "");
+    ? form.descriptionEn || form.descriptionAr
+    : videoSection?.description?.[locale] || "";
   const sectionImage = isEditing
     ? form.image || "/images/publicContain.jpg"
     : videoSection?.images?.[0] || "/images/publicContain.jpg";
@@ -187,6 +187,150 @@ export default function VideoSection() {
 
   return (
     <div className="space-y-6">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+          .video-section-description h1,
+          .video-section-description h2,
+          .video-section-description h3,
+          .video-section-description h4,
+          .video-section-description h5,
+          .video-section-description h6 {
+            color: rgb(0, 0, 0);
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+          }
+          .video-section-description h1 {
+            font-size: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+          }
+          .video-section-description h2 {
+            font-size: 1.75rem;
+            margin-top: 1.75rem;
+            margin-bottom: 1.25rem;
+          }
+          .video-section-description h3 {
+            font-size: 1.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+          }
+          .video-section-description h4 {
+            font-size: 1.25rem;
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+          }
+          .video-section-description h5,
+          .video-section-description h6 {
+            font-size: 1.125rem;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+          }
+          .video-section-description p {
+            color: rgb(102, 102, 102);
+            margin-bottom: 1rem;
+            line-height: 1.75;
+          }
+          .video-section-description strong,
+          .video-section-description b {
+            color: rgb(0, 0, 0);
+            font-weight: 600;
+          }
+          .video-section-description em,
+          .video-section-description i {
+            color: rgb(0, 0, 0);
+            font-style: italic;
+          }
+          .video-section-description a {
+            color: rgb(255, 215, 0);
+            font-weight: 600;
+            text-decoration: none;
+          }
+          .video-section-description a:hover {
+            text-decoration: underline;
+          }
+          .video-section-description ul,
+          .video-section-description ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+          }
+          .video-section-description ul {
+            list-style-type: disc;
+          }
+          .video-section-description ol {
+            list-style-type: decimal;
+          }
+          .video-section-description li {
+            color: rgb(102, 102, 102);
+            margin-bottom: 0.5rem;
+            line-height: 1.75;
+          }
+          .video-section-description blockquote {
+            border-left: 4px solid rgb(255, 215, 0);
+            padding-left: 1rem;
+            font-style: italic;
+            color: rgb(102, 102, 102);
+            margin: 1rem 0;
+          }
+          .video-section-description code {
+            color: rgb(255, 215, 0);
+            background-color: rgb(243, 244, 246);
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+          }
+          .video-section-description pre {
+            background-color: rgb(17, 24, 39);
+            color: rgb(243, 244, 246);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+          }
+          .video-section-description pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+          }
+          .video-section-description span[style*="color"],
+          .video-section-description p[style*="color"],
+          .video-section-description div[style*="color"] {
+            /* Preserve inline color styles from editor */
+          }
+          @media (min-width: 640px) {
+            .video-section-description h1 {
+              font-size: 2.25rem;
+            }
+            .video-section-description h2 {
+              font-size: 2rem;
+            }
+            .video-section-description h3 {
+              font-size: 1.75rem;
+            }
+            .video-section-description h4 {
+              font-size: 1.5rem;
+            }
+          }
+          @media (min-width: 768px) {
+            .video-section-description h1 {
+              font-size: 2.5rem;
+            }
+            .video-section-description h2 {
+              font-size: 2.25rem;
+            }
+            .video-section-description h3 {
+              font-size: 2rem;
+            }
+            .video-section-description h4 {
+              font-size: 1.75rem;
+            }
+          }
+        `,
+        }}
+      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-white">
@@ -410,9 +554,13 @@ export default function VideoSection() {
 
                   {/* Description */}
                   {sectionDescription && (
-                    <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed">
-                      {sectionDescription}
-                    </p>
+                    <div
+                      className="video-section-description text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: sectionDescription }}
+                      style={{
+                        wordBreak: "break-word",
+                      }}
+                    />
                   )}
                 </div>
               </div>

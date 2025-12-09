@@ -252,8 +252,11 @@ export default function TestimonialsSection() {
     ? form.titleEn || form.titleAr
     : testimonialsSection?.title?.[locale] || "";
   const sectionDescription = isEditing
-    ? stripHtml(form.descriptionEn || form.descriptionAr)
-    : stripHtml(testimonialsSection?.description?.[locale] || "");
+    ? form.descriptionEn || form.descriptionAr
+    : testimonialsSection?.description?.[locale] || "";
+  const sectionDescriptionText = sectionDescription
+    ? stripHtml(sectionDescription)
+    : "";
 
   const testimonials = isEditing
     ? form.testimonials.map((t) => ({
@@ -320,6 +323,153 @@ export default function TestimonialsSection() {
 
   return (
     <div className="space-y-6">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+          .testimonials-section-description h1,
+          .testimonials-section-description h2,
+          .testimonials-section-description h3,
+          .testimonials-section-description h4,
+          .testimonials-section-description h5,
+          .testimonials-section-description h6 {
+            color: rgb(0, 0, 0);
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+          }
+          .testimonials-section-description h1 {
+            font-size: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+          }
+          .testimonials-section-description h2 {
+            font-size: 1.75rem;
+            margin-top: 1.75rem;
+            margin-bottom: 1.25rem;
+          }
+          .testimonials-section-description h3 {
+            font-size: 1.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+          }
+          .testimonials-section-description h4 {
+            font-size: 1.25rem;
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+          }
+          .testimonials-section-description h5,
+          .testimonials-section-description h6 {
+            font-size: 1.125rem;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+          }
+          .testimonials-section-description p {
+            color: rgb(102, 102, 102);
+            margin-bottom: 1rem;
+            line-height: 1.75;
+          }
+          .testimonials-section-description strong,
+          .testimonials-section-description b {
+            color: rgb(0, 0, 0);
+            font-weight: 600;
+          }
+          .testimonials-section-description em,
+          .testimonials-section-description i {
+            color: rgb(0, 0, 0);
+            font-style: italic;
+          }
+          .testimonials-section-description a {
+            color: rgb(255, 215, 0);
+            font-weight: 600;
+            text-decoration: none;
+          }
+          .testimonials-section-description a:hover {
+            text-decoration: underline;
+          }
+          .testimonials-section-description ul,
+          .testimonials-section-description ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+          }
+          .testimonials-section-description ul {
+            list-style-type: disc;
+          }
+          .testimonials-section-description ol {
+            list-style-type: decimal;
+          }
+          .testimonials-section-description li {
+            color: rgb(102, 102, 102);
+            margin-bottom: 0.5rem;
+            line-height: 1.75;
+          }
+          .testimonials-section-description blockquote {
+            border-left: 4px solid rgb(255, 215, 0);
+            padding-left: 1rem;
+            font-style: italic;
+            color: rgb(102, 102, 102);
+            margin: 1rem 0;
+          }
+          .testimonials-section-description code {
+            color: rgb(255, 215, 0);
+            background-color: rgb(243, 244, 246);
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+          }
+          .testimonials-section-description pre {
+            background-color: rgb(17, 24, 39);
+            color: rgb(243, 244, 246);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+          }
+          .testimonials-section-description pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+          }
+          .testimonials-section-description span[style*="color"],
+          .testimonials-section-description p[style*="color"],
+          .testimonials-section-description div[style*="color"] {
+            /* Preserve inline color styles from editor */
+          }
+          .testimonials-section-description span[style*="color"] {
+            /* Preserve inline color styles from editor */
+          }
+          @media (min-width: 640px) {
+            .testimonials-section-description h1 {
+              font-size: 2.25rem;
+            }
+            .testimonials-section-description h2 {
+              font-size: 2rem;
+            }
+            .testimonials-section-description h3 {
+              font-size: 1.75rem;
+            }
+            .testimonials-section-description h4 {
+              font-size: 1.5rem;
+            }
+          }
+          @media (min-width: 768px) {
+            .testimonials-section-description h1 {
+              font-size: 2.5rem;
+            }
+            .testimonials-section-description h2 {
+              font-size: 2.25rem;
+            }
+            .testimonials-section-description h3 {
+              font-size: 2rem;
+            }
+            .testimonials-section-description h4 {
+              font-size: 1.75rem;
+            }
+          }
+        `,
+        }}
+      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-white">
@@ -686,9 +836,15 @@ export default function TestimonialsSection() {
                 </h2>
               )}
               {sectionDescription && (
-                <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-                  {sectionDescription}
-                </p>
+                <div
+                  className="testimonials-section-description text-base md:text-lg text-muted-foreground leading-relaxed"
+                  dangerouslySetInnerHTML={{
+                    __html: sectionDescription,
+                  }}
+                  style={{
+                    wordBreak: "break-word",
+                  }}
+                />
               )}
             </div>
 

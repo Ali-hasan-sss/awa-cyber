@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import FileUpload from "@/components/ui/FileUpload";
-import { Layers, Plus, Pencil, Trash2, X, Eye } from "lucide-react";
+import { Layers, Plus, Pencil, Trash2, X, Eye, ExternalLink } from "lucide-react";
+import Link from "next/link";
 import {
   serviceIconOptions,
   serviceIconComponents,
@@ -489,6 +490,17 @@ export default function ServicesManagementPage() {
                       {localizedTitle}
                     </h3>
                       <div className="flex items-center gap-2">
+                        <Link href={`/admin/dashboard/services/${service._id}`}>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
+                            title={isArabic ? "عرض الخدمة" : "View Service"}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </Link>
                         <Button
                           type="button"
                           variant="ghost"
