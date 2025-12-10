@@ -17,6 +17,7 @@ import {
   ChevronDown,
   ChevronUp,
   FileStack,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "../ui/logo";
@@ -69,6 +70,11 @@ const navItems: NavItem[] = [
         href: "/admin/dashboard/portfolios",
         icon: Briefcase,
         label: { en: "Portfolios", ar: "معرض الأعمال" },
+      },
+      {
+        href: "/admin/dashboard/articles",
+        icon: BookOpen,
+        label: { en: "Articles", ar: "المقالات" },
       },
     ],
   },

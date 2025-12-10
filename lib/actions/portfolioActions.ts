@@ -18,6 +18,8 @@ export type PortfolioPayload = {
   features?: PortfolioFeaturePayload[];
   images: string[];
   completionDate: string;
+  url?: string;
+  youtubeUrl?: string;
 };
 
 export const fetchAdminPortfolios = async () => {

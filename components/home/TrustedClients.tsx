@@ -10,7 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { getSectionsByPage } from "@/lib/api/sections";
 import Image from "next/image";
 
@@ -50,6 +50,13 @@ export default function TrustedClients({
   const { locale, messages } = useLanguage();
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<number | null>(null);
+  const dragOffsetRef = useRef(0);
+  const isManualDragRef = useRef(false);
 
   // Use provided sections or load them
   useEffect(() => {
@@ -141,6 +148,129 @@ export default function TrustedClients({
   const fallbackBrands: { name: string; tagline?: string; icon?: string }[] =
     fallbackSection.brands ?? [];
 
+  // Handle mouse/touch drag - Must be defined before any early returns
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX);
+    const container = scrollContainerRef.current;
+
+    // Get current transform value
+    const computedStyle = window.getComputedStyle(container);
+    const matrix = computedStyle.transform;
+    let currentX = 0;
+    if (matrix && matrix !== "none") {
+      const matrixValues = matrix.match(/matrix.*\((.+)\)/);
+      if (matrixValues) {
+        currentX = parseFloat(matrixValues[1].split(", ")[4]) || 0;
+      }
+    }
+
+    dragOffsetRef.current = currentX;
+    isManualDragRef.current = true;
+
+    // Pause animation and use manual transform
+    container.style.animation = "none";
+    container.style.transform = `translateX(${currentX}px)`;
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsDragging(false);
+    isManualDragRef.current = false;
+    // Resume animation from current position
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const computedStyle = window.getComputedStyle(container);
+      const matrix = computedStyle.transform;
+      let currentX = 0;
+      if (matrix && matrix !== "none") {
+        const matrixValues = matrix.match(/matrix.*\((.+)\)/);
+        if (matrixValues) {
+          currentX = parseFloat(matrixValues[1].split(", ")[4]) || 0;
+        }
+      }
+      dragOffsetRef.current = currentX;
+      // Reset animation will be handled by CSS
+      container.style.animation = "";
+    }
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+    isManualDragRef.current = false;
+    // Resume animation from current position
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.animation = "";
+    }
+  }, []);
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDragging || !scrollContainerRef.current) return;
+      e.preventDefault();
+      const walk = (e.pageX - startX) * 2; // Scroll speed multiplier
+      // When dragging left, content moves left (more negative)
+      // When dragging right, content moves right (less negative/more positive)
+      const newX = dragOffsetRef.current + walk;
+
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.style.transform = `translateX(${newX}px)`;
+      }
+    },
+    [isDragging, startX]
+  );
+
+  // Touch events
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX);
+    const container = scrollContainerRef.current;
+
+    // Get current transform value
+    const computedStyle = window.getComputedStyle(container);
+    const matrix = computedStyle.transform;
+    let currentX = 0;
+    if (matrix && matrix !== "none") {
+      const matrixValues = matrix.match(/matrix.*\((.+)\)/);
+      if (matrixValues) {
+        currentX = parseFloat(matrixValues[1].split(", ")[4]) || 0;
+      }
+    }
+
+    dragOffsetRef.current = currentX;
+    isManualDragRef.current = true;
+
+    // Pause animation and use manual transform
+    container.style.animation = "none";
+    container.style.transform = `translateX(${currentX}px)`;
+  }, []);
+
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDragging || !scrollContainerRef.current) return;
+      const walk = (e.touches[0].pageX - startX) * 2;
+      // When dragging left, content moves left (more negative)
+      // When dragging right, content moves right (less negative/more positive)
+      const newX = dragOffsetRef.current + walk;
+
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.style.transform = `translateX(${newX}px)`;
+      }
+    },
+    [isDragging, startX]
+  );
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+    isManualDragRef.current = false;
+    // Resume animation from current position
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.animation = "";
+    }
+  }, []);
+
   // Show loading state
   if (loading) {
     return (
@@ -224,48 +354,105 @@ export default function TrustedClients({
           )}
         </div>
 
-        <div className="mt-12 flex flex-wrap justify-center items-center gap-4 md:gap-6">
-          {displayBrands.map(
-            (
-              brand: { name: string; tagline?: string; icon?: string },
-              idx: number
-            ) => {
-              const Icon = iconMap[brand.icon ?? "Building2"] ?? Building2;
-              return (
-                <div
-                  key={brand.name || idx}
-                  className="rounded-2xl border border-border bg-white/80 p-6 text-center shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg w-[250px] h-[250px] flex flex-col"
-                >
-                  <div className="mx-auto mb-4 flex items-center justify-center h-32 w-full">
-                    {brand.icon && brand.icon.startsWith("http") ? (
-                      <div className="relative w-full h-full">
-                        <Image
-                          src={brand.icon}
-                          alt={brand.name}
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                    <Icon className="h-7 w-7" />
+        {/* Infinite Scrolling Cards */}
+        <div className="mt-12 overflow-hidden relative group">
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+              @keyframes scroll-trusted-clients {
+                0% {
+                  transform: translateX(0);
+                }
+                100% {
+                  transform: translateX(-50%);
+                }
+              }
+              @keyframes scroll-trusted-clients-rtl {
+                0% {
+                  transform: translateX(0);
+                }
+                100% {
+                  transform: translateX(50%);
+                }
+              }
+              .scrolling-wrapper-trusted-clients {
+                animation: scroll-trusted-clients 60s linear infinite;
+                cursor: grab;
+                will-change: transform;
+              }
+              .scrolling-wrapper-trusted-clients:active,
+              .scrolling-wrapper-trusted-clients.dragging {
+                cursor: grabbing;
+              }
+              [dir="rtl"] .scrolling-wrapper-trusted-clients {
+                animation: scroll-trusted-clients-rtl 60s linear infinite;
+              }
+              .group:hover .scrolling-wrapper-trusted-clients:not(.dragging) {
+                animation-play-state: paused;
+              }
+            `,
+            }}
+          />
+          <div
+            ref={scrollContainerRef}
+            className={`scrolling-wrapper-trusted-clients flex gap-4 md:gap-6 w-max select-none ${
+              locale === "ar" ? "rtl" : ""
+            } ${isDragging ? "dragging" : ""}`}
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeave}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            style={{
+              userSelect: "none",
+              touchAction: "none",
+            }}
+          >
+            {/* Duplicate brands for seamless infinite scroll */}
+            {[...displayBrands, ...displayBrands].map(
+              (
+                brand: { name: string; tagline?: string; icon?: string },
+                idx: number
+              ) => {
+                const Icon = iconMap[brand.icon ?? "Building2"] ?? Building2;
+                return (
+                  <div
+                    key={`${brand.name}-${idx}`}
+                    className="rounded-2xl border border-border bg-white/80 p-6 text-center shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-lg w-[250px] h-[250px] flex flex-col flex-shrink-0 grayscale hover:grayscale-0"
+                  >
+                    <div className="mx-auto mb-4 flex items-center justify-center h-32 w-full">
+                      {brand.icon && brand.icon.startsWith("http") ? (
+                        <div className="relative w-full h-full">
+                          <Image
+                            src={brand.icon}
+                            alt={brand.name}
+                            fill
+                            className="object-contain transition-all duration-300"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                          <Icon className="h-7 w-7" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 flex flex-col justify-center">
+                      <p className="font-semibold text-lg text-foreground mb-1">
+                        {brand.name}
+                      </p>
+                      {brand.tagline && (
+                        <p className="text-sm text-muted-foreground">
+                          {brand.tagline}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                    )}
-                  </div>
-                  <div className="flex-1 flex flex-col justify-center">
-                    <p className="font-semibold text-lg text-foreground mb-1">
-                    {brand.name}
-                  </p>
-                  {brand.tagline && (
-                      <p className="text-sm text-muted-foreground">
-                      {brand.tagline}
-                    </p>
-                  )}
-                  </div>
-                </div>
-              );
-            }
-          )}
+                );
+              }
+            )}
+          </div>
         </div>
       </div>
     </section>

@@ -16,6 +16,8 @@ import {
   X,
   Eye,
   Calendar,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import {
   serviceIconOptions,
@@ -55,6 +57,51 @@ const emptyForm: PortfolioFormState = {
 
 const inputStyles =
   "rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-cyan-400 focus:border-transparent focus:bg-white/[0.05] transition";
+
+// YouTube URL Input Component
+function YouTubeUrlInput({
+  onAdd,
+  placeholder,
+}: {
+  onAdd: (url: string) => void;
+  placeholder: string;
+}) {
+  const [url, setUrl] = useState("");
+
+  const handleAdd = () => {
+    const trimmedUrl = url.trim();
+    if (trimmedUrl) {
+      onAdd(trimmedUrl);
+      setUrl("");
+    }
+  };
+
+  return (
+    <div className="flex gap-2">
+      <Input
+        type="url"
+        className={inputStyles}
+        placeholder={placeholder}
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleAdd();
+          }
+        }}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        className="rounded-full border-white/20 text-white/80 hover:bg-white/10 whitespace-nowrap"
+        onClick={handleAdd}
+      >
+        <Plus className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
 
 export default function PortfoliosManagementPage() {
   const { locale } = useLanguage();
@@ -199,6 +246,20 @@ export default function PortfoliosManagementPage() {
   const removeImage = (index: number) => {
     setForm((prev) => {
       const images = prev.images.filter((_, idx) => idx !== index);
+      return { ...prev, images };
+    });
+  };
+
+  const moveImage = (index: number, direction: "up" | "down") => {
+    setForm((prev) => {
+      const images = [...prev.images];
+      const newIndex = direction === "up" ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= images.length) return prev;
+
+      const temp = images[index];
+      images[index] = images[newIndex];
+      images[newIndex] = temp;
+
       return { ...prev, images };
     });
   };
@@ -789,56 +850,163 @@ export default function PortfoliosManagementPage() {
                 }}
               />
 
+              {/* Manual YouTube URL Input */}
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-[0.35em] text-white/40">
+                  {isArabic
+                    ? "أو أضف رابط فيديو YouTube"
+                    : "Or Add YouTube Video URL"}
+                </label>
+                <YouTubeUrlInput
+                  onAdd={(url) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      images: [...prev.images, url],
+                    }));
+                  }}
+                  placeholder={
+                    isArabic
+                      ? "https://www.youtube.com/watch?v=..."
+                      : "https://www.youtube.com/watch?v=..."
+                  }
+                />
+                <p className="text-xs text-white/50">
+                  {isArabic
+                    ? "يمكنك إضافة روابط فيديو YouTube وستظهر مع الصور في المعرض"
+                    : "You can add YouTube video URLs and they will appear alongside images in the gallery"}
+                </p>
+              </div>
+
               {form.images.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs uppercase tracking-[0.35em] text-white/40">
-                    {isArabic ? "الصور المرفوعة" : "Uploaded Images"}
+                    {isArabic ? "الصور والفيديوهات" : "Images & Videos"}
                   </p>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {form.images.map((imageUrl, index) => (
-                      <div
-                        key={`image-${index}`}
-                        className="group relative rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden"
-                      >
-                        <img
-                          src={imageUrl}
-                          alt={`Upload ${index + 1}`}
-                          className="w-full h-32 object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23ccc' width='100' height='100'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='14' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3EImage%3C/text%3E%3C/svg%3E";
-                          }}
-                        />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <div className="flex gap-2">
-                            <a
-                              href={imageUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="rounded-full bg-primary/20 p-2 text-primary hover:bg-primary/30"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </a>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                              onClick={() => removeImage(index)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                    {form.images.map((imageUrl, index) => {
+                      const isYouTube =
+                        /youtube\.com\//.test(imageUrl) ||
+                        /youtu\.be\//.test(imageUrl);
+                      const getYouTubeVideoId = (url: string) => {
+                        const match = url.match(
+                          /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/
+                        );
+                        return match ? match[1] : null;
+                      };
+                      const youtubeVideoId = isYouTube
+                        ? getYouTubeVideoId(imageUrl)
+                        : null;
+
+                      return (
+                        <div
+                          key={`image-${index}`}
+                          className="group relative rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden"
+                        >
+                          {/* Primary Badge */}
+                          {index === 0 && (
+                            <div className="absolute top-2 left-2 z-10">
+                              <span className="inline-block rounded-full bg-primary text-black px-2 py-1 text-xs font-semibold shadow-lg">
+                                {isArabic ? "رئيسية" : "Primary"}
+                              </span>
+                            </div>
+                          )}
+                          {isYouTube && youtubeVideoId ? (
+                            <>
+                              <div className="relative w-full h-32 bg-gradient-to-br from-red-600 to-red-700">
+                                <img
+                                  src={`https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`}
+                                  alt={`YouTube video ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    (
+                                      e.target as HTMLImageElement
+                                    ).src = `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`;
+                                  }}
+                                />
+                              </div>
+                              <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold z-10">
+                                YouTube
+                              </div>
+                            </>
+                          ) : (
+                            <img
+                              src={imageUrl}
+                              alt={`Upload ${index + 1}`}
+                              className="w-full h-32 object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src =
+                                  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23ccc' width='100' height='100'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='14' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3EImage%3C/text%3E%3C/svg%3E";
+                              }}
+                            />
+                          )}
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => moveImage(index, "up")}
+                                disabled={index === 0}
+                                className="rounded-full bg-white/20 backdrop-blur-sm p-2 text-white hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                title={isArabic ? "نقل لأعلى" : "Move up"}
+                              >
+                                <ChevronUp className="h-4 w-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => moveImage(index, "down")}
+                                disabled={index === form.images.length - 1}
+                                className="rounded-full bg-white/20 backdrop-blur-sm p-2 text-white hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                title={isArabic ? "نقل لأسفل" : "Move down"}
+                              >
+                                <ChevronDown className="h-4 w-4" />
+                              </button>
+                              <a
+                                href={imageUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="rounded-full bg-primary/20 p-2 text-primary hover:bg-primary/30"
+                                onClick={(e) => e.stopPropagation()}
+                                title={isArabic ? "عرض" : "View"}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </a>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                                onClick={() => removeImage(index)}
+                                title={isArabic ? "حذف" : "Delete"}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="p-2">
+                            <p className="truncate text-xs text-white/60">
+                              {isYouTube
+                                ? `YouTube: ${imageUrl
+                                    .split("/")
+                                    .pop()
+                                    ?.substring(0, 30)}...`
+                                : imageUrl.split("/").pop()}
+                            </p>
+                            {index === 0 && (
+                              <p className="text-xs text-primary font-medium mt-1">
+                                {isArabic
+                                  ? "ستظهر هذه الصورة في البطاقة"
+                                  : "This image will appear on the card"}
+                              </p>
+                            )}
                           </div>
                         </div>
-                        <div className="p-2">
-                          <p className="truncate text-xs text-white/60">
-                            {imageUrl.split("/").pop()}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
+                  <p className="text-xs text-white/70 mt-3 backdrop-blur-sm bg-black/20 rounded-lg p-2 border border-white/10">
+                    {isArabic
+                      ? "💡 نصيحة: استخدم أزرار السهم لترتيب الصور. الصورة الأولى ستظهر في بطاقة العمل."
+                      : "💡 Tip: Use arrow buttons to reorder images. The first image will appear on the portfolio card."}
+                  </p>
                 </div>
               )}
             </div>

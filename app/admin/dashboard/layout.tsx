@@ -13,6 +13,7 @@ import { ServiceProvider } from "@/contexts/ServiceContext";
 import { PortfolioProvider } from "@/contexts/PortfolioContext";
 import { ProjectProvider } from "@/contexts/ProjectContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { ArticleProvider } from "@/contexts/ArticleContext";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { token, initializing } = useAuth();
@@ -54,9 +55,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     <UserProvider>
       <QuoteProvider>
         <ServiceProvider>
-          <PortfolioProvider>
-            <ProjectProvider>
-              <NotificationProvider>
+          <ArticleProvider>
+            <PortfolioProvider>
+              <ProjectProvider>
+                <NotificationProvider>
                 <div className="relative min-h-screen overflow-hidden bg-[#030617] text-slate-100">
                   <BackgroundDecor />
                   <div className="relative z-10 flex h-screen max-h-screen overflow-hidden">
@@ -76,9 +78,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     </div>
                   </div>
                 </div>
-              </NotificationProvider>
-            </ProjectProvider>
-          </PortfolioProvider>
+                </NotificationProvider>
+              </ProjectProvider>
+            </PortfolioProvider>
+          </ArticleProvider>
         </ServiceProvider>
       </QuoteProvider>
     </UserProvider>

@@ -1,7 +1,13 @@
 import { apiClient } from "@/lib/apiClient";
 import { API_BASE_URL } from "@/lib/config/api";
 
-export type PageType = "home" | "about" | "services" | "contact" | "portfolio";
+export type PageType =
+  | "home"
+  | "about"
+  | "services"
+  | "contact"
+  | "portfolio"
+  | "articles";
 
 export interface Feature {
   name: {
