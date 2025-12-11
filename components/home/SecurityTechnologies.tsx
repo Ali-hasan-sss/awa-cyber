@@ -323,7 +323,7 @@ export default function SecurityTechnologies({
               return (
                 <div
                   key={`${tool.name}-${idx}`}
-                  className="rounded-2xl border border-white/60 bg-white/80 p-5 text-center shadow-sm hover:-translate-y-1 transition-transform"
+                  className="group rounded-2xl border border-white/60 bg-white/80 p-5 text-center shadow-sm hover:-translate-y-1 transition-transform"
                 >
                   <div className="mx-auto mb-4 flex items-center justify-center">
                     {tool.icon && tool.icon.startsWith("http") ? (
@@ -332,7 +332,7 @@ export default function SecurityTechnologies({
                         alt={tool.name}
                         width={80}
                         height={80}
-                        className="object-contain"
+                        className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
                       />
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">

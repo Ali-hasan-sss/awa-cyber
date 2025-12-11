@@ -889,7 +889,7 @@ export default function PortfoliosManagementPage() {
                         /youtu\.be\//.test(imageUrl);
                       const getYouTubeVideoId = (url: string) => {
                         const match = url.match(
-                          /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/
+                          /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&\n?#\/]+)/
                         );
                         return match ? match[1] : null;
                       };

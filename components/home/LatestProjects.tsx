@@ -78,7 +78,11 @@ const fallbackProject: ProjectContent = {
   imageAlt: "Security specialists reviewing e-commerce dashboards",
 };
 
-export default function LatestProjects({ sections: sectionsProp }: { sections?: any[] }) {
+export default function LatestProjects({
+  sections: sectionsProp,
+}: {
+  sections?: any[];
+}) {
   const { locale, messages } = useLanguage();
   const fallbackSection = messages?.projectsSection ?? {};
   const [sections, setSections] = useState<any[]>([]);
@@ -302,7 +306,7 @@ export default function LatestProjects({ sections: sectionsProp }: { sections?: 
           )}
         </div>
 
-        <div className="mt-12 rounded-[32px] border border-border/40 bg-white shadow-2xl overflow-hidden">
+        <div className="mt-12 rounded-[32px] border border-border/40 bg-white shadow-2xl overflow-hidden group">
           <div className="flex flex-col lg:flex-row">
             <div className="relative lg:w-1/2">
               <Image
@@ -310,7 +314,7 @@ export default function LatestProjects({ sections: sectionsProp }: { sections?: 
                 alt={project.imageAlt || fallbackProject.imageAlt}
                 width={640}
                 height={420}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                 sizes="(max-width: 1024px) 100vw, 640px"
               />
               <span className="absolute top-6 left-6 flex items-center gap-3 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-foreground shadow">

@@ -86,7 +86,7 @@ export default function RelatedServices({
                       src={image}
                       alt={title}
                       fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />

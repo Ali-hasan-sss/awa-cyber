@@ -262,7 +262,7 @@ export default function ArticlesList() {
                               src={featuredArticle.mainImage}
                               alt={featuredArticle.title || ""}
                               fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-300"
                             />
                           ) : (
                             <div className="w-full h-full bg-gradient-to-br from-primary/20 to-cyan-500/20 flex items-center justify-center">
@@ -342,7 +342,7 @@ export default function ArticlesList() {
                             src={article.mainImage}
                             alt={article.title || ""}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-300"
                           />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-primary/20 to-cyan-500/20 flex items-center justify-center">

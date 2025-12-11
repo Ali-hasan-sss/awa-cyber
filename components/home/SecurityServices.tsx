@@ -229,7 +229,7 @@ export default function SecurityServices({
                       src={card.image}
                       alt={card.title}
                       fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
                       sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
                     />
                   </div>
