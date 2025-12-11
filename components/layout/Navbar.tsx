@@ -23,7 +23,6 @@ export default function Navbar() {
   const { user, admin, logout } = useAuth();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDarkBackground, setIsDarkBackground] = useState(false);
   const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
   const [services, setServices] = useState<any[]>([]);
   const servicesDropdownRef = useRef<HTMLDivElement>(null);
@@ -37,68 +36,6 @@ export default function Navbar() {
     { key: "nav.articles", href: "/articles" },
     { key: "nav.contact", href: "/contact" },
   ];
-
-  // Detect background color behind navbar
-  useEffect(() => {
-    const checkBackgroundColor = () => {
-      if (!navRef.current) return;
-
-      const navRect = navRef.current.getBoundingClientRect();
-      // Check multiple points to get better accuracy
-      const checkPoints = [
-        { x: navRect.left + navRect.width / 2, y: navRect.bottom + 5 },
-        { x: navRect.left + navRect.width / 4, y: navRect.bottom + 5 },
-        { x: navRect.left + (navRect.width * 3) / 4, y: navRect.bottom + 5 },
-      ];
-
-      let totalLuminance = 0;
-      let validChecks = 0;
-
-      for (const point of checkPoints) {
-        const element = document.elementFromPoint(point.x, point.y);
-        if (element) {
-          const computedStyle = window.getComputedStyle(element);
-          const bgColor = computedStyle.backgroundColor;
-
-          // Extract RGB values
-          const rgbMatch = bgColor.match(/\d+/g);
-          if (rgbMatch && rgbMatch.length >= 3) {
-            const r = parseInt(rgbMatch[0]);
-            const g = parseInt(rgbMatch[1]);
-            const b = parseInt(rgbMatch[2]);
-
-            // Calculate luminance
-            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-            totalLuminance += luminance;
-            validChecks++;
-          }
-        }
-      }
-
-      if (validChecks > 0) {
-        const avgLuminance = totalLuminance / validChecks;
-        // If average luminance is less than 0.5, it's a dark background
-        setIsDarkBackground(avgLuminance < 0.5);
-      }
-    };
-
-    // Check on mount and scroll
-    checkBackgroundColor();
-    const handleScroll = () => checkBackgroundColor();
-    const handleResize = () => checkBackgroundColor();
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleResize);
-
-    // Also check after a short delay to ensure page is loaded
-    const timeout = setTimeout(checkBackgroundColor, 100);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleResize);
-      clearTimeout(timeout);
-    };
-  }, [pathname]);
 
   const toggleLocale = () => {
     const newLocale = locale === "en" ? "ar" : "en";
@@ -169,13 +106,9 @@ export default function Navbar() {
   const linkClassName = (href: string) => {
     const active = isActive(href);
     const baseClasses = "relative transition-colors font-medium";
-    const colorClasses = isDarkBackground
-      ? active
-        ? "text-primary"
-        : "text-white/90 hover:text-primary"
-      : active
+    const colorClasses = active
       ? "text-primary"
-      : "text-foreground hover:text-primary";
+      : "text-white hover:text-primary";
 
     return `${baseClasses} ${colorClasses}`;
   };
@@ -184,11 +117,7 @@ export default function Navbar() {
     <>
       <nav
         ref={navRef}
-        className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl transition-colors ${
-          isDarkBackground
-            ? "bg-black/20 text-white"
-            : "bg-white/10 text-foreground"
-        }`}
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/90 text-white border-b border-white/10"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
@@ -220,7 +149,7 @@ export default function Navbar() {
                         )} flex items-center gap-1`}
                       >
                         {t(link.key)}
-                        <ChevronDown className="h-4 w-4" />
+                        <ChevronDown className="h-4 w-4 text-white" />
                         {isActive(link.href) && (
                           <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary" />
                         )}
@@ -279,11 +208,7 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-3">
               <button
                 onClick={toggleLocale}
-                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-semibold transition-colors ${
-                  isDarkBackground
-                    ? "text-white/90 hover:text-primary"
-                    : "text-foreground hover:text-primary"
-                }`}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold transition-colors text-white hover:text-primary"
               >
                 <Globe className="h-4 w-4" />
                 <span className="uppercase">{nextLocaleLabel}</span>
@@ -292,7 +217,7 @@ export default function Navbar() {
               {/* User Info or Quote Button */}
               {isLoggedIn ? (
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 px-3 py-1.5 text-sm text-foreground">
+                  <div className="flex items-center gap-2 px-3 py-1.5 text-sm text-white">
                     <User className="h-4 w-4" />
                     <span className="font-medium">
                       {user?.name || admin?.name}
@@ -302,7 +227,7 @@ export default function Navbar() {
                     variant="outline"
                     size="sm"
                     onClick={logout}
-                    className="border-foreground/20 text-foreground hover:bg-foreground/10"
+                    className="border-white/20 text-white hover:bg-white/10"
                   >
                     <LogOut className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
                     {locale === "ar" ? "تسجيل الخروج" : "Logout"}
@@ -326,11 +251,7 @@ export default function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`md:hidden p-2 transition-colors ${
-                isDarkBackground
-                  ? "text-white/90 hover:text-primary"
-                  : "text-foreground hover:text-primary"
-              }`}
+              className="md:hidden p-2 transition-colors text-white hover:text-primary"
               aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? (

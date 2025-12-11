@@ -103,7 +103,7 @@ export default function ContactHero() {
   // First feature is address, second is phone, rest are social media
   const addressFeature = features[0];
   const phoneFeature = features[1];
-  const socialFeatures = features.slice(2);
+  const socialFeatures = features.slice(3);
 
   const address =
     addressFeature &&

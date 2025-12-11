@@ -119,10 +119,10 @@ export default function ContactHeroSection() {
         const locationFeature = features[2];
         if (locationFeature) {
           const lat = parseFloat(
-            locationFeature.nameEn || locationFeature.descriptionEn || ""
+            locationFeature.descriptionAr || locationFeature.descriptionEn || ""
           );
           const lng = parseFloat(
-            locationFeature.nameAr || locationFeature.descriptionAr || ""
+            locationFeature.nameAr || locationFeature.nameEn || ""
           );
           if (!isNaN(lat) && !isNaN(lng)) {
             setMapLocation({ lat, lng });
@@ -161,12 +161,12 @@ export default function ContactHeroSection() {
           return {
             icon: feature.icon || "MapPin",
             name: {
-              en: mapLocation.lat.toString(),
+              en: mapLocation.lng.toString(),
               ar: mapLocation.lng.toString(),
             },
             description: {
               en: mapLocation.lat.toString(),
-              ar: mapLocation.lng.toString(),
+              ar: mapLocation.lat.toString(),
             },
             order: feature.order,
           };
@@ -538,7 +538,7 @@ export default function ContactHeroSection() {
                                 lat,
                                 lng: prev?.lng || 46.6753,
                               }));
-                              updateFeature(2, "nameEn", lat.toString());
+                              updateFeature(2, "descriptionAr", lat.toString());
                               updateFeature(2, "descriptionEn", lat.toString());
                             }
                           }}
@@ -562,7 +562,7 @@ export default function ContactHeroSection() {
                                 lng,
                               }));
                               updateFeature(2, "nameAr", lng.toString());
-                              updateFeature(2, "descriptionAr", lng.toString());
+                              updateFeature(2, "nameEn", lng.toString());
                             }
                           }}
                           className="bg-white/5 border-white/10 text-white text-sm"
@@ -575,10 +575,10 @@ export default function ContactHeroSection() {
                       lng={mapLocation?.lng || 46.6753}
                       onLocationChange={(newLat, newLng) => {
                         setMapLocation({ lat: newLat, lng: newLng });
-                        updateFeature(2, "nameEn", newLat.toString());
+                        updateFeature(2, "descriptionAr", newLat.toString());
                         updateFeature(2, "descriptionEn", newLat.toString());
                         updateFeature(2, "nameAr", newLng.toString());
-                        updateFeature(2, "descriptionAr", newLng.toString());
+                        updateFeature(2, "nameEn", newLng.toString());
                       }}
                       height="400px"
                     />

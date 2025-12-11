@@ -60,18 +60,15 @@ export default function ContactMap() {
 
   if (locationFeature) {
     // Try to get coordinates from name or description
-    const lat = parseFloat(
-      locationFeature.name?.en || locationFeature.description?.en || ""
-    );
-    const lng = parseFloat(
-      locationFeature.name?.ar || locationFeature.description?.ar || ""
-    );
+    const lat = parseFloat(locationFeature.description || "");
+    const lng = parseFloat(locationFeature.name || "");
     if (!isNaN(lat) && !isNaN(lng)) {
       mapLat = lat;
       mapLng = lng;
     }
   }
-
+  console.log("lat:", mapLat);
+  console.log("lang:", mapLng);
   // Google Maps embed URL - using simple embed format
   const mapUrl = `https://www.google.com/maps?q=${mapLat},${mapLng}&output=embed&z=15`;
 

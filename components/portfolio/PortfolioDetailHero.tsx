@@ -43,15 +43,11 @@ export default function PortfolioDetailHero({ portfolio }: { portfolio: any }) {
       <div className="relative z-30 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-5xl mx-auto">
           {/* Main Title - Large, bold, white, split into lines */}
-          <h1 className="text-5xl md:text-6xl text-center lg:text-7xl xl:text-8xl font-bold text-white leading-tight">
-            {title
-              .split(/\s+/)
-              .map((word: string, index: number, array: string[]) => (
-                <span key={index} className="block">
-                  {word}
-                </span>
-              ))}
-          </h1>
+          {title && (
+            <h1 className="text-3xl md:text-5xl text-center  font-bold text-white leading-tight">
+              {title}
+            </h1>
+          )}
         </div>
       </div>
     </section>

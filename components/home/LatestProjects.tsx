@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect, useMemo } from "react";
-import { getSectionsByPage } from "@/lib/api/sections";
+import { getSectionsByPage, getSections } from "@/lib/api/sections";
 import { fetchPublicPortfolios } from "@/lib/actions/portfolioActions";
 import { serviceIconComponents } from "@/lib/serviceIconOptions";
 
@@ -103,8 +103,23 @@ export default function LatestProjects({
   const loadSections = async () => {
     try {
       setSectionsLoading(true);
-      const data = await getSectionsByPage("home", locale);
-      setSections(data);
+      // Use getSections to get full section data including selectedPortfolioId
+      const allSections = await getSections({ page: "home" });
+      const sortedSections = allSections.sort((a, b) => a.order - b.order);
+
+      // Also get localized data for display
+      const localizedData = await getSectionsByPage("home", locale);
+
+      // Merge: use localized data but keep selectedPortfolioId from full data
+      const mergedSections = sortedSections.map((section, index) => {
+        const localized = localizedData[index];
+        return {
+          ...localized,
+          selectedPortfolioId: (section as any).selectedPortfolioId,
+        };
+      });
+
+      setSections(mergedSections);
     } catch (error) {
       console.error("Error loading sections:", error);
       setSections([]);
@@ -185,11 +200,26 @@ export default function LatestProjects({
     return null;
   }, [projectsSection, locale]);
 
-  // Get latest portfolio project
+  // Get selected portfolio or latest portfolio
   const latestPortfolio = useMemo(() => {
     if (portfolios.length === 0) return null;
-    return portfolios[0]; // Latest one (already sorted)
-  }, [portfolios]);
+
+    // Check if section has selectedPortfolioId
+    const selectedPortfolioId = (projectsSection as any)?.selectedPortfolioId;
+
+    if (selectedPortfolioId && selectedPortfolioId.trim() !== "") {
+      // Find the selected portfolio
+      const selected = portfolios.find(
+        (p: any) => p._id === selectedPortfolioId
+      );
+      if (selected) {
+        return selected;
+      }
+    }
+
+    // Fallback to latest one (already sorted)
+    return portfolios[0];
+  }, [portfolios, projectsSection]);
 
   // Build project content from portfolio
   const project: ProjectContent = useMemo(() => {

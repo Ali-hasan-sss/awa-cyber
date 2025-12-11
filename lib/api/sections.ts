@@ -37,6 +37,7 @@ export interface Section {
   features: Feature[];
   order: number;
   isActive: boolean;
+  selectedPortfolioId?: string; // For LatestProjects section
   createdAt: string;
   updatedAt: string;
 }
@@ -72,6 +73,7 @@ export interface UpdateSectionPayload {
   features?: Feature[];
   order?: number;
   isActive?: boolean;
+  selectedPortfolioId?: string; // For LatestProjects section
 }
 
 export const getSections = async (filters?: {

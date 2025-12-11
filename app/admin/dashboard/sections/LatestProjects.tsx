@@ -107,12 +107,13 @@ export default function LatestProjectsSection() {
     }>;
   } | null>(null);
 
-  // Form state for section (title and description only)
+  // Form state for section (title, description, and selected portfolio)
   const [form, setForm] = useState({
     titleEn: "",
     titleAr: "",
     descriptionEn: "",
     descriptionAr: "",
+    selectedPortfolioId: "",
   });
 
   useEffect(() => {
@@ -131,11 +132,15 @@ export default function LatestProjectsSection() {
       if (sortedData && sortedData.length > 4) {
         const section = sortedData[4];
         setLatestProjectsSection(section);
+        // Get selectedPortfolioId from section metadata
+        const selectedPortfolioId = (section as any).selectedPortfolioId || "";
+
         setForm({
           titleEn: section.title?.en || "",
           titleAr: section.title?.ar || "",
           descriptionEn: section.description?.en || "",
           descriptionAr: section.description?.ar || "",
+          selectedPortfolioId: selectedPortfolioId,
         });
       }
     } catch (err: any) {
@@ -166,20 +171,18 @@ export default function LatestProjectsSection() {
         }
       }
 
-      // Sort by completionDate or createdAt descending and take latest one only
+      // Sort by completionDate or createdAt descending
       const sortedPortfolios =
         data.length > 0
-          ? data
-              .sort((a: any, b: any) => {
-                const dateA = new Date(
-                  a.completionDate || a.createdAt || 0
-                ).getTime();
-                const dateB = new Date(
-                  b.completionDate || b.createdAt || 0
-                ).getTime();
-                return dateB - dateA;
-              })
-              .slice(0, 1) // Take only the latest one
+          ? data.sort((a: any, b: any) => {
+              const dateA = new Date(
+                a.completionDate || a.createdAt || 0
+              ).getTime();
+              const dateB = new Date(
+                b.completionDate || b.createdAt || 0
+              ).getTime();
+              return dateB - dateA;
+            })
           : [];
       setPortfolios(sortedPortfolios);
     } catch (err: any) {
@@ -219,6 +222,7 @@ export default function LatestProjectsSection() {
           en: form.descriptionEn.trim(),
           ar: form.descriptionAr.trim(),
         },
+        selectedPortfolioId: form.selectedPortfolioId || undefined,
       };
 
       await updateSection(latestProjectsSection._id, payload);
@@ -233,11 +237,14 @@ export default function LatestProjectsSection() {
 
   const handleCancel = () => {
     if (latestProjectsSection) {
+      const selectedPortfolioId =
+        (latestProjectsSection as any).selectedPortfolioId || "";
       setForm({
         titleEn: latestProjectsSection.title?.en || "",
         titleAr: latestProjectsSection.title?.ar || "",
         descriptionEn: latestProjectsSection.description?.en || "",
         descriptionAr: latestProjectsSection.description?.ar || "",
+        selectedPortfolioId: selectedPortfolioId,
       });
     }
     setIsEditing(false);
@@ -552,10 +559,16 @@ export default function LatestProjectsSection() {
     ? stripHtml(form.descriptionEn || form.descriptionAr)
     : stripHtml(latestProjectsSection?.description?.[locale] || "");
 
-  // Get latest portfolio (already limited to 1 in loadPortfolios)
-  const latestPortfolio = useMemo(() => {
+  // Get selected portfolio or latest portfolio
+  const selectedPortfolio = useMemo(() => {
+    if (form.selectedPortfolioId) {
+      return portfolios.find((p) => p._id === form.selectedPortfolioId) || null;
+    }
     return portfolios.length > 0 ? portfolios[0] : null;
-  }, [portfolios]);
+  }, [portfolios, form.selectedPortfolioId]);
+
+  // For display purposes, use selectedPortfolio
+  const latestPortfolio = selectedPortfolio;
 
   if (loading) {
     return (
@@ -723,6 +736,47 @@ export default function LatestProjectsSection() {
                             : "Enter description in Arabic..."
                         }
                       />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Portfolio Selection */}
+                <div className="backdrop-blur-md bg-black/60 rounded-2xl p-6 border border-white/20 shadow-xl">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-white mb-2">
+                        {isArabic
+                          ? "اختر العمل المعروض"
+                          : "Select Project to Display"}
+                      </label>
+                      <select
+                        value={form.selectedPortfolioId}
+                        onChange={(e) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            selectedPortfolioId: e.target.value,
+                          }))
+                        }
+                        className={inputStyles}
+                      >
+                        <option value="">
+                          {isArabic
+                            ? "أحدث عمل تلقائياً"
+                            : "Latest Project (Auto)"}
+                        </option>
+                        {portfolios.map((portfolio) => (
+                          <option key={portfolio._id} value={portfolio._id}>
+                            {portfolio.title?.[locale] ||
+                              portfolio.title?.en ||
+                              portfolio._id}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-white/60 mt-2">
+                        {isArabic
+                          ? "اختر عملاً محدداً للعرض، أو اتركه فارغاً لعرض أحدث عمل تلقائياً"
+                          : "Select a specific project to display, or leave empty to show latest project automatically"}
+                      </p>
                     </div>
                   </div>
                 </div>
