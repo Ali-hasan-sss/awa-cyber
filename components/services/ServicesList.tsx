@@ -56,7 +56,7 @@ export default function ServicesList() {
 
   if (loading) {
     return (
-      <section className="relative bg-gradient-to-b from-white to-primary/5 py-20 md:py-28">
+      <section className="relative bg-gradient-to-b from-white to-gray-100 py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[...Array(4)].map((_, i) => (
@@ -90,7 +90,7 @@ export default function ServicesList() {
 
   if (services.length === 0) {
     return (
-      <section className="relative bg-gradient-to-b from-white to-primary/5 py-20 md:py-28">
+      <section className="relative bg-gradient-to-b from-white to-gray-100 py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-muted-foreground text-lg">

@@ -16,11 +16,13 @@ import {
   ClipboardCheck,
   MessageCircle,
   ArrowRight,
+  MapPin,
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { createQuotationRequestApi } from "@/lib/actions/quoteActions";
 import { fetchPublicServices } from "@/lib/actions/serviceActions";
+import { getSectionsByPage } from "@/lib/api/sections";
 
 const contentMap = {
   en: {
@@ -191,6 +193,8 @@ export default function QuotePage() {
   );
   const [services, setServices] = useState<PublicService[]>([]);
   const [loadingServices, setLoadingServices] = useState(false);
+  const [contactSection, setContactSection] = useState<any>(null);
+  const [loadingContact, setLoadingContact] = useState(true);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -228,6 +232,42 @@ export default function QuotePage() {
     };
     loadServices();
   }, [locale]);
+
+  // Load contact section data
+  useEffect(() => {
+    const loadContactSection = async () => {
+      try {
+        setLoadingContact(true);
+        const data = await getSectionsByPage("contact", locale);
+        const sections = Array.isArray(data) ? data : (data as any)?.data || [];
+        const firstSection =
+          sections.find((s: any) => s.order === 1) || sections[0];
+        setContactSection(firstSection);
+      } catch (error) {
+        console.error("Error loading contact section:", error);
+      } finally {
+        setLoadingContact(false);
+      }
+    };
+    loadContactSection();
+  }, [locale]);
+
+  // Extract contact information from section features
+  const features = contactSection?.features || [];
+  const addressFeature = features[0];
+  const phoneFeature = features[1];
+
+  const address =
+    addressFeature &&
+    (typeof addressFeature.name === "string"
+      ? addressFeature.name
+      : addressFeature.name?.[locale] || "");
+
+  const phone =
+    phoneFeature &&
+    (typeof phoneFeature.name === "string"
+      ? phoneFeature.name
+      : phoneFeature.name?.[locale] || "");
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -746,24 +786,57 @@ export default function QuotePage() {
             </div>
           </form>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {copy.contactCards.map((card) => {
-              const Icon = card.icon;
-              return (
-                <div
-                  key={card.title}
-                  className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 py-6 text-center"
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <p className="text-sm text-white/70">{card.title}</p>
-                  <p className="text-base font-semibold text-white">
-                    {card.value}
-                  </p>
+          <div className="mt-10 grid gap-4 md:grid-cols-2">
+            {/* Address Card */}
+            {!loadingContact && address && (
+              <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 py-6 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                  <MapPin className="h-6 w-6" />
                 </div>
-              );
-            })}
+                <p className="text-sm text-white/70">
+                  {locale === "ar" ? "العنوان" : "Address"}
+                </p>
+                <p className="text-base font-semibold text-white">{address}</p>
+              </div>
+            )}
+
+            {/* Phone Card */}
+            {!loadingContact && phone && (
+              <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 py-6 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                  <Phone className="h-6 w-6" />
+                </div>
+                <p className="text-sm text-white/70">
+                  {locale === "ar" ? "رقم الهاتف" : "Phone Number"}
+                </p>
+                <a
+                  href={`tel:${phone}`}
+                  className="text-base font-semibold text-white hover:text-primary transition-colors"
+                >
+                  {phone}
+                </a>
+              </div>
+            )}
+
+            {/* Fallback to default cards if contact data not loaded */}
+            {loadingContact &&
+              copy.contactCards.slice(0, 2).map((card) => {
+                const Icon = card.icon;
+                return (
+                  <div
+                    key={card.title}
+                    className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 py-6 text-center"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <p className="text-sm text-white/70">{card.title}</p>
+                    <p className="text-base font-semibold text-white">
+                      {card.value}
+                    </p>
+                  </div>
+                );
+              })}
           </div>
         </div>
       </section>

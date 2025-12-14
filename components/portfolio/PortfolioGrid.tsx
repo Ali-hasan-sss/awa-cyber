@@ -98,7 +98,7 @@ export default function PortfolioGrid() {
 
   if (loading) {
     return (
-      <section className="relative bg-white py-20 md:py-28 min-h-screen">
+      <section className="relative bg-gradient-to-b from-white to-gray-100 py-20 md:py-28 min-h-screen">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <div className="h-12 w-64 bg-gray-200 rounded-lg mx-auto animate-pulse" />
@@ -118,7 +118,7 @@ export default function PortfolioGrid() {
   }
 
   return (
-    <section className="relative bg-white py-10 md:py-15 min-h-screen">
+    <section className="relative bg-gradient-to-b from-white to-gray-100 py-10 md:py-15 min-h-screen">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Filter Section */}
         <PortfolioFilter

@@ -274,7 +274,7 @@ export default function TrustedClients({
   // Show loading state
   if (loading) {
     return (
-      <section className="relative bg-gradient-to-b from-white to-primary/5 py-20 md:py-28">
+      <section className="relative bg-gradient-to-b from-white to-gray-100 py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto space-y-12">
             {/* Title Skeleton */}
@@ -306,7 +306,7 @@ export default function TrustedClients({
     : defaultBrands;
 
   return (
-    <section className="relative bg-gradient-to-b from-white to-primary/5 py-20 md:py-28">
+    <section className="relative bg-gradient-to-b from-white to-gray-100 py-20 md:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 max-w-3xl mx-auto rtl:text-center">
           {displayTitle ? (

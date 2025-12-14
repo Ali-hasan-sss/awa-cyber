@@ -9,7 +9,7 @@ export default function PortfolioPage() {
       <Navbar />
       <PortfolioHero />
       {/* Content that appears above the fixed background */}
-      <div className="relative z-10 bg-white">
+      <div className="relative z-10 bg-gradient-to-b from-white to-gray-100">
         <PortfolioGrid />
       </div>
       <Footer />

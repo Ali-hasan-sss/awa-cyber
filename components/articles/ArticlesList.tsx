@@ -150,7 +150,7 @@ export default function ArticlesList() {
 
   if (loading) {
     return (
-      <section className="relative bg-gradient-to-b from-white to-primary/5 py-20 md:py-28">
+      <section className="relative bg-gradient-to-b from-white to-gray-100 py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[...Array(6)].map((_, i) => (
@@ -178,7 +178,7 @@ export default function ArticlesList() {
   }
 
   return (
-    <section className="relative bg-gradient-to-b from-white to-primary/5 py-10 md:py-15">
+    <section className="relative bg-gradient-to-b from-white to-gray-100 py-10 md:py-15">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Filter */}
         {services.length > 0 && (

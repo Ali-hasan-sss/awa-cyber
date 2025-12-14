@@ -122,8 +122,8 @@ export function AdminSidebar({
   const filteredNavItems = isEmployee
     ? navItems.filter(
         (item) =>
-          item.href === "/admin/dashboard/projects" ||
-          item.href === "/admin/dashboard/revenue"
+          // Hide revenue/accounting page from employees
+          item.href !== "/admin/dashboard/revenue"
       )
     : navItems;
 

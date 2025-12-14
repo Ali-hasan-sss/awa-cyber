@@ -113,7 +113,7 @@ export default function WhoWeAre({
   // Show loading state
   if (loading) {
     return (
-      <section className="relative bg-white py-20 md:py-28">
+      <section className="relative bg--white py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             {/* Left Side - Content Skeleton */}
@@ -145,7 +145,7 @@ export default function WhoWeAre({
   }
 
   return (
-    <section className="relative bg-white py-20 md:py-28">
+    <section className="relative bg-gradient-to-b from-white to-gray-100 py-20 md:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
           <div className="space-y-8 text-center md:rtl:text-right md:ltr:text-left">

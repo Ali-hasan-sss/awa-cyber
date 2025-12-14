@@ -99,7 +99,7 @@ export default function ContactForm() {
 
   if (loadingSection) {
     return (
-      <section className="relative bg-white py-20 md:py-28">
+      <section className="relative bg-gradient-to-b from-white to-gray-100 py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             {/* Title and Description Skeleton */}
@@ -147,7 +147,7 @@ export default function ContactForm() {
       : section.title?.[locale] || "");
 
   return (
-    <section className="relative bg-gray-50 py-12 md:py-16">
+    <section className="relative bg-gradient-to-b from-white to-gray-100 py-12 md:py-16">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Section Title */}

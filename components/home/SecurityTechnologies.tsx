@@ -279,7 +279,7 @@ export default function SecurityTechnologies({
   }, [sectionTitle, sectionDescription, tools, fallbackSection]);
 
   return (
-    <section className="relative bg-white py-20 md:py-28">
+    <section className="relative bg-gradient-to-b from-white to-gray-100 py-20 md:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto space-y-4">
           {section.title ? (

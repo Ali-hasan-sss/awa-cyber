@@ -107,7 +107,7 @@ export default function Footer() {
   const features = contactSection?.features || [];
   const addressFeature = features[0];
   const phoneFeature = features[1];
-  const socialFeatures = features.slice(2);
+  const socialFeatures = features.slice(3);
 
   const address =
     addressFeature &&
@@ -173,10 +173,23 @@ export default function Footer() {
 
                   if (!IconComponent || !link) return null;
 
+                  // Ensure the link has a protocol (http:// or https://)
+                  // Only add https:// if it's a domain (contains a dot) and doesn't start with / or #
+                  let formattedLink = link;
+                  if (
+                    !link.startsWith("http://") &&
+                    !link.startsWith("https://") &&
+                    !link.startsWith("/") &&
+                    !link.startsWith("#") &&
+                    link.includes(".")
+                  ) {
+                    formattedLink = `https://${link}`;
+                  }
+
                   return (
                     <a
                       key={index}
-                      href={link}
+                      href={formattedLink}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-black hover:bg-primary/90 transition-colors"
