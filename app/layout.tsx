@@ -1,6 +1,8 @@
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import "./globals.css";
 import PageTransition from "@/components/layout/PageTransition";
+import FloatingButtons from "@/components/layout/FloatingButtons";
+import StructuredData from "@/components/layout/StructuredData";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Cairo, Inter } from "next/font/google";
 import type { Metadata } from "next";
@@ -19,8 +21,86 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AWA CYBER - Your Digital Fortress",
-  description: "Enterprise-grade cybersecurity solutions",
+  applicationName: "awacyber",
+  title: {
+    default: "AWA Cyber | اوا سايبر - تطوير التطبيقات والتسويق الرقمي",
+    template: "%s | AWA Cyber | اوا سايبر",
+  },
+  description:
+    "AWA Cyber (اوا سايبر) - شركة متخصصة في بناء وتصميم تطبيقات الويب والموبايل، إدارة الحملات الإعلانية والتسويق الرقمي، وإدارة صفحات التواصل الاجتماعي. نقدم حلولاً شاملة للشركات والمؤسسات لتعزيز وجودها الرقمي. Web and mobile app development, digital marketing campaigns, social media management, and comprehensive digital solutions.",
+  keywords: [
+    "AWA Cyber",
+    "اوا سايبر",
+    "awacyber",
+    "web development",
+    "تطوير المواقع",
+    "mobile app development",
+    "تطوير تطبيقات الموبايل",
+    "web design",
+    "تصميم المواقع",
+    "digital marketing",
+    "التسويق الرقمي",
+    "advertising campaigns",
+    "الحملات الإعلانية",
+    "social media management",
+    "إدارة وسائل التواصل الاجتماعي",
+    "web applications",
+    "تطبيقات الويب",
+    "mobile applications",
+    "تطبيقات الموبايل",
+    "digital solutions",
+    "الحلول الرقمية",
+    "online marketing",
+    "التسويق الإلكتروني",
+    "social media marketing",
+    "التسويق عبر وسائل التواصل",
+  ],
+  authors: [{ name: "AWA Cyber", url: "https://awacyber.com" }],
+  creator: "AWA Cyber",
+  publisher: "AWA Cyber",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "ar_SA",
+    alternateLocale: "en_US",
+    siteName: "AWA Cyber | اوا سايبر",
+    title: "AWA Cyber | اوا سايبر - تطوير التطبيقات والتسويق الرقمي",
+    description:
+      "شركة متخصصة في بناء وتصميم تطبيقات الويب والموبايل، إدارة الحملات الإعلانية والتسويق الرقمي، وإدارة صفحات التواصل الاجتماعي.",
+    url: "https://awacyber.com",
+    images: [
+      {
+        url: "/images/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "AWA Cyber Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AWA Cyber | اوا سايبر - تطوير التطبيقات والتسويق الرقمي",
+    description:
+      "شركة متخصصة في بناء وتصميم تطبيقات الويب والموبايل، إدارة الحملات الإعلانية والتسويق الرقمي، وإدارة صفحات التواصل الاجتماعي",
+    images: ["/images/logo.png"],
+  },
+  alternates: {
+    canonical: "https://awacyber.com",
+    languages: {
+      "ar-SA": "https://awacyber.com",
+      "en-US": "https://awacyber.com",
+    },
+  },
   icons: {
     icon: [
       { url: "/images/logo.png", type: "image/png" },
@@ -29,6 +109,10 @@ export const metadata: Metadata = {
     ],
     shortcut: "/images/logo.png",
     apple: "/images/logo.png",
+  },
+  manifest: "/manifest.json",
+  verification: {
+    google: "your-google-verification-code", // يجب استبدالها برمز التحقق من Google Search Console
   },
 };
 
@@ -40,9 +124,11 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={`${inter.variable} ${cairo.variable} antialiased`}>
+        <StructuredData />
         <LanguageProvider>
           <AuthProvider>
             <PageTransition>{children}</PageTransition>
+            <FloatingButtons />
           </AuthProvider>
         </LanguageProvider>
       </body>

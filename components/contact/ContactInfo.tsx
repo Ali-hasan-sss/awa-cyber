@@ -121,7 +121,8 @@ export default function ContactInfo() {
                   </h3>
                   <a
                     href={`tel:${phone}`}
-                    className="text-base text-gray-700 hover:text-primary transition-colors font-medium block"
+                    className="text-base text-gray-700 hover:text-primary transition-colors font-medium block ltr"
+                    dir="ltr"
                   >
                     {phone}
                   </a>

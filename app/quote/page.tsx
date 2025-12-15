@@ -29,7 +29,7 @@ const contentMap = {
     eyebrow: "REQUEST A QUOTE",
     title: "Request Your Free Quotation",
     subtitle:
-      "Fill out the form below and our cybersecurity experts will get back to you within 24 hours with a customized solution.",
+      "Fill out the form below and our digital solutions experts will get back to you within 24 hours with a customized solution.",
     sections: {
       personal: "Personal Information",
       service: "Service Details",
@@ -58,7 +58,7 @@ const contentMap = {
       phone: "+1 234 567 8900",
       company: "Your Company",
       projectDesc:
-        "Please describe your security needs, current infrastructure, and any specific requirements...",
+        "Please describe your project needs, current requirements, and any specific features you'd like...",
       notes: "Any other details we should know about your project...",
     },
     select: {
@@ -79,7 +79,7 @@ const contentMap = {
     eyebrow: "اطلب عرض سعر",
     title: "اطلب عرضك المجاني",
     subtitle:
-      "املأ النموذج أدناه وسيعود إليك خبراؤنا في الأمن السيبراني خلال 24 ساعة بحل مخصص.",
+      "املأ النموذج أدناه وسيعود إليك خبراؤنا في الحلول الرقمية خلال 24 ساعة بحل مخصص.",
     sections: {
       personal: "المعلومات الشخصية",
       service: "تفاصيل الخدمة",
@@ -108,7 +108,7 @@ const contentMap = {
       phone: "+966 12 345 6789",
       company: "شركتك",
       projectDesc:
-        "يرجى وصف احتياجاتك الأمنية، البنية الحالية، وأي متطلبات خاصة...",
+        "يرجى وصف احتياجات مشروعك، المتطلبات الحالية، وأي ميزات خاصة تريدها...",
       notes: "أي تفاصيل أخرى يجب أن نعرفها عن مشروعك...",
     },
     select: {
@@ -811,7 +811,8 @@ export default function QuotePage() {
                 </p>
                 <a
                   href={`tel:${phone}`}
-                  className="text-base font-semibold text-white hover:text-primary transition-colors"
+                  className="text-base font-semibold text-white hover:text-primary transition-colors ltr"
+                  dir="ltr"
                 >
                   {phone}
                 </a>

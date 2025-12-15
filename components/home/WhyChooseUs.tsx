@@ -74,14 +74,14 @@ const fallbackContent: SectionContent = {
   eyebrow: "WHY CHOOSE US",
   title: {
     line1: "Your Trusted",
-    highlight: "Security Partner",
+    highlight: "Digital Partner",
   },
   description:
-    "We deliver cutting-edge cybersecurity solutions backed by expertise, proven methodologies, and commitment to excellence.",
+    "We deliver cutting-edge app development and digital marketing solutions backed by expertise, proven methodologies, and commitment to excellence.",
   cta: "Learn More About Us",
   badge: {
-    label: "Certified",
-    value: "ISO 27001",
+    label: "Expert",
+    value: "Certified",
   },
   experience: {
     value: "10+",
@@ -89,9 +89,9 @@ const fallbackContent: SectionContent = {
   },
   features: [
     {
-      title: "Certified Experts",
+      title: "Professional Team",
       description:
-        "Our team holds CEH, OSCP, CISSP, and other industry-leading certifications.",
+        "Our team has extensive experience in app development and digital marketing using the latest technologies.",
       icon: "Award",
     },
     {
@@ -101,20 +101,20 @@ const fallbackContent: SectionContent = {
       icon: "ShieldCheck",
     },
     {
-      title: "24/7 Support",
+      title: "Ongoing Support",
       description:
-        "Round-the-clock monitoring and rapid incident response when you need it most.",
+        "Continuous technical support and follow-up after delivery to ensure your project's success.",
       icon: "Headphones",
     },
     {
       title: "Tailored Solutions",
       description:
-        "Custom strategies designed for your specific business needs and risk profile.",
+        "Solutions designed specifically for your business needs and marketing goals.",
       icon: "Layers",
     },
   ],
   image: "/images/cyberhand.jpg",
-  imageAlt: "Cybersecurity professional holding a digital lock hologram",
+  imageAlt: "Development team working on a digital project",
 };
 
 export default function WhyChooseUs({

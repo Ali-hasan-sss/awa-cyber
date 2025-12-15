@@ -111,11 +111,18 @@ export default function ContactHero() {
       ? addressFeature.name
       : addressFeature.name?.[locale] || "");
 
-  const phone =
+  const phoneRaw =
     phoneFeature &&
     (typeof phoneFeature.name === "string"
       ? phoneFeature.name
       : phoneFeature.name?.[locale] || "");
+
+  // Format phone number: ensure + is at the start and display LTR
+  const phone = phoneRaw
+    ? phoneRaw.trim().startsWith("+")
+      ? phoneRaw.trim()
+      : `+${phoneRaw.trim()}`
+    : "";
 
   return (
     <section className="relative h-[75vh] flex items-center justify-center overflow-hidden w-full">
@@ -174,7 +181,8 @@ export default function ContactHero() {
                 <Phone className="w-5 h-5 text-primary" />
                 <a
                   href={`tel:${phone}`}
-                  className="text-sm md:text-base hover:text-primary transition-colors"
+                  className="text-sm md:text-base hover:text-primary transition-colors ltr"
+                  dir="ltr"
                 >
                   {phone}
                 </a>

@@ -512,8 +512,8 @@ export default function Payments({ projectId }: PaymentsProps) {
                 </h2>
                 <p className="text-sm text-gray-600">
                   {isArabic
-                    ? "شركة الحلول السيبرانية والبرمجيات"
-                    : "Cybersecurity & Software Solutions"}
+                    ? "شركة تطوير التطبيقات والتسويق الرقمي"
+                    : "App Development & Digital Marketing"}
                 </p>
                 <p className="text-sm text-gray-600">
                   {isArabic ? "سلطنة عمان" : "Sultanate of Oman"}

@@ -12,20 +12,20 @@
     "slides": [
       {
         "accent": "Your Digital",
-        "title": "Fortress",
-        "description": "Enterprise-grade cybersecurity solutions that protect your business from evolving threats.",
-        "highlight": "24/7 monitoring",
-        "description2": "penetration testing, and security audits.",
+        "title": "Solutions",
+        "description": "We design and build modern web and mobile applications tailored to your business needs.",
+        "highlight": "Professional Design",
+        "description2": "App development, advertising campaigns, and social media management.",
         "cta1": "Get Free Quote",
         "cta2": "View Services",
         "image": "/images/publicContain.jpg"
       },
       {
-        "accent": "Protect Your",
+        "accent": "Grow Your",
         "title": "Business",
-        "description": "Advanced threat detection and real-time protection for your digital assets.",
-        "highlight": "real-time protection",
-        "description2": "Stay ahead of cyber threats with our expert team.",
+        "description": "Effective marketing campaigns and professional social media management to increase your reach.",
+        "highlight": "Digital Marketing",
+        "description2": "Get comprehensive solutions to enhance your digital presence with our expert team.",
         "cta1": "Get Free Quote",
         "cta2": "View Services",
         "image": "/images/public.jpg"
@@ -37,12 +37,12 @@
     "eyebrow": "WHO WE ARE",
     "title": {
       "line1": "Leading",
-      "highlight": "Cybersecurity",
-      "line2": "Experts"
+      "highlight": "Digital Development",
+      "line2": "& Marketing Experts"
     },
     "paragraphs": [
-      "AWA Cyber is a premier cybersecurity firm dedicated to protecting businesses from evolving digital threats. With decades of combined experience, we've safeguarded hundreds of organizations across critical industries.",
-      "From penetration testing to security audits, our certified professionals blend strategic insights with industry-leading methodologies to identify vulnerabilities and strengthen your unique security posture."
+      "AWA Cyber is a specialized company in building and designing web and mobile applications, managing advertising campaigns and digital marketing, and managing social media pages. With years of experience, we've successfully completed hundreds of projects for clients across diverse industries.",
+      "From advanced app development to effective marketing campaigns, our team blends creativity with modern technologies to deliver comprehensive digital solutions tailored to your unique business needs."
     ],
     "stats": [
       { "value": "500+", "label": "Projects" },
@@ -62,7 +62,7 @@
       "line1": "Trusted By Industry-Leading",
       "highlight": "Organizations"
     },
-    "description": "We're proud to protect some of the world's most innovative companies with tailored cybersecurity programs.",
+    "description": "We're proud to partner with some of the world's most innovative companies through tailored digital solutions.",
     "brands": [
       {
         "name": "Enterprise Co.",
@@ -90,46 +90,46 @@
   "servicesSection": {
     "eyebrow": "WHAT WE DO",
     "title": {
-      "line1": "Comprehensive Security",
+      "line1": "Comprehensive Digital",
       "highlight": "Solutions"
     },
-    "description": "Protecting your digital assets with enterprise-grade cybersecurity services tailored to your industry.",
+    "description": "We provide integrated app development and digital marketing services tailored to your business needs.",
     "cta": "View All Services",
     "cards": [
       {
-        "title": "Penetration Testing",
-        "description": "Identify vulnerabilities before attackers do with comprehensive ethical hacking assessments.",
-        "icon": "Target",
-        "linkLabel": "Learn More"
-      },
-      {
-        "title": "Security Audits",
-        "description": "Complete evaluation of your security posture with prioritized recommendations for improvement.",
-        "icon": "ShieldCheck",
-        "linkLabel": "Learn More"
-      },
-      {
-        "title": "Web Security",
-        "description": "Protect critical web applications from OWASP Top 10 vulnerabilities using advanced testing.",
+        "title": "Web App Development",
+        "description": "We design and develop modern, responsive web applications using the latest technologies.",
         "icon": "Globe",
         "linkLabel": "Learn More"
       },
       {
-        "title": "Network Security",
-        "description": "Secure your network with continuous monitoring, firewalls, and intrusion detection systems.",
-        "icon": "Wifi",
+        "title": "Mobile App Development",
+        "description": "We develop professional mobile apps for iOS and Android with modern design and high performance.",
+        "icon": "Smartphone",
         "linkLabel": "Learn More"
       },
       {
-        "title": "Cloud Security",
-        "description": "Safeguard AWS, Azure, or GCP environments with best practices, compliance, and 24/7 monitoring.",
-        "icon": "Cloud",
+        "title": "Web Design",
+        "description": "Professional and attractive web designs that improve user experience and enhance your digital presence.",
+        "icon": "Palette",
         "linkLabel": "Learn More"
       },
       {
-        "title": "Security Training",
-        "description": "Empower teams with awareness programs and hands-on cyber defense simulations.",
-        "icon": "GraduationCap",
+        "title": "Advertising Campaigns",
+        "description": "Effective advertising campaigns across various platforms to increase reach and achieve your marketing goals.",
+        "icon": "Megaphone",
+        "linkLabel": "Learn More"
+      },
+      {
+        "title": "Digital Marketing",
+        "description": "Comprehensive digital marketing strategies to enhance your brand and increase sales.",
+        "icon": "TrendingUp",
+        "linkLabel": "Learn More"
+      },
+      {
+        "title": "Social Media Management",
+        "description": "Professional management of social media pages and engaging content creation to increase engagement.",
+        "icon": "Share2",
         "linkLabel": "Learn More"
       }
     ]
@@ -137,38 +137,38 @@
   "projectsSection": {
     "eyebrow": "OUR WORK",
     "title": {
-      "line1": "Latest Security",
-      "highlight": "Projects"
+      "line1": "Latest Development",
+      "highlight": "& Marketing Projects"
     },
-    "description": "Explore our recent cybersecurity projects and see how we've helped organizations strengthen their defenses.",
+    "description": "Explore our recent app development and digital marketing projects and see how we've helped companies enhance their digital presence.",
     "cta": "View Full Portfolio",
     "primaryProject": {
-      "badge": "Web Security",
+      "badge": "Web Development",
       "badgeIcon": "Globe",
       "timeline": "Completed Q4 2024",
-      "title": "E-Commerce Platform Security",
-      "summary": "Comprehensive penetration testing and security hardening for a major e-commerce platform, protecting customer data and payment systems.",
+      "title": "Integrated E-Commerce Platform",
+      "summary": "Development and design of a comprehensive e-commerce platform with a successful marketing campaign that increased sales by 300%.",
       "highlights": [
-        { "icon": "ShieldCheck", "text": "50+ vulnerabilities fixed" },
-        { "icon": "Target", "text": "PCI DSS compliance achieved" },
-        { "icon": "Activity", "text": "24/7 monitoring implemented" }
+        { "icon": "CheckCircle", "text": "Responsive design on all devices" },
+        { "icon": "Zap", "text": "Fast performance and SEO optimization" },
+        { "icon": "TrendingUp", "text": "300% increase in sales" }
       ],
       "linkLabel": "View Case Study",
       "image": "/images/skils.jpg",
-      "imageAlt": "Security specialists reviewing e-commerce dashboards"
+      "imageAlt": "Development team reviewing e-commerce platform dashboard"
     }
   },
   "whyChooseSection": {
     "eyebrow": "WHY CHOOSE US",
     "title": {
       "line1": "Your Trusted",
-      "highlight": "Security Partner"
+      "highlight": "Digital Partner"
     },
-    "description": "We deliver cutting-edge cybersecurity solutions backed by expertise, proven methodologies, and commitment to excellence.",
+    "description": "We deliver cutting-edge app development and digital marketing solutions backed by expertise, proven methodologies, and commitment to excellence.",
     "cta": "Learn More About Us",
     "badge": {
-      "label": "Certified",
-      "value": "ISO 27001"
+      "label": "Expert",
+      "value": "Certified"
     },
     "experience": {
       "value": "10+",
@@ -176,28 +176,28 @@
     },
     "features": [
       {
-        "title": "Certified Experts",
-        "description": "Our team holds CEH, OSCP, CISSP, and other industry-leading certifications.",
+        "title": "Professional Team",
+        "description": "Our team has extensive experience in app development and digital marketing using the latest technologies.",
         "icon": "Award"
       },
       {
         "title": "Proven Track Record",
         "description": "500+ successful projects across diverse industries with 100% satisfaction rate.",
-        "icon": "ShieldCheck"
+        "icon": "CheckCircle"
       },
       {
-        "title": "24/7 Support",
-        "description": "Round-the-clock monitoring and rapid incident response when you need it most.",
+        "title": "Ongoing Support",
+        "description": "Continuous technical support and follow-up after delivery to ensure your project's success.",
         "icon": "Headphones"
       },
       {
         "title": "Tailored Solutions",
-        "description": "Custom strategies designed for your specific business needs and risk profile.",
+        "description": "Solutions designed specifically for your business needs and marketing goals.",
         "icon": "Layers"
       }
     ],
     "image": "/images/cyberhand.jpg",
-    "imageAlt": "Cybersecurity professional holding a digital lock hologram"
+    "imageAlt": "Development team working on a digital project"
   },
   "testimonialsSection": {
     "eyebrow": "TESTIMONIALS",
@@ -208,37 +208,37 @@
     "description": "Don't just take our word for it - hear from the businesses we've protected",
     "testimonials": [
       {
-        "quote": "AWA Cyber transformed our security posture. Their penetration testing identified critical vulnerabilities we didn't know existed. Highly professional Team",
+        "quote": "AWA Cyber completely transformed our digital presence. The app they developed for us made it easy for customers to use and significantly increased our sales. Highly professional Team",
         "name": "John Davis",
         "role": "CTO",
         "company": "TechCorp"
       },
       {
-        "quote": "Outstanding service! Their cloud security audit helped us achieve ISO 27001 certification. The team is knowledgeable, responsive, and truly understands enterprise security",
+        "quote": "Outstanding service! The marketing campaign they executed for us achieved excellent results. The team is knowledgeable, responsive, and truly understands digital marketing needs",
         "name": "Sarah Martinez",
         "role": "CISO",
         "company": "Cloudly inc"
       },
       {
-        "quote": "We've worked with several security firms, but AWA Cyber stands out. Their comprehensive approach and detailed reporting gave us actionable insights to improve our security",
+        "quote": "We've worked with several development companies, but AWA Cyber stands out. Their comprehensive approach and excellent design gave us an app that meets all our needs",
         "name": "Michael Roberts",
         "role": "CEO",
         "company": "DataSecure"
       },
       {
-        "quote": "The best investment we made this year. Their 24/7 monitoring and rapid incident response prevented a major breach. Cannot recommend them enough!",
+        "quote": "The best investment we made this year. Their social media management increased our followers by 500%. Cannot recommend them enough!",
         "name": "Emily Kim",
         "role": "VP Operations",
         "company": "FinTech Pro"
       },
       {
-        "quote": "Professional, thorough, and extremely competent. Their security training program educated our entire team on best practices. Worth every penny!",
+        "quote": "Professional, thorough, and extremely competent. The mobile app they developed for us is easy to use and loved by our customers. Worth every penny!",
         "name": "David Lee",
         "role": "Director",
         "company": "Enterprise Co"
       },
       {
-        "quote": "Exceptional expertise in network security. They implemented advanced IDS/IPS that has been running flawlessly. Their support team is always available when needed.",
+        "quote": "Exceptional expertise in app development. They implemented an advanced web application that has been running flawlessly. Their support team is always available when needed.",
         "name": "Amanda Brown",
         "role": "CTO",
         "company": "NSolutions"
@@ -246,69 +246,69 @@
     ]
   },
   "technologiesSection": {
-    "eyebrow": "ADVANCED TOOLS",
+    "eyebrow": "ADVANCED TECHNOLOGIES",
     "title": {
-      "line1": "Advanced",
-      "highlight": "Security Technologies"
+      "line1": "Development & Marketing",
+      "highlight": "Technologies"
     },
-    "description": "We leverage industry-leading tools and technologies to deliver comprehensive security solutions.",
-    "toolsTitle": "Security Testing & Penetration Tools",
-    "toolsSubtitle": "Advanced tools for comprehensive security assessments",
+    "description": "We use the latest technologies and tools to deliver comprehensive app development and digital marketing solutions.",
+    "toolsTitle": "Development & Marketing Technologies",
+    "toolsSubtitle": "Modern tools and technologies for integrated digital solutions",
     "tools": [
       {
-        "name": "Kali Linux",
-        "description": "Top testing OS",
-        "category": "Testing Suite",
-        "icon": "Command"
-      },
-      {
-        "name": "Metasploit",
-        "description": "Exploit framework",
-        "category": "Exploit Framework",
-        "icon": "Terminal"
-      },
-      {
-        "name": "Burp Suite",
-        "description": "Web security",
-        "category": "Web Security",
-        "icon": "Globe"
-      },
-      {
-        "name": "OWASP ZAP",
-        "description": "Security scanner",
-        "category": "Security Scanner",
-        "icon": "Shield"
-      },
-      {
-        "name": "Nmap",
-        "description": "Network scanner",
-        "category": "Network Scanner",
-        "icon": "Radar"
-      },
-      {
-        "name": "Wireshark",
-        "description": "Network analysis",
-        "category": "Network Analysis",
-        "icon": "Signal"
-      },
-      {
-        "name": "Nessus",
-        "description": "Vulnerability",
-        "category": "Vulnerability",
-        "icon": "AlertTriangle"
-      },
-      {
-        "name": "Python",
-        "description": "Scripting",
-        "category": "Scripting",
+        "name": "React & Next.js",
+        "description": "Web development",
+        "category": "Web Development",
         "icon": "Code"
+      },
+      {
+        "name": "React Native",
+        "description": "Mobile development",
+        "category": "Mobile Development",
+        "icon": "Smartphone"
+      },
+      {
+        "name": "Node.js",
+        "description": "Server development",
+        "category": "Backend",
+        "icon": "Server"
+      },
+      {
+        "name": "Google Ads",
+        "description": "Google advertising",
+        "category": "Advertising",
+        "icon": "Megaphone"
+      },
+      {
+        "name": "Facebook Ads",
+        "description": "Facebook advertising",
+        "category": "Social Media",
+        "icon": "Share2"
+      },
+      {
+        "name": "Analytics",
+        "description": "Data analysis",
+        "category": "Analytics",
+        "icon": "BarChart"
+      },
+      {
+        "name": "SEO Tools",
+        "description": "Search engine optimization",
+        "category": "SEO",
+        "icon": "Search"
+      },
+      {
+        "name": "Design Tools",
+        "description": "Design tools",
+        "category": "Design",
+        "icon": "Palette"
       }
     ],
     "stats": [
       { "value": "500+", "label": "Projects Completed" },
       { "value": "10+", "label": "Years Experience" },
       { "value": "100%", "label": "Client Satisfaction" },
-      { "value": "24/7", "label": "Security Monitoring" }
+      { "value": "24/7", "label": "Technical Support" }
     ]
   },
   "howItWorksSection": {
@@ -318,38 +318,38 @@
       "highlight": "AWA Cyber",
       "line2": "Works"
     },
-    "description": "A proven methodology that delivers comprehensive security solutions",
+    "description": "A proven methodology that delivers comprehensive app development and digital marketing solutions",
     "steps": [
       {
         "number": "1",
         "title": "Consultation",
-        "description": "We discuss your security needs, current infrastructure, and business goals to understand your unique requirements.",
+        "description": "We discuss your needs, business goals, and requirements to understand exactly what you need.",
         "icon": "MessageCircle"
       },
       {
         "number": "2",
-        "title": "Assessment",
-        "description": "Comprehensive analysis of your systems, networks, and applications to identify vulnerabilities and security gaps.",
+        "title": "Planning & Design",
+        "description": "We create a comprehensive plan and design attractive user interfaces that match your brand.",
         "icon": "Search"
       },
       {
         "number": "3",
-        "title": "Implementation",
-        "description": "Deploy security solutions, fix vulnerabilities, and implement best practices tailored to your environment.",
+        "title": "Development & Execution",
+        "description": "We develop the app or execute the marketing campaign using the latest technologies and best practices.",
         "icon": "Settings"
       },
       {
         "number": "4",
-        "title": "Monitoring",
-        "description": "Continuous 24/7 monitoring, regular updates, and ongoing support to maintain your security posture.",
+        "title": "Support & Follow-up",
+        "description": "We provide continuous technical support and regular follow-up to ensure your project's success and achieve your goals.",
         "icon": "Activity"
       }
     ],
     "cta": "Start Your Journey"
   },
   "securityModal": {
-    "title": "Ready to Secure Your Business?",
-    "description": "Don't wait for a security breach to take action. Get a comprehensive security assessment and protect your business from cyber threats today.",
+    "title": "Ready to Grow Your Digital Presence?",
+    "description": "Don't wait any longer. Get a free consultation and start your digital journey today with comprehensive app development and marketing solutions.",
     "features": ["Free Consultation", "No Commitment", "Expert Guidance"],
     "buttons": {
       "quote": "Get Your Free Quote",
@@ -366,11 +366,12 @@
     "services": {
       "title": "Our Services",
       "items": [
-        "Penetration Testing",
-        "Security Audits",
-        "Web App Security",
-        "Network Security",
-        "Cloud Security"
+        "Web App Development",
+        "Mobile App Development",
+        "Web Design",
+        "Advertising Campaigns",
+        "Digital Marketing",
+        "Social Media Management"
       ]
     },
     "contact": {
@@ -509,9 +510,9 @@
   },
   "aboutPage": {
     "hero": {
-      "subtitle": "Leading Cybersecurity Company",
+      "subtitle": "Leading Digital Development & Marketing Company",
       "title": "About Us",
-      "description": "We are a team of seasoned cybersecurity experts dedicated to protecting your business from evolving digital threats. With years of experience and deep expertise, we help organizations build strong defenses against cyber attacks.",
+      "description": "We are a team of seasoned app development and digital marketing experts dedicated to helping your business grow and thrive in the digital world. With years of experience and deep expertise, we help companies build a strong and effective digital presence.",
       "stats": {
         "projects": {
           "value": "500+",

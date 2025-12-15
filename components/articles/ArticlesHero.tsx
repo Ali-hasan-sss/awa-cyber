@@ -60,8 +60,8 @@ export default function ArticlesHero() {
   const description = descriptionRaw
     ? stripHtml(descriptionRaw)
     : locale === "ar"
-    ? "اكتشف آخر المقالات والأخبار المتعلقة بخدماتنا وأحدث التطورات في عالم الأمن السيبراني"
-    : "Discover the latest articles and news about our services and the latest developments in cybersecurity";
+    ? "اكتشف آخر المقالات والأخبار المتعلقة بخدماتنا وأحدث التطورات في عالم التطوير الرقمي والتسويق"
+    : "Discover the latest articles and news about our services and the latest developments in digital development and marketing";
 
   const heroImage = heroSection?.images?.[0] || "/images/publicContain.jpg";
 

@@ -83,20 +83,22 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen">
-      <Navbar />
-      <Hero sections={sections} />
-      <WhoWeAre sections={sections} />
-      <TrustedClients sections={sections} />
-      <SecurityServices sections={sections} />
-      <LatestProjects sections={sections} />
-      <WhyChooseUs sections={sections} />
-      <Testimonials sections={sections} />
-      <HowItWorks sections={sections} />
-      <SecurityTechnologies sections={sections} />
-      <SecurityModal sections={sections} />
-      <SectionRenderer page="home" sections={sections} />
-      <Footer />
-    </main>
+    <>
+      <main className="min-h-screen">
+        <Navbar />
+        <Hero sections={sections} />
+        <WhoWeAre sections={sections} />
+        <TrustedClients sections={sections} />
+        <SecurityServices sections={sections} />
+        <LatestProjects sections={sections} />
+        <WhyChooseUs sections={sections} />
+        <Testimonials sections={sections} />
+        <HowItWorks sections={sections} />
+        <SecurityTechnologies sections={sections} />
+        <SecurityModal sections={sections} />
+        <SectionRenderer page="home" sections={sections} />
+        <Footer />
+      </main>
+    </>
   );
 }

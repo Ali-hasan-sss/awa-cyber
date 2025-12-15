@@ -80,8 +80,8 @@ export default function WhoWeAre({
   const sectionDescription = useMemo(() => {
     if (!aboutSection?.description) {
       return locale === "ar"
-        ? "شركة رائدة في مجال الأمن السيبراني مكرسة لحماية الأعمال من التهديدات الرقمية المتطورة."
-        : "A premier cybersecurity firm dedicated to protecting businesses from evolving digital threats.";
+        ? "شركة متخصصة في بناء وتصميم تطبيقات الويب والموبايل، إدارة الحملات الإعلانية والتسويق الرقمي، وإدارة صفحات التواصل الاجتماعي."
+        : "A specialized company in building and designing web and mobile applications, managing advertising campaigns and digital marketing, and managing social media pages.";
     }
     const text = stripHtml(aboutSection.description);
     // Split by double line breaks or periods to create paragraphs

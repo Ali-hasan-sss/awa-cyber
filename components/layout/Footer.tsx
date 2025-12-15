@@ -36,7 +36,7 @@ type FooterContent = {
 
 const fallbackContent: FooterContent = {
   tagline:
-    "Protecting businesses from cyber threats with cutting-edge security solutions and expert guidance.",
+    "Building modern web and mobile applications, managing effective marketing campaigns, and professional social media management.",
   quickLinks: {
     title: "Quick Links",
     links: ["Home", "About Us", "Services", "Portfolio", "Contact"],
@@ -44,16 +44,17 @@ const fallbackContent: FooterContent = {
   services: {
     title: "Our Services",
     items: [
-      "Penetration Testing",
-      "Security Audits",
-      "Web App Security",
-      "Network Security",
-      "Cloud Security",
+      "Web App Development",
+      "Mobile App Development",
+      "Web Design",
+      "Advertising Campaigns",
+      "Digital Marketing",
+      "Social Media Management",
     ],
   },
   contact: {
     title: "Get In Touch",
-    address: "123 Security Street, Cyber City, CC 12345",
+    address: "Muscat, Sultanate of Oman",
     email: "info@awacyber.com",
     phone: "+1 (234) 567-890",
     whatsapp: "WhatsApp Us",
@@ -245,7 +246,8 @@ export default function Footer() {
                   <Phone className="h-5 w-5 text-primary shrink-0" />
                   <a
                     href={`tel:${phone}`}
-                    className="hover:text-primary transition-colors"
+                    className="hover:text-primary transition-colors ltr"
+                    dir="ltr"
                   >
                     {phone}
                   </a>
@@ -261,7 +263,8 @@ export default function Footer() {
                     <Phone className="h-5 w-5 text-primary shrink-0" />
                     <a
                       href={`tel:${content.contact?.phone}`}
-                      className="hover:text-primary transition-colors"
+                      className="hover:text-primary transition-colors ltr"
+                      dir="ltr"
                     >
                       {content.contact?.phone}
                     </a>

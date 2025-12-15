@@ -198,7 +198,7 @@ export default function SecurityServices({
             )
           ) : (
             <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
-              Comprehensive Security{" "}
+              Comprehensive Digital{" "}
               <span className="text-primary">Solutions</span>
             </h2>
           )}
@@ -273,45 +273,45 @@ export default function SecurityServices({
 
 const defaultCards: ServiceCard[] = [
   {
-    title: "Penetration Testing",
+    title: "Web App Development",
     description:
-      "Identify vulnerabilities before attackers do with comprehensive ethical hacking assessments.",
-    icon: "Target",
-    linkLabel: "Learn More",
-  },
-  {
-    title: "Security Audits",
-    description:
-      "Complete evaluation of your security posture with prioritized recommendations for improvement.",
-    icon: "ShieldCheck",
-    linkLabel: "Learn More",
-  },
-  {
-    title: "Web Security",
-    description:
-      "Protect critical web applications from OWASP Top 10 vulnerabilities using advanced testing.",
+      "We design and develop modern, responsive web applications using the latest technologies.",
     icon: "Globe",
     linkLabel: "Learn More",
   },
   {
-    title: "Network Security",
+    title: "Mobile App Development",
     description:
-      "Secure your network with continuous monitoring, firewalls, and intrusion detection systems.",
-    icon: "Wifi",
+      "We develop professional mobile apps for iOS and Android with modern design and high performance.",
+    icon: "Smartphone",
     linkLabel: "Learn More",
   },
   {
-    title: "Cloud Security",
+    title: "Web Design",
     description:
-      "Safeguard AWS, Azure, or GCP environments with best practices, compliance, and 24/7 monitoring.",
-    icon: "Cloud",
+      "Professional and attractive web designs that improve user experience and enhance your digital presence.",
+    icon: "Palette",
     linkLabel: "Learn More",
   },
   {
-    title: "Security Training",
+    title: "Advertising Campaigns",
     description:
-      "Empower teams with awareness programs and hands-on cyber defense simulations.",
-    icon: "GraduationCap",
+      "Effective advertising campaigns across various platforms to increase reach and achieve your marketing goals.",
+    icon: "Megaphone",
+    linkLabel: "Learn More",
+  },
+  {
+    title: "Digital Marketing",
+    description:
+      "Comprehensive digital marketing strategies to enhance your brand and increase sales.",
+    icon: "TrendingUp",
+    linkLabel: "Learn More",
+  },
+  {
+    title: "Social Media Management",
+    description:
+      "Professional management of social media pages and engaging content creation to increase engagement.",
+    icon: "Share2",
     linkLabel: "Learn More",
   },
 ];
