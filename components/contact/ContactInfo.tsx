@@ -93,7 +93,7 @@ export default function ContactInfo() {
           {address && (
             <div className="group relative rounded-2xl bg-white border border-border/60 p-6 hover:shadow-lg hover:border-primary/40 transition-all duration-300 shadow-sm">
               <div className="flex items-start gap-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-md">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-md">
                   <MapPin className="w-7 h-7 text-primary" />
                 </div>
                 <div className="flex-1">
@@ -112,7 +112,7 @@ export default function ContactInfo() {
           {phone && (
             <div className="group relative rounded-2xl bg-white border border-border/60 p-6 hover:shadow-lg hover:border-primary/40 transition-all duration-300 shadow-sm">
               <div className="flex items-start gap-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-md">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-md">
                   <Phone className="w-7 h-7 text-primary" />
                 </div>
                 <div className="flex-1">

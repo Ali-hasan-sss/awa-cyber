@@ -45,7 +45,8 @@ export default function ServicesList() {
     try {
       setLoading(true);
       const data = await fetchPublicServices(locale);
-      setServices(Array.isArray(data) ? data : data?.data || []);
+      const servicesList = Array.isArray(data) ? data : data?.data || [];
+      setServices([...servicesList].reverse());
     } catch (error) {
       console.error("Error loading services:", error);
       setServices([]);
@@ -105,7 +106,7 @@ export default function ServicesList() {
   }
 
   return (
-    <section className="relative bg-gradient-to-b from-white to-primary/5 py-20 md:py-28">
+    <section className="relative bg-gradient-to-b from-white to-gray-100 py-20 md:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {services.map((service: any) => {

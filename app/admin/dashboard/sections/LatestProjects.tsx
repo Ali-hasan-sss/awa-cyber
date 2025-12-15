@@ -107,13 +107,14 @@ export default function LatestProjectsSection() {
     }>;
   } | null>(null);
 
-  // Form state for section (title, description, and selected portfolio)
+  // Form state for section (title, description, and selected portfolios)
   const [form, setForm] = useState({
     titleEn: "",
     titleAr: "",
     descriptionEn: "",
     descriptionAr: "",
-    selectedPortfolioId: "",
+    selectedPortfolioId: "", // Keep for backward compatibility
+    selectedPortfolioIds: ["", "", ""], // Array of 3 portfolio IDs
   });
 
   useEffect(() => {
@@ -135,12 +136,37 @@ export default function LatestProjectsSection() {
         // Get selectedPortfolioId from section metadata
         const selectedPortfolioId = (section as any).selectedPortfolioId || "";
 
+        // Get selected portfolios from features (up to 3)
+        const selectedPortfolioIds = ["", "", ""];
+        if (section.features && Array.isArray(section.features)) {
+          section.features
+            .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+            .slice(0, 3)
+            .forEach((feature: any, idx: number) => {
+              // Support both old format (string) and new format (object)
+              let portfolioId: string | undefined;
+              if (typeof feature.name === "string") {
+                portfolioId = feature.name;
+              } else if (feature.name?.en) {
+                portfolioId = feature.name.en;
+              } else if (typeof feature.description === "string") {
+                portfolioId = feature.description;
+              } else if (feature.description?.en) {
+                portfolioId = feature.description.en;
+              }
+              if (portfolioId) {
+                selectedPortfolioIds[idx] = portfolioId;
+              }
+            });
+        }
+
         setForm({
           titleEn: section.title?.en || "",
           titleAr: section.title?.ar || "",
           descriptionEn: section.description?.en || "",
           descriptionAr: section.description?.ar || "",
           selectedPortfolioId: selectedPortfolioId,
+          selectedPortfolioIds: selectedPortfolioIds,
         });
       }
     } catch (err: any) {
@@ -213,6 +239,34 @@ export default function LatestProjectsSection() {
     setError(null);
 
     try {
+      // Convert selectedPortfolioIds array into features array
+      // Each feature stores a portfolio ID in name.en and name.ar (same value)
+      const features = form.selectedPortfolioIds
+        .map((portfolioId, index) => {
+          // Only include non-empty portfolio IDs, but preserve their original index as order
+          if (portfolioId && portfolioId.trim() !== "") {
+            return {
+              name: {
+                en: portfolioId, // Store portfolio ID in name.en
+                ar: portfolioId, // Store portfolio ID in name.ar (same value)
+              },
+              description: {
+                en: portfolioId, // Store portfolio ID in description.en for backward compatibility
+                ar: portfolioId, // Store portfolio ID in description.ar for backward compatibility
+              },
+              icon: "ShieldCheck", // Required icon field
+              order: index, // Preserve original index as order
+            };
+          }
+          return null;
+        })
+        .filter((feature) => feature !== null) as Array<{
+        name: { en: string; ar: string };
+        description: { en: string; ar: string };
+        icon: string;
+        order: number;
+      }>;
+
       const payload: any = {
         title: {
           en: form.titleEn.trim(),
@@ -222,7 +276,11 @@ export default function LatestProjectsSection() {
           en: form.descriptionEn.trim(),
           ar: form.descriptionAr.trim(),
         },
-        selectedPortfolioId: form.selectedPortfolioId || undefined,
+        features: features, // Save portfolio IDs as features
+        // Keep selectedPortfolioId for backward compatibility (use first selected ID)
+        selectedPortfolioId:
+          form.selectedPortfolioIds.find((id) => id && id.trim() !== "") ||
+          undefined,
       };
 
       await updateSection(latestProjectsSection._id, payload);
@@ -239,12 +297,41 @@ export default function LatestProjectsSection() {
     if (latestProjectsSection) {
       const selectedPortfolioId =
         (latestProjectsSection as any).selectedPortfolioId || "";
+
+      // Get selected portfolios from features
+      const selectedPortfolioIds = ["", "", ""];
+      if (
+        latestProjectsSection.features &&
+        Array.isArray(latestProjectsSection.features)
+      ) {
+        latestProjectsSection.features
+          .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+          .slice(0, 3)
+          .forEach((feature: any, idx: number) => {
+            // Support both old format (string) and new format (object)
+            let portfolioId: string | undefined;
+            if (typeof feature.name === "string") {
+              portfolioId = feature.name;
+            } else if (feature.name?.en) {
+              portfolioId = feature.name.en;
+            } else if (typeof feature.description === "string") {
+              portfolioId = feature.description;
+            } else if (feature.description?.en) {
+              portfolioId = feature.description.en;
+            }
+            if (portfolioId) {
+              selectedPortfolioIds[idx] = portfolioId;
+            }
+          });
+      }
+
       setForm({
         titleEn: latestProjectsSection.title?.en || "",
         titleAr: latestProjectsSection.title?.ar || "",
         descriptionEn: latestProjectsSection.description?.en || "",
         descriptionAr: latestProjectsSection.description?.ar || "",
         selectedPortfolioId: selectedPortfolioId,
+        selectedPortfolioIds: selectedPortfolioIds,
       });
     }
     setIsEditing(false);
@@ -740,42 +827,56 @@ export default function LatestProjectsSection() {
                   </div>
                 </div>
 
-                {/* Portfolio Selection */}
+                {/* Portfolio Selection - 3 Projects */}
                 <div className="backdrop-blur-md bg-black/60 rounded-2xl p-6 border border-white/20 shadow-xl">
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-white mb-2">
                         {isArabic
-                          ? "اختر العمل المعروض"
-                          : "Select Project to Display"}
+                          ? "اختر الأعمال المعروضة (3 أعمال)"
+                          : "Select Projects to Display (3 projects)"}
                       </label>
-                      <select
-                        value={form.selectedPortfolioId}
-                        onChange={(e) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            selectedPortfolioId: e.target.value,
-                          }))
-                        }
-                        className={inputStyles}
-                      >
-                        <option value="">
-                          {isArabic
-                            ? "أحدث عمل تلقائياً"
-                            : "Latest Project (Auto)"}
-                        </option>
-                        {portfolios.map((portfolio) => (
-                          <option key={portfolio._id} value={portfolio._id}>
-                            {portfolio.title?.[locale] ||
-                              portfolio.title?.en ||
-                              portfolio._id}
-                          </option>
-                        ))}
-                      </select>
-                      <p className="text-xs text-white/60 mt-2">
+                      <p className="text-xs text-white/60 mb-4">
                         {isArabic
-                          ? "اختر عملاً محدداً للعرض، أو اتركه فارغاً لعرض أحدث عمل تلقائياً"
-                          : "Select a specific project to display, or leave empty to show latest project automatically"}
+                          ? "سيتم عرض الأعمال المختارة بالتناوب كل 10 ثواني"
+                          : "Selected projects will rotate automatically every 10 seconds"}
+                      </p>
+                      {[0, 1, 2].map((index) => (
+                        <div key={index} className="mb-4">
+                          <label className="block text-xs font-medium text-white/80 mb-2">
+                            {isArabic
+                              ? `العمل ${index + 1}`
+                              : `Project ${index + 1}`}
+                          </label>
+                          <select
+                            value={form.selectedPortfolioIds[index] || ""}
+                            onChange={(e) => {
+                              const newIds = [...form.selectedPortfolioIds];
+                              newIds[index] = e.target.value;
+                              setForm((prev) => ({
+                                ...prev,
+                                selectedPortfolioIds: newIds,
+                              }));
+                            }}
+                            className={inputStyles}
+                          >
+                            <option value="">
+                              {isArabic ? "لا شيء" : "None"}
+                            </option>
+                            {portfolios.map((portfolio) => (
+                              <option key={portfolio._id} value={portfolio._id}>
+                                {portfolio.title?.[locale] ||
+                                  portfolio.title?.en ||
+                                  portfolio._id}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                      <p className="text-xs text-white/60 mt-4">
+                        {isArabic
+                          ? "اختر حتى 3 أعمال للعرض. سيتم تغيير العمل المعروض تلقائياً كل 10 ثواني"
+                          : "Select up to 3 projects to display. The displayed project will change automatically every 10 seconds"}
                       </p>
                     </div>
                   </div>

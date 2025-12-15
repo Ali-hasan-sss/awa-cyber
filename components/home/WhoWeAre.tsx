@@ -194,7 +194,7 @@ export default function WhoWeAre({
                 sizes="(max-width: 1024px) 100vw, 600px"
                 priority={false}
               />
-              <div className="absolute inset-0 bg-gradient-to-tr from-black/20 via-transparent to-primary/10" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-black/20 via-transparent to-gray-200/20" />
             </div>
             {stats.length > 0 && (
               <div className="absolute -bottom-6 ltr:-right-6 rtl:-left-6 hidden sm:block rounded-2xl bg-white/90 px-6 py-4 shadow-lg backdrop-blur">

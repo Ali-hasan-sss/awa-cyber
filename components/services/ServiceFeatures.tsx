@@ -46,7 +46,7 @@ export default function ServiceFeatures({ service }: { service: any }) {
   const features = service.features || [];
 
   return (
-    <section className="relative bg-gradient-to-b from-white via-primary/5 to-primary/10 py-10 md:py-18">
+    <section className="relative bg-gradient-to-b from-white to-gray-100 py-10 md:py-18">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* What's Included Section */}

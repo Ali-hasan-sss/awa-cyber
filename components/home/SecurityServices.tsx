@@ -122,8 +122,9 @@ export default function SecurityServices({
       .then((data) => {
         if (cancelled) return;
         const servicesList = Array.isArray(data) ? data : data?.data || [];
-        const mapped: ServiceCard[] = servicesList
-          .slice(0, 4)
+        const mapped: ServiceCard[] = [...servicesList]
+          .reverse()
+          .slice(0, 6)
           .map((service: any) => ({
             _id: service._id,
             title: service.title || "",
@@ -151,10 +152,10 @@ export default function SecurityServices({
   }, [locale]);
 
   const cards: ServiceCard[] = remoteCards
-    ? remoteCards.slice(0, 4)
+    ? remoteCards.slice(0, 6)
     : Array.isArray(fallbackSection.cards)
-    ? fallbackSection.cards.slice(0, 4)
-    : defaultCards.slice(0, 4);
+    ? fallbackSection.cards.slice(0, 6)
+    : defaultCards.slice(0, 6);
 
   // Determine which data to use: API data or fallback
   const displayTitle = sectionTitle || fallbackSection.title;
@@ -234,7 +235,7 @@ export default function SecurityServices({
                     />
                   </div>
                 ) : (
-                  <div className="relative w-full aspect-video bg-gradient-to-br from-primary/10 to-primary/5" />
+                  <div className="relative w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200" />
                 )}
                 <div className="p-6 md:p-8 flex flex-col flex-grow">
                   <h3 className="text-2xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
@@ -253,6 +254,17 @@ export default function SecurityServices({
               </Link>
             );
           })}
+        </div>
+
+        {/* View More Button */}
+        <div className="mt-12 flex justify-center">
+          <Link
+            href="/services"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-black font-semibold rounded-full hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl"
+          >
+            <span>{locale === "ar" ? "عرض المزيد" : "View More"}</span>
+            <ArrowRight className="h-5 w-5 rtl:rotate-180" />
+          </Link>
         </div>
       </div>
     </section>

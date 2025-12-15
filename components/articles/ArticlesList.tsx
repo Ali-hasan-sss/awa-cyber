@@ -265,7 +265,7 @@ export default function ArticlesList() {
                               className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-300"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-cyan-500/20 flex items-center justify-center">
+                            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                               <span className="text-6xl text-primary/40">
                                 📄
                               </span>
@@ -345,8 +345,8 @@ export default function ArticlesList() {
                             className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-300"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-cyan-500/20 flex items-center justify-center">
-                            <span className="text-4xl text-primary/40">📄</span>
+                          <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                            <span className="text-4xl text-gray-400">📄</span>
                           </div>
                         )}
                         {/* Category Badge */}

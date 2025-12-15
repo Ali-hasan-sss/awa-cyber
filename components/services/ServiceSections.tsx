@@ -37,7 +37,7 @@ export default function ServiceSections({ sections }: ServiceSectionsProps) {
       {sortedSections.map((section) => (
         <section
           key={section._id}
-          className="relative bg-gradient-to-b from-white via-primary/5 to-primary/10 py-16 md:py-24"
+          className="relative bg-gradient-to-b from-white to-gray-100 py-16 md:py-24"
         >
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">

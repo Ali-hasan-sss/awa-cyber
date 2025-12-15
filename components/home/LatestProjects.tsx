@@ -8,6 +8,8 @@ import {
   Activity,
   Globe,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -89,6 +91,7 @@ export default function LatestProjects({
   const [sectionsLoading, setSectionsLoading] = useState(true);
   const [portfolios, setPortfolios] = useState<any[]>([]);
   const [portfoliosLoading, setPortfoliosLoading] = useState(true);
+  const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
 
   // Use provided sections or load them
   useEffect(() => {
@@ -200,26 +203,80 @@ export default function LatestProjects({
     return null;
   }, [projectsSection, locale]);
 
-  // Get selected portfolio or latest portfolio
-  const latestPortfolio = useMemo(() => {
-    if (portfolios.length === 0) return null;
+  // Get selected portfolios (up to 3) from features or selectedPortfolioId
+  const selectedPortfolios = useMemo(() => {
+    if (portfolios.length === 0) return [];
 
-    // Check if section has selectedPortfolioId
-    const selectedPortfolioId = (projectsSection as any)?.selectedPortfolioId;
+    const selectedPortfolioList: any[] = [];
 
-    if (selectedPortfolioId && selectedPortfolioId.trim() !== "") {
-      // Find the selected portfolio
-      const selected = portfolios.find(
-        (p: any) => p._id === selectedPortfolioId
-      );
-      if (selected) {
-        return selected;
+    // Check if section has features with portfolio IDs
+    if (projectsSection?.features && projectsSection.features.length > 0) {
+      // Use features to get portfolio IDs (feature.name contains portfolio ID)
+      projectsSection.features
+        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+        .slice(0, 3) // Take only first 3
+        .forEach((feature: any) => {
+          const portfolioId = feature.name || feature.description;
+          if (portfolioId) {
+            const portfolio = portfolios.find(
+              (p: any) => p._id === portfolioId
+            );
+            if (portfolio) {
+              selectedPortfolioList.push(portfolio);
+            }
+          }
+        });
+    }
+
+    // Fallback: Check if section has selectedPortfolioId (backward compatibility)
+    if (selectedPortfolioList.length === 0) {
+      const selectedPortfolioId = (projectsSection as any)?.selectedPortfolioId;
+      if (selectedPortfolioId && selectedPortfolioId.trim() !== "") {
+        const selected = portfolios.find(
+          (p: any) => p._id === selectedPortfolioId
+        );
+        if (selected) {
+          selectedPortfolioList.push(selected);
+        }
       }
     }
 
-    // Fallback to latest one (already sorted)
-    return portfolios[0];
+    // If still no portfolios, use latest 3 portfolios
+    if (selectedPortfolioList.length === 0) {
+      return portfolios.slice(0, 3);
+    }
+
+    return selectedPortfolioList;
   }, [portfolios, projectsSection]);
+
+  // Auto-rotate projects every 10 seconds
+  useEffect(() => {
+    if (selectedPortfolios.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentProjectIndex((prev) => (prev + 1) % selectedPortfolios.length);
+    }, 10000); // 10 seconds
+
+    return () => clearInterval(interval);
+  }, [selectedPortfolios.length]);
+
+  // Navigation functions
+  const goToNext = () => {
+    setCurrentProjectIndex((prev) => (prev + 1) % selectedPortfolios.length);
+  };
+
+  const goToPrevious = () => {
+    setCurrentProjectIndex(
+      (prev) =>
+        (prev - 1 + selectedPortfolios.length) % selectedPortfolios.length
+    );
+  };
+
+  // Get current portfolio to display
+  const latestPortfolio = useMemo(() => {
+    if (selectedPortfolios.length === 0) return null;
+    return selectedPortfolios[currentProjectIndex] || selectedPortfolios[0];
+  }, [selectedPortfolios, currentProjectIndex]);
 
   // Build project content from portfolio
   const project: ProjectContent = useMemo(() => {
@@ -336,70 +393,268 @@ export default function LatestProjects({
           )}
         </div>
 
-        <div className="mt-12 rounded-[32px] border border-border/40 bg-white shadow-2xl overflow-hidden group">
-          <div className="flex flex-col lg:flex-row">
-            <div className="relative lg:w-1/2">
-              <Image
-                src={project.image || fallbackProject.image}
-                alt={project.imageAlt || fallbackProject.imageAlt}
-                width={640}
-                height={420}
-                className="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
-                sizes="(max-width: 1024px) 100vw, 640px"
-              />
-              <span className="absolute top-6 left-6 flex items-center gap-3 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-foreground shadow">
-                <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-                  <BadgeIcon className="h-4 w-4" />
-                </span>
-                {project.badge}
-              </span>
-            </div>
-
-            <div className="lg:w-1/2 p-8 md:p-12 flex flex-col gap-6 text-center md:text-left md:rtl:text-right">
-              {project.timeline && (
-                <div className="flex items-center justify-center md:justify-start gap-3 text-sm font-semibold text-primary">
-                  <span className="h-2 w-2 rounded-full bg-primary" />
-                  {project.timeline}
-                </div>
-              )}
-              <div className="space-y-4">
-                <h3 className="text-3xl font-bold text-foreground">
-                  {project.title}
-                </h3>
-                <p className="text-base text-muted-foreground leading-relaxed">
-                  {project.summary}
-                </p>
-              </div>
-              <ul className="space-y-4">
-                {highlights.map((item, idx) => {
-                  const Icon =
-                    iconMap[item.icon ?? "ShieldCheck"] ?? ShieldCheck;
-                  return (
-                    <li
-                      key={`${item.text}-${idx}`}
-                      className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm text-muted-foreground justify-center md:justify-start"
-                    >
-                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <span className="text-base text-foreground">
-                        {item.text}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-              {project.linkLabel && latestPortfolio && (
-                <Link
-                  href={`/portfolio/${latestPortfolio._id}`}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 justify-center md:justify-start transition-colors"
+        <div className="mt-12 relative">
+          {/* Carousel container with slide transition */}
+          <div className="relative rounded-[32px] border border-border/40 bg-white shadow-2xl overflow-hidden group">
+            {selectedPortfolios.length > 0 ? (
+              <div className="relative overflow-hidden">
+                {/* Slider wrapper */}
+                <div
+                  className="flex transition-transform duration-700 ease-in-out"
+                  style={{
+                    transform:
+                      locale === "ar"
+                        ? `translateX(${currentProjectIndex * 100}%)`
+                        : `translateX(-${currentProjectIndex * 100}%)`,
+                  }}
                 >
-                  {project.linkLabel}
-                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-                </Link>
-              )}
-            </div>
+                  {selectedPortfolios.map((portfolio, idx) => {
+                    // Build project content for each portfolio
+                    const portfolioTitle =
+                      typeof portfolio.title === "string"
+                        ? portfolio.title
+                        : portfolio.title?.[locale] ||
+                          portfolio.title?.en ||
+                          "";
+
+                    const portfolioDescription =
+                      typeof portfolio.description === "string"
+                        ? portfolio.description
+                        : portfolio.description?.[locale] ||
+                          portfolio.description?.en ||
+                          "";
+
+                    const portfolioHighlights: ProjectHighlight[] =
+                      portfolio.features && Array.isArray(portfolio.features)
+                        ? portfolio.features.map((feature: any) => ({
+                            icon: feature.icon || "ShieldCheck",
+                            text:
+                              typeof feature.name === "string"
+                                ? feature.name
+                                : feature.name?.[locale] ||
+                                  feature.name?.en ||
+                                  feature.description?.[locale] ||
+                                  feature.description?.en ||
+                                  "",
+                          }))
+                        : [];
+
+                    const completionDate = portfolio.completionDate
+                      ? new Date(portfolio.completionDate).toLocaleDateString(
+                          locale === "ar" ? "ar-SA" : "en-US",
+                          {
+                            year: "numeric",
+                            month: "short",
+                          }
+                        )
+                      : "";
+
+                    const portfolioProject: ProjectContent = {
+                      badge:
+                        portfolioTitle.split(" ").slice(0, 2).join(" ") ||
+                        "Project",
+                      badgeIcon: portfolio.features?.[0]?.icon || "Globe",
+                      timeline: completionDate
+                        ? `Completed ${completionDate}`
+                        : "",
+                      title: portfolioTitle,
+                      summary: portfolioDescription,
+                      highlights: portfolioHighlights.slice(0, 3),
+                      linkLabel:
+                        locale === "ar" ? "عرض التفاصيل" : "View Details",
+                      image:
+                        portfolio.images && portfolio.images.length > 0
+                          ? portfolio.images[0]
+                          : fallbackProject.image,
+                      imageAlt: portfolioTitle,
+                    };
+
+                    const PortfolioBadgeIcon =
+                      iconMap[portfolioProject.badgeIcon ?? "Globe"] ?? Globe;
+
+                    return (
+                      <div key={portfolio._id} className="w-full flex-shrink-0">
+                        <div className="flex flex-col lg:flex-row">
+                          <div className="relative lg:w-1/2">
+                            <Image
+                              src={
+                                portfolioProject.image || fallbackProject.image
+                              }
+                              alt={
+                                portfolioProject.imageAlt ||
+                                fallbackProject.imageAlt
+                              }
+                              width={640}
+                              height={420}
+                              className="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                              sizes="(max-width: 1024px) 100vw, 640px"
+                            />
+                            <span className="absolute top-6 left-6 flex items-center gap-3 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-foreground shadow">
+                              <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                                <PortfolioBadgeIcon className="h-4 w-4" />
+                              </span>
+                              {portfolioProject.badge}
+                            </span>
+                          </div>
+
+                          <div className="lg:w-1/2 p-8 md:p-12 flex flex-col gap-6 text-center md:text-left md:rtl:text-right">
+                            {portfolioProject.timeline && (
+                              <div className="flex items-center justify-center md:justify-start gap-3 text-sm font-semibold text-primary">
+                                <span className="h-2 w-2 rounded-full bg-primary" />
+                                {portfolioProject.timeline}
+                              </div>
+                            )}
+                            <div className="space-y-4">
+                              <h3 className="text-3xl font-bold text-foreground">
+                                {portfolioProject.title}
+                              </h3>
+                              <p className="text-base text-muted-foreground leading-relaxed">
+                                {portfolioProject.summary}
+                              </p>
+                            </div>
+                            <ul className="space-y-4">
+                              {portfolioProject.highlights.map(
+                                (item, highlightIdx) => {
+                                  const Icon =
+                                    iconMap[item.icon ?? "ShieldCheck"] ??
+                                    ShieldCheck;
+                                  return (
+                                    <li
+                                      key={`${item.text}-${highlightIdx}`}
+                                      className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm text-muted-foreground justify-center md:justify-start"
+                                    >
+                                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                                        <Icon className="h-5 w-5" />
+                                      </span>
+                                      <span className="text-base text-foreground">
+                                        {item.text}
+                                      </span>
+                                    </li>
+                                  );
+                                }
+                              )}
+                            </ul>
+                            {portfolioProject.linkLabel && (
+                              <Link
+                                href={`/portfolio/${portfolio._id}`}
+                                className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 justify-center md:justify-start transition-colors"
+                              >
+                                {portfolioProject.linkLabel}
+                                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                              </Link>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Navigation arrows */}
+                {selectedPortfolios.length > 1 && (
+                  <>
+                    <button
+                      onClick={goToPrevious}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white rounded-full p-3 shadow-lg transition-all duration-300 hover:scale-110 rtl:left-auto rtl:right-4"
+                      aria-label={locale === "ar" ? "السابق" : "Previous"}
+                    >
+                      <ChevronLeft className="h-6 w-6 text-gray-700 rtl:rotate-180" />
+                    </button>
+                    <button
+                      onClick={goToNext}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white rounded-full p-3 shadow-lg transition-all duration-300 hover:scale-110 rtl:right-auto rtl:left-4"
+                      aria-label={locale === "ar" ? "التالي" : "Next"}
+                    >
+                      <ChevronRight className="h-6 w-6 text-gray-700 rtl:rotate-180" />
+                    </button>
+                  </>
+                )}
+              </div>
+            ) : (
+              // Fallback: Show single project using old method
+              <div className="flex flex-col lg:flex-row">
+                <div className="relative lg:w-1/2">
+                  <Image
+                    src={project.image || fallbackProject.image}
+                    alt={project.imageAlt || fallbackProject.imageAlt}
+                    width={640}
+                    height={420}
+                    className="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                    sizes="(max-width: 1024px) 100vw, 640px"
+                  />
+                  <span className="absolute top-6 left-6 flex items-center gap-3 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-foreground shadow">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                      <BadgeIcon className="h-4 w-4" />
+                    </span>
+                    {project.badge}
+                  </span>
+                </div>
+
+                <div className="lg:w-1/2 p-8 md:p-12 flex flex-col gap-6 text-center md:text-left md:rtl:text-right">
+                  {project.timeline && (
+                    <div className="flex items-center justify-center md:justify-start gap-3 text-sm font-semibold text-primary">
+                      <span className="h-2 w-2 rounded-full bg-primary" />
+                      {project.timeline}
+                    </div>
+                  )}
+                  <div className="space-y-4">
+                    <h3 className="text-3xl font-bold text-foreground">
+                      {project.title}
+                    </h3>
+                    <p className="text-base text-muted-foreground leading-relaxed">
+                      {project.summary}
+                    </p>
+                  </div>
+                  <ul className="space-y-4">
+                    {highlights.map((item, idx) => {
+                      const Icon =
+                        iconMap[item.icon ?? "ShieldCheck"] ?? ShieldCheck;
+                      return (
+                        <li
+                          key={`${item.text}-${idx}`}
+                          className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm text-muted-foreground justify-center md:justify-start"
+                        >
+                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                            <Icon className="h-5 w-5" />
+                          </span>
+                          <span className="text-base text-foreground">
+                            {item.text}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {project.linkLabel && latestPortfolio && (
+                    <Link
+                      href={`/portfolio/${latestPortfolio._id}`}
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 justify-center md:justify-start transition-colors"
+                    >
+                      {project.linkLabel}
+                      <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Carousel indicators */}
+          {selectedPortfolios.length > 1 && (
+            <div className="flex justify-center gap-2 mt-6">
+              {selectedPortfolios.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentProjectIndex(idx)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    idx === currentProjectIndex
+                      ? "w-8 bg-primary"
+                      : "w-2 bg-gray-300 hover:bg-gray-400"
+                  }`}
+                  aria-label={`Go to project ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {fallbackSection.cta && (

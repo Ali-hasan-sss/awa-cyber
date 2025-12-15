@@ -328,7 +328,7 @@ export default function VideoSection() {
                 playsInline
                 style={{ maxHeight: "100%" }}
               />
-              <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-primary/5 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-gray-200/10 pointer-events-none" />
             </>
           ) : (
             <>
@@ -340,7 +340,7 @@ export default function VideoSection() {
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-primary/5 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-gray-200/10 pointer-events-none" />
             </>
           )}
 

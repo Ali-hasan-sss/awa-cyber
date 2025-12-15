@@ -119,7 +119,7 @@ export default function ArticleDetail({ articleId }: { articleId: string }) {
 
   if (!article) {
     return (
-      <section className="relative bg-gradient-to-b from-white to-primary/5 py-20 md:py-28">
+      <section className="relative bg-gradient-to-b from-white to-gray-100 py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl text-center">
           <p className="text-muted-foreground text-lg">
             {locale === "ar" ? "المقالة غير موجودة" : "Article not found"}
@@ -176,7 +176,7 @@ export default function ArticleDetail({ articleId }: { articleId: string }) {
         </div>
       ) : (
         // Fallback if no image
-        <div className="relative w-full h-[50vh] bg-gradient-to-br from-primary/20 to-cyan-500/20 flex items-center justify-center">
+        <div className="relative w-full h-[50vh] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <Link
               href="/articles"
@@ -383,7 +383,7 @@ export default function ArticleDetail({ articleId }: { articleId: string }) {
                               className="object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-cyan-500/20 flex items-center justify-center">
+                            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                               <span className="text-4xl text-primary/40">
                                 📄
                               </span>

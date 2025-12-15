@@ -316,7 +316,7 @@ export default function SecurityTechnologies({
           )}
         </div>
 
-        <div className="mt-12 bg-gradient-to-b from-primary/20 via-white to-white rounded-[36px] p-6 md:p-8 shadow-lg border border-primary/10">
+        <div className="mt-12 bg-gradient-to-b from-gray-100 to-white rounded-[36px] p-6 md:p-8 shadow-lg border border-gray-200">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {tools.map((tool: Tool, idx: number) => {
               const Icon = iconMap[tool.icon ?? "Shield"] ?? Shield;
