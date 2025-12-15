@@ -475,7 +475,7 @@ export default function LatestProjects({
                     return (
                       <div key={portfolio._id} className="w-full flex-shrink-0">
                         <div className="flex flex-col lg:flex-row">
-                          <div className="relative lg:w-1/2">
+                          <div className="relative lg:w-1/2 aspect-[4/3] lg:min-h-[420px] lg:max-h-[600px]">
                             <Image
                               src={
                                 portfolioProject.image || fallbackProject.image
@@ -484,9 +484,8 @@ export default function LatestProjects({
                                 portfolioProject.imageAlt ||
                                 fallbackProject.imageAlt
                               }
-                              width={640}
-                              height={420}
-                              className="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                              fill
+                              className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                               sizes="(max-width: 1024px) 100vw, 640px"
                             />
                             <span className="absolute top-6 left-6 flex items-center gap-3 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-foreground shadow">
@@ -573,13 +572,12 @@ export default function LatestProjects({
             ) : (
               // Fallback: Show single project using old method
               <div className="flex flex-col lg:flex-row">
-                <div className="relative lg:w-1/2">
+                <div className="relative lg:w-1/2 aspect-[4/3] lg:min-h-[420px] lg:max-h-[600px]">
                   <Image
                     src={project.image || fallbackProject.image}
                     alt={project.imageAlt || fallbackProject.imageAlt}
-                    width={640}
-                    height={420}
-                    className="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                    fill
+                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                     sizes="(max-width: 1024px) 100vw, 640px"
                   />
                   <span className="absolute top-6 left-6 flex items-center gap-3 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-foreground shadow">
