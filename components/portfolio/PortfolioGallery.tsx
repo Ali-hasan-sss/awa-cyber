@@ -343,7 +343,7 @@ export default function PortfolioGallery({ portfolio }: { portfolio: any }) {
                   // Lightbox should only show images, not YouTube videos
                   return (
                     <Image
-                      src={selectedItem}
+                      src={normalizeImageUrl(selectedItem)}
                       alt={`Portfolio item ${selectedImage + 1}`}
                       fill
                       className="object-contain"
