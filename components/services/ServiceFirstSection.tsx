@@ -2,7 +2,7 @@
 
 import { useLanguage } from "@/contexts/LanguageContext";
 import Image from "next/image";
-import { normalizeImageUrl } from "@/lib/utils";
+import { normalizeImageUrl, normalizeHtmlContent } from "@/lib/utils";
 
 interface ServiceFirstSectionProps {
   section: {
@@ -49,7 +49,9 @@ export default function ServiceFirstSection({
             {description && (
               <div
                 className="text-base md:text-lg text-gray-700 leading-relaxed space-y-4"
-                dangerouslySetInnerHTML={{ __html: description }}
+                dangerouslySetInnerHTML={{
+                  __html: normalizeHtmlContent(description),
+                }}
               />
             )}
           </div>

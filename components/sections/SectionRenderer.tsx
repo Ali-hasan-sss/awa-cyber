@@ -8,7 +8,7 @@ import {
   serviceIconComponents,
   ServiceIconKey,
 } from "@/lib/serviceIconOptions";
-import { normalizeImageUrl } from "@/lib/utils";
+import { normalizeImageUrl, normalizeHtmlContent } from "@/lib/utils";
 
 interface SectionData {
   _id: string;
@@ -212,7 +212,9 @@ export default function SectionRenderer({
                       className={`text-base md:text-lg leading-relaxed ${
                         isStyle1 ? "text-muted-foreground" : "text-white/80"
                       }`}
-                      dangerouslySetInnerHTML={{ __html: sectionDescription }}
+                      dangerouslySetInnerHTML={{
+                        __html: normalizeHtmlContent(sectionDescription),
+                      }}
                     />
                   )}
 

@@ -6,7 +6,7 @@ import { apiClient } from "@/lib/apiClient";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import { normalizeImageUrl } from "@/lib/utils";
+import { normalizeImageUrl, normalizeHtmlContent } from "@/lib/utils";
 
 interface ServiceFourthSectionProps {
   section: {
@@ -73,7 +73,9 @@ export default function ServiceFourthSection({
             {description && (
               <div
                 className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto"
-                dangerouslySetInnerHTML={{ __html: description }}
+                dangerouslySetInnerHTML={{
+                  __html: normalizeHtmlContent(description),
+                }}
               />
             )}
           </div>

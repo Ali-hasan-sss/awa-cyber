@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { getSectionsByPage } from "@/lib/api/sections";
 import Image from "next/image";
 import { Play } from "lucide-react";
+import { normalizeImageUrl, normalizeHtmlContent } from "@/lib/utils";
 
 // Helper function to strip HTML tags
 const stripHtml = (html: string): string => {
@@ -104,8 +105,9 @@ export default function VideoSection() {
     typeof videoSection.description === "string"
       ? videoSection.description
       : videoSection.description?.[locale] || "";
-  const sectionImage = videoSection.images?.[0] || "/images/publicContain.jpg";
-  const videoUrl = videoSection.videoUrl || "";
+  const rawSectionImage =
+    videoSection.images?.[0] || "/images/publicContain.jpg";
+  const rawVideoUrl = videoSection.videoUrl || "";
 
   // Check if the image is actually a video file
   const isVideoFile = (url: string) => {
@@ -114,8 +116,15 @@ export default function VideoSection() {
     return videoExtensions.some((ext) => url.toLowerCase().endsWith(ext));
   };
 
-  const isVideo = isVideoFile(sectionImage) || isVideoFile(videoUrl);
-  const videoSource = isVideoFile(sectionImage) ? sectionImage : videoUrl;
+  const isVideo = isVideoFile(rawSectionImage) || isVideoFile(rawVideoUrl);
+  const rawVideoSource = isVideoFile(rawSectionImage)
+    ? rawSectionImage
+    : rawVideoUrl;
+
+  // Normalize URLs after determining which one to use
+  const sectionImage = normalizeImageUrl(rawSectionImage);
+  const videoUrl = normalizeImageUrl(rawVideoUrl);
+  const videoSource = normalizeImageUrl(rawVideoSource);
 
   const handlePlay = () => {
     if (isVideo && videoRef.current) {
@@ -300,7 +309,9 @@ export default function VideoSection() {
               {sectionDescription && (
                 <div
                   className="video-section-description text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: sectionDescription }}
+                  dangerouslySetInnerHTML={{
+                    __html: normalizeHtmlContent(sectionDescription),
+                  }}
                   style={{
                     wordBreak: "break-word",
                   }}

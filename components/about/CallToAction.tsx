@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { getSectionsByPage } from "@/lib/api/sections";
 import Image from "next/image";
 import Link from "next/link";
+import { normalizeImageUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
@@ -103,7 +104,9 @@ export default function CallToAction() {
     typeof ctaSection.description === "string"
       ? ctaSection.description
       : ctaSection.description?.[locale] || "";
-  const sectionImage = ctaSection.images?.[0] || "/images/publicContain.jpg";
+  const sectionImage = ctaSection.images?.[0]
+    ? normalizeImageUrl(ctaSection.images[0])
+    : "/images/publicContain.jpg";
 
   return (
     <section className="relative bg-gray-50">

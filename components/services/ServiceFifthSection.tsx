@@ -3,6 +3,7 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { normalizeHtmlContent } from "@/lib/utils";
 
 interface ServiceFifthSectionProps {
   section: {
@@ -45,7 +46,9 @@ export default function ServiceFifthSection({
           {description && (
             <div
               className="text-lg md:text-xl text-gray-800 mb-8 max-w-2xl mx-auto"
-              dangerouslySetInnerHTML={{ __html: description }}
+              dangerouslySetInnerHTML={{
+                __html: normalizeHtmlContent(description),
+              }}
             />
           )}
 

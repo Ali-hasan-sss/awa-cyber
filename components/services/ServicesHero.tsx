@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Image from "next/image";
 import { getSectionsByPage } from "@/lib/api/sections";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // Helper function to strip HTML tags
 const stripHtml = (html: string): string => {
@@ -59,7 +60,9 @@ export default function ServicesHero() {
       : heroSection?.description?.[locale] || "";
   const description = descriptionRaw ? stripHtml(descriptionRaw) : "";
 
-  const heroImage = heroSection?.images?.[0] || "/images/publicContain.jpg";
+  const heroImage = heroSection?.images?.[0]
+    ? normalizeImageUrl(heroSection.images[0])
+    : "/images/publicContain.jpg";
 
   if (loading) {
     return (

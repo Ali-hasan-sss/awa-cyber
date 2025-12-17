@@ -3,7 +3,7 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import Image from "next/image";
 import { Check } from "lucide-react";
-import { normalizeImageUrl } from "@/lib/utils";
+import { normalizeImageUrl, normalizeHtmlContent } from "@/lib/utils";
 
 interface ServiceSection {
   _id: string;
@@ -50,7 +50,9 @@ export default function ServiceSections({ sections }: ServiceSectionsProps) {
                 {section.description && (
                   <div
                     className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
-                    dangerouslySetInnerHTML={{ __html: section.description }}
+                    dangerouslySetInnerHTML={{
+                      __html: normalizeHtmlContent(section.description),
+                    }}
                   />
                 )}
               </div>

@@ -7,6 +7,60 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Normalizes URLs in HTML content (img src, video src, etc.)
+ * @param html - HTML string that may contain URLs
+ * @returns HTML with normalized URLs
+ */
+export function normalizeHtmlContent(html: string | undefined | null): string {
+  if (!html || typeof html !== "string") return "";
+
+  // Replace img src URLs
+  html = html.replace(
+    /<img([^>]*)\ssrc=["']([^"']+)["']/gi,
+    (match, attributes, url) => {
+      const normalizedUrl = normalizeImageUrl(url);
+      return `<img${attributes} src="${normalizedUrl}"`;
+    }
+  );
+
+  // Replace video src URLs
+  html = html.replace(
+    /<video([^>]*)\ssrc=["']([^"']+)["']/gi,
+    (match, attributes, url) => {
+      const normalizedUrl = normalizeImageUrl(url);
+      return `<video${attributes} src="${normalizedUrl}"`;
+    }
+  );
+
+  // Replace source src URLs (for video sources)
+  html = html.replace(
+    /<source([^>]*)\ssrc=["']([^"']+)["']/gi,
+    (match, attributes, url) => {
+      const normalizedUrl = normalizeImageUrl(url);
+      return `<source${attributes} src="${normalizedUrl}"`;
+    }
+  );
+
+  // Replace anchor href URLs (for video/image links)
+  html = html.replace(
+    /<a([^>]*)\shref=["']([^"']+)["']/gi,
+    (match, attributes, url) => {
+      // Only normalize if it looks like a media URL
+      if (
+        url.includes("72.60.208.192") ||
+        url.match(/\.(jpg|jpeg|png|gif|mp4|webm|ogg|mov|avi)/i)
+      ) {
+        const normalizedUrl = normalizeImageUrl(url);
+        return `<a${attributes} href="${normalizedUrl}"`;
+      }
+      return match;
+    }
+  );
+
+  return html;
+}
+
+/**
  * Converts image URLs from old IP/HTTP format to HTTPS domain format
  * This fixes Mixed Content issues when serving images over HTTPS
  * @param url - The image URL (can be relative, absolute HTTP, or already HTTPS)
