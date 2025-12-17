@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/contexts/LanguageContext";
 import Image from "next/image";
+import { normalizeImageUrl } from "@/lib/utils";
 
 interface ServiceFirstSectionProps {
   section: {

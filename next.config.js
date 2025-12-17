@@ -10,8 +10,13 @@ const nextConfig = {
         pathname: "/api/uploads/**",
       },
       {
+        protocol: "https",
+        hostname: "awacyber.com",
+        pathname: "/api/uploads/**",
+      },
+      {
         protocol: "http",
-        hostname: "72.60.208.192",
+        hostname: "awacyber.com",
         pathname: "/api/uploads/**",
       },
     ],
