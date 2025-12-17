@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useProjects, AdminProject } from "@/contexts/ProjectContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,6 +22,8 @@ export default function ProjectsManagementPage() {
   const { locale } = useLanguage();
   const isArabic = locale === "ar";
   const router = useRouter();
+  const { admin } = useAuth();
+  const isEmployee = admin?.role === "employee";
   const { projects, loading, error, pagination, fetchProjects, deleteProject } =
     useProjects();
 
@@ -29,6 +32,27 @@ export default function ProjectsManagementPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const limit = 10;
+
+  // Filter projects for employees - show only projects where employee is in the team
+  const filteredProjects = useMemo(() => {
+    if (!isEmployee || !admin?.id) {
+      return projects;
+    }
+    return projects.filter((project) => {
+      if (!project.employees || !Array.isArray(project.employees)) {
+        return false;
+      }
+      return project.employees.some((emp) => {
+        if (typeof emp === "string") {
+          return emp === admin.id;
+        }
+        if (typeof emp === "object" && emp !== null && "_id" in emp) {
+          return emp._id === admin.id;
+        }
+        return false;
+      });
+    });
+  }, [projects, isEmployee, admin?.id]);
 
   // Debounce search query
   useEffect(() => {
@@ -52,7 +76,11 @@ export default function ProjectsManagementPage() {
     () => ({
       title: isArabic ? "إدارة المشاريع" : "Projects Management",
       subtitle: isArabic
-        ? "استعرض وأدر جميع المشاريع والعملاء."
+        ? isEmployee
+          ? "استعرض المشاريع التي أنت جزء من طاقم العمل فيها."
+          : "استعرض وأدر جميع المشاريع والعملاء."
+        : isEmployee
+        ? "View projects you are part of the team."
         : "View and manage all projects and clients.",
       addProject: isArabic ? "إضافة مشروع" : "Add Project",
       noProjects: isArabic
@@ -139,15 +167,17 @@ export default function ProjectsManagementPage() {
             />
           </div>
         </div>
-        <Button
-          onClick={() => router.push("/admin/dashboard/projects/new")}
-          className="rounded-full bg-primary px-6 py-3 text-black shadow-lg hover:bg-primary/90"
-        >
-          <div className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            {copy.addProject}
-          </div>
-        </Button>
+        {!isEmployee && (
+          <Button
+            onClick={() => router.push("/admin/dashboard/projects/new")}
+            className="rounded-full bg-primary px-6 py-3 text-black shadow-lg hover:bg-primary/90"
+          >
+            <div className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              {copy.addProject}
+            </div>
+          </Button>
+        )}
       </div>
 
       {error && (
@@ -156,7 +186,7 @@ export default function ProjectsManagementPage() {
         </p>
       )}
 
-      {pagination && (
+      {pagination && !isEmployee && (
         <div className="flex items-center justify-between text-sm text-white/70">
           <p>
             {copy.showing}{" "}
@@ -170,10 +200,17 @@ export default function ProjectsManagementPage() {
           </p>
         </div>
       )}
+      {isEmployee && filteredProjects.length > 0 && (
+        <div className="flex items-center justify-between text-sm text-white/70">
+          <p>
+            {copy.showing} 1 {copy.to} {filteredProjects.length} {copy.results}
+          </p>
+        </div>
+      )}
 
       {loading && <p className="text-sm text-white/60">{copy.loading}</p>}
 
-      {!loading && projects.length === 0 ? (
+      {!loading && filteredProjects.length === 0 ? (
         <p className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white/70">
           {debouncedSearch ? copy.noResults : copy.noProjects}
         </p>
@@ -195,13 +232,15 @@ export default function ProjectsManagementPage() {
                 <th className="py-3 ltr:text-left rtl:text-right">
                   {copy.startDate}
                 </th>
-                <th className="py-3 ltr:text-left rtl:text-right">
-                  {copy.actions}
-                </th>
+                {!isEmployee && (
+                  <th className="py-3 ltr:text-left rtl:text-right">
+                    {copy.actions}
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {projects.map((project) => (
+              {filteredProjects.map((project) => (
                 <tr
                   key={project._id}
                   className="text-white/90 hover:bg-white/5 cursor-pointer transition"
@@ -266,20 +305,22 @@ export default function ProjectsManagementPage() {
                         : "-"}
                     </p>
                   </td>
-                  <td className="py-4">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(project._id);
-                      }}
-                      title={copy.delete}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </td>
+                  {!isEmployee && (
+                    <td className="py-4">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(project._id);
+                        }}
+                        title={copy.delete}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -288,7 +329,7 @@ export default function ProjectsManagementPage() {
       )}
 
       {/* Pagination */}
-      {pagination && pagination.totalPages > 1 && (
+      {!isEmployee && pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <Button
             variant="ghost"
