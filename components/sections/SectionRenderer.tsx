@@ -8,6 +8,7 @@ import {
   serviceIconComponents,
   ServiceIconKey,
 } from "@/lib/serviceIconOptions";
+import { normalizeImageUrl } from "@/lib/utils";
 
 interface SectionData {
   _id: string;
@@ -152,7 +153,7 @@ export default function SectionRenderer({
         const sectionDescription = getLocalizedText(section.description);
         const mainImage =
           section.images && section.images.length > 0
-            ? section.images[0]
+            ? normalizeImageUrl(section.images[0])
             : null;
 
         return (
@@ -286,7 +287,7 @@ export default function SectionRenderer({
                           className="relative rounded-2xl overflow-hidden border border-border/20 shadow-lg"
                         >
                           <Image
-                            src={image}
+                            src={normalizeImageUrl(image)}
                             alt={`${sectionTitle} - Image ${idx + 2}`}
                             width={300}
                             height={200}

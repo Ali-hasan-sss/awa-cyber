@@ -27,7 +27,9 @@ export default function ServiceFirstSection({
       ? section.description
       : section.description?.[locale] || section.description?.en || "";
 
-  const image = section.images?.[0] || "/images/publicContain.jpg";
+  const image = section.images?.[0]
+    ? normalizeImageUrl(section.images[0])
+    : "/images/publicContain.jpg";
 
   if (!title && !description && !image) {
     return null;

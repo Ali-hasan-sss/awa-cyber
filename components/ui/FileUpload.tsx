@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { apiClient } from "@/lib/apiClient";
 import { API_BASE_URL } from "@/lib/config/api";
+import { normalizeImageUrl } from "@/lib/utils";
 
 interface FileUploadProps {
   onUploadComplete?: (url: string) => void;
@@ -72,10 +73,12 @@ export default function FileUpload({
       if (response.data.success) {
         const uploaded = multiple ? response.data.data : [response.data.data];
 
-        // Convert relative URLs to absolute URLs
+        // Convert relative URLs to absolute URLs and normalize to HTTPS domain
         const uploadedWithFullUrls = uploaded.map((f: UploadedFile) => ({
           ...f,
-          url: f.url.startsWith("http") ? f.url : `${API_BASE_URL}${f.url}`,
+          url: normalizeImageUrl(
+            f.url.startsWith("http") ? f.url : `${API_BASE_URL}${f.url}`
+          ),
         }));
 
         setUploadedFiles((prev) => [...prev, ...uploadedWithFullUrls]);

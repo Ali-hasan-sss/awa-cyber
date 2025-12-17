@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { normalizeImageUrl } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect, useMemo } from "react";
 import { getSectionsByPage, getSections } from "@/lib/api/sections";
@@ -478,7 +479,8 @@ export default function LatestProjects({
                           <div className="relative lg:w-1/2 aspect-[4/3] lg:min-h-[420px] lg:max-h-[600px]">
                             <Image
                               src={
-                                portfolioProject.image || fallbackProject.image
+                                normalizeImageUrl(portfolioProject.image) ||
+                                fallbackProject.image
                               }
                               alt={
                                 portfolioProject.imageAlt ||

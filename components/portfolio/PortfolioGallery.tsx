@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // Helper function to check if a URL is a YouTube URL
 const isYouTubeUrl = (url: string): boolean => {
@@ -259,7 +260,7 @@ export default function PortfolioGallery({ portfolio }: { portfolio: any }) {
                       onClick={() => openLightbox(galleryIndex)}
                     >
                       <Image
-                        src={item}
+                        src={normalizeImageUrl(item)}
                         alt={`Portfolio image ${galleryIndex + 1}`}
                         fill
                         className="object-cover group-hover:scale-110 transition-transform duration-500"

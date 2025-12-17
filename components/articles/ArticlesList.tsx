@@ -7,6 +7,7 @@ import { apiClient } from "@/lib/apiClient";
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock } from "lucide-react";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // Helper function to strip HTML tags
 const stripHtml = (html: string): string => {
@@ -259,7 +260,7 @@ export default function ArticlesList() {
                         <div className="relative h-64 lg:h-auto lg:min-h-[400px] w-full overflow-hidden">
                           {featuredArticle.mainImage ? (
                             <Image
-                              src={featuredArticle.mainImage}
+                              src={normalizeImageUrl(featuredArticle.mainImage)}
                               alt={featuredArticle.title || ""}
                               fill
                               className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-300"
@@ -339,7 +340,7 @@ export default function ArticlesList() {
                       <div className="relative h-48 w-full overflow-hidden">
                         {article.mainImage ? (
                           <Image
-                            src={article.mainImage}
+                            src={normalizeImageUrl(article.mainImage)}
                             alt={article.title || ""}
                             fill
                             className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-300"

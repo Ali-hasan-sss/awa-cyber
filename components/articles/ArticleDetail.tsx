@@ -17,6 +17,7 @@ import {
   Linkedin,
   Share2,
 } from "lucide-react";
+import { normalizeImageUrl } from "@/lib/utils";
 
 const calculateReadingTime = (html: string): number => {
   if (!html) return 1;
@@ -146,7 +147,7 @@ export default function ArticleDetail({ articleId }: { articleId: string }) {
       {article.mainImage ? (
         <div className="relative w-full h-[60vh] md:h-[70vh] lg:h-[80vh] overflow-hidden">
           <Image
-            src={article.mainImage}
+            src={normalizeImageUrl(article.mainImage)}
             alt={article.title || ""}
             fill
             priority
@@ -377,7 +378,7 @@ export default function ArticleDetail({ articleId }: { articleId: string }) {
                         <div className="relative h-48 w-full overflow-hidden">
                           {relatedArticle.mainImage ? (
                             <Image
-                              src={relatedArticle.mainImage}
+                              src={normalizeImageUrl(relatedArticle.mainImage)}
                               alt={relatedArticle.title || ""}
                               fill
                               className="object-cover group-hover:scale-105 transition-transform duration-300"

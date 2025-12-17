@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect, useMemo } from "react";
 import { getSectionsByPage } from "@/lib/api/sections";
+import { normalizeImageUrl } from "@/lib/utils";
 import { serviceIconComponents } from "@/lib/serviceIconOptions";
 import Link from "next/link";
 
@@ -287,7 +288,7 @@ export default function WhyChooseUs({
           <div className="relative">
             <div className="relative rounded-[32px]  shadow-2xl border border-white/10">
               <Image
-                src={section.image ?? fallbackContent.image!}
+                src={normalizeImageUrl(section.image) ?? fallbackContent.image!}
                 alt={section.imageAlt ?? fallbackContent.imageAlt!}
                 width={640}
                 height={480}
