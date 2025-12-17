@@ -1003,8 +1003,10 @@ export default function QuotationsPage() {
                   </span>
                 </div>
                 <p className="text-xs text-white/60">
-                  {request.projectDescription.slice(0, 140)}
-                  {request.projectDescription.length > 140 && "..."}
+                  {request.projectDescription
+                    ? request.projectDescription.slice(0, 140) +
+                      (request.projectDescription.length > 140 ? "..." : "")
+                    : "-"}
                 </p>
                 <div className="flex flex-wrap gap-2 pt-2">
                   <Button
