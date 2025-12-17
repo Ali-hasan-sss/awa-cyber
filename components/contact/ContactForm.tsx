@@ -33,7 +33,7 @@ export default function ContactForm() {
   const loadSection = async () => {
     try {
       setLoadingSection(true);
-      const data = await getSectionsByPage("contact");
+      const data = await getSectionsByPage("contact", locale);
       const sections = Array.isArray(data) ? data : (data as any)?.data || [];
       // Get first section (order 1)
       const firstSection =

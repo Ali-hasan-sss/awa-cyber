@@ -49,7 +49,7 @@ export default function ContactHero() {
   const loadSection = async () => {
     try {
       setLoading(true);
-      const data = await getSectionsByPage("contact");
+      const data = await getSectionsByPage("contact", locale);
       const sections = Array.isArray(data) ? data : (data as any)?.data || [];
       // Get first section (order 1)
       const firstSection =
@@ -163,62 +163,6 @@ export default function ContactHero() {
             <p className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto">
               {stripHtml(description)}
             </p>
-          )}
-
-          {/* Contact Info */}
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 mb-8">
-            {/* Address */}
-            {address && (
-              <div className="flex items-center gap-3 text-white/90">
-                <MapPin className="w-5 h-5 text-primary" />
-                <span className="text-sm md:text-base">{address}</span>
-              </div>
-            )}
-
-            {/* Phone */}
-            {phone && (
-              <div className="flex items-center gap-3 text-white/90">
-                <Phone className="w-5 h-5 text-primary" />
-                <a
-                  href={`tel:${phone}`}
-                  className="text-sm md:text-base hover:text-primary transition-colors ltr"
-                  dir="ltr"
-                >
-                  {phone}
-                </a>
-              </div>
-            )}
-          </div>
-
-          {/* Social Media Icons */}
-          {socialFeatures.length > 0 && (
-            <div className="flex items-center justify-center gap-4">
-              {socialFeatures.map((feature: any, index: number) => {
-                const iconName = feature.icon;
-                // Use description for full URL, fallback to name if description is empty
-                const link =
-                  typeof feature.description === "string"
-                    ? feature.description || feature.name
-                    : feature.description?.[locale] ||
-                      feature.name?.[locale] ||
-                      "";
-                const IconComponent = getIconComponent(iconName);
-
-                if (!link) return null;
-
-                return (
-                  <a
-                    key={index}
-                    href={link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-primary hover:text-black transition-all duration-300"
-                  >
-                    <IconComponent className="w-5 h-5" />
-                  </a>
-                );
-              })}
-            </div>
           )}
         </div>
       </div>
