@@ -21,6 +21,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   scrollbar-color: rgba(14, 165, 233, 0.6) rgba(3, 7, 18, 0.6);
   scrollbar-width: thin;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* Apply Cairo font for Arabic (RTL) */
@@ -39,10 +41,12 @@ html[dir="ltr"] {
 
 html[dir="rtl"] {
   direction: rtl;
+  overflow-x: hidden;
 }
 
 html[dir="ltr"] {
   direction: ltr;
+  overflow-x: hidden;
 }
 
 /* RTL/LTR Utilities */
@@ -57,6 +61,8 @@ html[dir="ltr"] {
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* Container adjustments for RTL */

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { getSections, updateSection, Section } from "@/lib/api/sections";
+import { normalizeImageUrl } from "@/lib/utils";
 import {
   socialIconOptions,
   socialIconComponents,
@@ -872,7 +873,7 @@ export default function ContactHeroSection() {
           <div className="relative h-[40vh] rounded-2xl overflow-hidden">
             {form.image && (
               <Image
-                src={form.image}
+                src={normalizeImageUrl(form.image)}
                 alt="Hero"
                 fill
                 className="object-cover"

@@ -24,6 +24,7 @@ import {
 } from "@/lib/actions/serviceActions";
 import FileUpload from "@/components/ui/FileUpload";
 import Image from "next/image";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -666,7 +667,7 @@ export default function SecurityServicesSection() {
                                   className="relative rounded-lg overflow-hidden border border-white/10"
                                 >
                                   <img
-                                    src={imageUrl}
+                                    src={normalizeImageUrl(imageUrl)}
                                     alt={`Service ${index + 1}`}
                                     className="w-full h-20 object-cover"
                                   />
@@ -718,7 +719,7 @@ export default function SecurityServicesSection() {
                               {service.images && service.images.length > 0 && (
                                 <div className="mt-2 relative w-full h-20 rounded-lg overflow-hidden">
                                   <Image
-                                    src={service.images[0]}
+                                    src={normalizeImageUrl(service.images[0])}
                                     alt={service.title?.[locale] || ""}
                                     fill
                                     className="object-cover"
@@ -853,7 +854,7 @@ export default function SecurityServicesSection() {
                                             className="relative rounded-lg overflow-hidden border border-white/10"
                                           >
                                             <img
-                                              src={imageUrl}
+                                              src={normalizeImageUrl(imageUrl)}
                                               alt={`Service ${imgIndex + 1}`}
                                               className="w-full h-20 object-cover"
                                             />
@@ -943,7 +944,7 @@ export default function SecurityServicesSection() {
                     {service.images && service.images.length > 0 && (
                       <div className="relative w-full aspect-video">
                         <Image
-                          src={service.images[0]}
+                          src={normalizeImageUrl(service.images[0])}
                           alt={service.title?.[locale] || ""}
                           fill
                           className="object-cover"

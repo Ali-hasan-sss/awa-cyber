@@ -125,7 +125,7 @@ function PortalContent() {
   }
 
   return (
-    <div className="p-xl">
+    <div className="p-xl overflow-x-hidden w-full max-w-full">
       <PortalHeader />
       <PortalHero />
       <PortalFeatures />
@@ -155,7 +155,7 @@ function PortalContent() {
 
 export default function Portal() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen overflow-x-hidden w-full">
       <Suspense
         fallback={
           <div className="min-h-screen flex items-center justify-center">

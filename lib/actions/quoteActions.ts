@@ -4,18 +4,19 @@ export type QuotationStatus = "pending" | "in_review" | "quoted" | "closed";
 
 export interface CreateQuotationPayload {
   fullName: string;
-  email: string;
   phone: string;
-  companyName?: string;
   serviceId: string;
-  projectDescription: string;
-  budget: {
+  // Optional fields
+  email?: string;
+  companyName?: string;
+  projectDescription?: string;
+  budget?: {
     from: number;
     to: number;
   };
-  expectedDuration: string;
-  startDate: string;
-  endDate: string;
+  expectedDuration?: string;
+  startDate?: string;
+  endDate?: string;
   additionalInfo?: string;
 }
 

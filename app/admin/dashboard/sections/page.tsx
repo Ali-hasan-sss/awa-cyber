@@ -28,6 +28,7 @@ import {
   PageType,
   Feature,
 } from "@/lib/api/sections";
+import { normalizeImageUrl, normalizeHtmlContent } from "@/lib/utils";
 import {
   serviceIconOptions,
   serviceIconComponents,
@@ -798,7 +799,7 @@ export default function SectionsManagementPage() {
                             <div
                               className="text-sm text-white/80 prose prose-invert max-w-none mb-4"
                               dangerouslySetInnerHTML={{
-                                __html: section.description[viewLocale],
+                                __html: normalizeHtmlContent(section.description[viewLocale]),
                               }}
                             />
                             {section.images && section.images.length > 0 && (
@@ -808,7 +809,7 @@ export default function SectionsManagementPage() {
                                   .map((image, idx) => (
                                     <img
                                       key={idx}
-                                      src={image}
+                                      src={normalizeImageUrl(image)}
                                       alt={`Section image ${idx + 1}`}
                                       className="w-full h-24 object-cover rounded-lg border border-white/10"
                                     />
@@ -898,7 +899,7 @@ export default function SectionsManagementPage() {
                   "";
             const mainImage =
               section.images && section.images.length > 0
-                ? section.images[0]
+                ? normalizeImageUrl(section.images[0])
                 : null;
 
             return (
@@ -981,7 +982,7 @@ export default function SectionsManagementPage() {
                             isStyle1 ? "text-muted-foreground" : "text-white/80"
                           }`}
                           dangerouslySetInnerHTML={{
-                            __html: sectionDescription,
+                            __html: normalizeHtmlContent(sectionDescription),
                           }}
                         />
                       )}
@@ -1065,7 +1066,7 @@ export default function SectionsManagementPage() {
                               className="relative rounded-2xl overflow-hidden border border-border/20 shadow-lg"
                             >
                               <Image
-                                src={image}
+                                src={normalizeImageUrl(image)}
                                 alt={`${sectionTitle} - Image ${idx + 2}`}
                                 width={300}
                                 height={200}
@@ -1277,7 +1278,7 @@ export default function SectionsManagementPage() {
                             className="group relative rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden"
                           >
                             <img
-                              src={imageUrl}
+                              src={normalizeImageUrl(imageUrl)}
                               alt={`Upload ${index + 1}`}
                               className="w-full h-32 object-cover"
                               onError={(e) => {

@@ -21,6 +21,7 @@ import {
   serviceIconComponents,
   ServiceIconKey,
 } from "@/lib/serviceIconOptions";
+import { normalizeImageUrl } from "@/lib/utils";
 import { fetchAdminServices } from "@/lib/actions/serviceActions";
 
 // Helper function to strip HTML tags and convert to plain text
@@ -1065,7 +1066,7 @@ export default function LatestProjectsSection() {
                                   className="relative rounded-lg overflow-hidden border border-white/10"
                                 >
                                   <img
-                                    src={imageUrl}
+                                    src={normalizeImageUrl(imageUrl)}
                                     alt={`Portfolio ${index + 1}`}
                                     className="w-full h-20 object-cover"
                                   />
@@ -1197,7 +1198,7 @@ export default function LatestProjectsSection() {
                             latestPortfolio.images.length > 0 && (
                               <div className="mt-2 relative w-full h-20 rounded-lg overflow-hidden">
                                 <Image
-                                  src={latestPortfolio.images[0]}
+                                  src={normalizeImageUrl(latestPortfolio.images[0])}
                                   alt={latestPortfolio.title?.[locale] || ""}
                                   fill
                                   className="object-cover"
@@ -1372,7 +1373,7 @@ export default function LatestProjectsSection() {
                                         className="relative rounded-lg overflow-hidden border border-white/10"
                                       >
                                         <img
-                                          src={imageUrl}
+                                          src={normalizeImageUrl(imageUrl)}
                                           alt={`Portfolio ${imgIndex + 1}`}
                                           className="w-full h-20 object-cover"
                                         />
@@ -1550,7 +1551,7 @@ export default function LatestProjectsSection() {
                       src={
                         latestPortfolio.images &&
                         latestPortfolio.images.length > 0
-                          ? latestPortfolio.images[0]
+                          ? normalizeImageUrl(latestPortfolio.images[0])
                           : "/images/skils.jpg"
                       }
                       alt={latestPortfolio.title?.[locale] || ""}

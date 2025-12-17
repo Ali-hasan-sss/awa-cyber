@@ -158,7 +158,7 @@ export default function Navbar() {
                       {/* Services Dropdown */}
                       {isServicesDropdownOpen && services.length > 0 && (
                         <div
-                          className={`absolute top-full mt-2 max-w-[calc(100vw-2rem)] w-[500px] bg-gradient-to-br from-white via-primary/5 to-primary/10 shadow-2xl border border-primary/20 overflow-hidden z-50 ${
+                          className={`absolute top-full mt-2 max-w-[calc(100vw-2rem)] w-[500px] bg-white shadow-2xl border border-primary/20 overflow-hidden z-50 ${
                             locale === "ar" ? "right-0" : "left-0"
                           }`}
                         >
@@ -173,7 +173,7 @@ export default function Navbar() {
                                   <Link
                                     key={service._id}
                                     href={`/services/${service._id}`}
-                                    className="block px-4 py-3 text-foreground hover:bg-primary/20 hover:text-white transition-all rounded-lg bg-white/50 backdrop-blur-sm border border-white/30"
+                                    className="block px-4 py-3 text-foreground hover:bg-primary hover:text-white transition-all rounded-lg bg-white border border-gray-200"
                                     onClick={() =>
                                       setIsServicesDropdownOpen(false)
                                     }

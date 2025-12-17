@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { getSections, updateSection, Section } from "@/lib/api/sections";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -562,7 +563,7 @@ export default function WhoWeAreSection() {
               <div className="relative">
                 <div className="relative overflow-hidden rounded-3xl shadow-2xl">
                   <Image
-                    src={sectionImage}
+                    src={normalizeImageUrl(sectionImage)}
                     alt={sectionTitle || "About us"}
                     width={640}
                     height={480}

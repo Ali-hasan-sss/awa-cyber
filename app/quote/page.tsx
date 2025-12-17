@@ -13,7 +13,6 @@ import {
   FileText,
   Wallet,
   Calendar,
-  ClipboardCheck,
   MessageCircle,
   ArrowRight,
   MapPin,
@@ -34,7 +33,6 @@ const contentMap = {
       personal: "Personal Information",
       service: "Service Details",
       budget: "Budget & Timeline",
-      additional: "Additional Information",
     },
     labels: {
       fullName: "Full Name",
@@ -47,10 +45,8 @@ const contentMap = {
       duration: "Project Duration",
       startDate: "Preferred Start Date",
       endDate: "Expected Delivery Date",
-      notes: "Additional Notes or Requirements",
-      referral: "How did you hear about us?",
-      consent:
-        "I agree to the processing of my personal data and consent to be contacted by AWA Cyber regarding my quotation request.",
+      required: "Required",
+      optional: "Optional",
     },
     placeholders: {
       fullName: "John Doe",
@@ -59,15 +55,12 @@ const contentMap = {
       company: "Your Company",
       projectDesc:
         "Please describe your project needs, current requirements, and any specific features you'd like...",
-      notes: "Any other details we should know about your project...",
     },
     select: {
       service: "Select a service",
       budget: "Select budget range",
       duration: "Estimated duration",
-      referral: "Select an option",
     },
-    consentNote: "* We typically respond within 24 hours.",
     submit: "Submit Quotation Request",
     contactCards: [
       { title: "Email Us", value: "info@awacyber.com", icon: Mail },
@@ -84,7 +77,6 @@ const contentMap = {
       personal: "المعلومات الشخصية",
       service: "تفاصيل الخدمة",
       budget: "الميزانية والجدول الزمني",
-      additional: "معلومات إضافية",
     },
     labels: {
       fullName: "الاسم الكامل",
@@ -97,10 +89,8 @@ const contentMap = {
       duration: "مدة المشروع",
       startDate: "تاريخ البدء المفضل",
       endDate: "تاريخ التسليم المتوقع",
-      notes: "ملاحظات أو متطلبات إضافية",
-      referral: "كيف سمعت عنا؟",
-      consent:
-        "أوافق على معالجة بياناتي الشخصية وأسمح لـ AWA Cyber بالتواصل معي بشأن طلب عرض السعر.",
+      required: "مطلوب",
+      optional: "اختياري",
     },
     placeholders: {
       fullName: "محمد أحمد",
@@ -109,15 +99,12 @@ const contentMap = {
       company: "شركتك",
       projectDesc:
         "يرجى وصف احتياجات مشروعك، المتطلبات الحالية، وأي ميزات خاصة تريدها...",
-      notes: "أي تفاصيل أخرى يجب أن نعرفها عن مشروعك...",
     },
     select: {
       service: "اختر الخدمة",
       budget: "اختر نطاق الميزانية",
       duration: "مدة تقديرية",
-      referral: "اختر خياراً",
     },
-    consentNote: "* عادةً ما نرد خلال 24 ساعة.",
     submit: "إرسال طلب عرض السعر",
     contactCards: [
       { title: "راسلنا", value: "info@awacyber.com", icon: Mail },
@@ -135,28 +122,34 @@ interface PublicService {
 
 const budgetOptions = [
   {
-    value: "200-500",
-    label: { en: "$200 - $500", ar: "200 - 500 دولار" },
-    from: 200,
-    to: 500,
+    value: "50-150",
+    label: { en: "50 - 150 OMR", ar: "50 - 150 ريال عماني" },
+    from: 50,
+    to: 150,
   },
   {
-    value: "500-1000",
-    label: { en: "$500 - $1,000", ar: "500 - 1000 دولار" },
-    from: 500,
-    to: 1000,
+    value: "150-300",
+    label: { en: "150 - 300 OMR", ar: "150 - 300 ريال عماني" },
+    from: 150,
+    to: 300,
   },
   {
-    value: "1000-2500",
-    label: { en: "$1,000 - $2,500", ar: "1000 - 2500 دولار" },
-    from: 1000,
-    to: 2500,
+    value: "300-750",
+    label: { en: "300 - 750 OMR", ar: "300 - 750 ريال عماني" },
+    from: 300,
+    to: 750,
   },
   {
-    value: "2500-5000",
-    label: { en: "$2,500 - $5,000", ar: "2500 - 5000 دولار" },
-    from: 2500,
-    to: 5000,
+    value: "750-1500",
+    label: { en: "750 - 1,500 OMR", ar: "750 - 1500 ريال عماني" },
+    from: 750,
+    to: 1500,
+  },
+  {
+    value: "1500-3000",
+    label: { en: "1,500 - 3,000 OMR", ar: "1500 - 3000 ريال عماني" },
+    from: 1500,
+    to: 3000,
   },
 ];
 
@@ -168,14 +161,6 @@ const durationOptions = [
   { value: "4months", label: { en: "4 Months", ar: "4 أشهر" } },
   { value: "5months", label: { en: "5 Months", ar: "5 أشهر" } },
   { value: "notimportant", label: { en: "Not Important", ar: "لا غير مهم" } },
-];
-
-const referralOptions = [
-  "Google Search",
-  "Social Media",
-  "Conference / Event",
-  "Existing Client",
-  "Other",
 ];
 
 const inputClasses =
@@ -206,9 +191,6 @@ export default function QuotePage() {
     duration: "",
     startDate: "",
     endDate: "",
-    notes: "",
-    referral: "",
-    consent: false,
   });
   const [submitting, setSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -273,7 +255,7 @@ export default function QuotePage() {
     const errors: Record<string, string> = {};
     const isAr = locale === "ar";
 
-    // fullName: min 3 characters
+    // fullName: min 3 characters (REQUIRED)
     if (!form.fullName.trim()) {
       errors.fullName = isAr ? "الاسم الكامل مطلوب" : "Full name is required";
     } else if (form.fullName.trim().length < 3) {
@@ -282,19 +264,7 @@ export default function QuotePage() {
         : "Full name must be at least 3 characters";
     }
 
-    // email: valid email
-    if (!form.email.trim()) {
-      errors.email = isAr ? "البريد الإلكتروني مطلوب" : "Email is required";
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(form.email.trim())) {
-        errors.email = isAr
-          ? "البريد الإلكتروني غير صحيح"
-          : "Invalid email address";
-      }
-    }
-
-    // phone: min 6 characters
+    // phone: min 6 characters (REQUIRED)
     if (!form.phone.trim()) {
       errors.phone = isAr ? "رقم الهاتف مطلوب" : "Phone number is required";
     } else if (form.phone.trim().length < 6) {
@@ -303,7 +273,22 @@ export default function QuotePage() {
         : "Phone number must be at least 6 characters";
     }
 
-    // companyName: min 2 characters if provided (optional)
+    // serviceId: required (REQUIRED)
+    if (!form.serviceType || !form.serviceType.trim()) {
+      errors.serviceType = isAr ? "الخدمة مطلوبة" : "Service is required";
+    }
+
+    // email: valid email if provided (OPTIONAL)
+    if (form.email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(form.email.trim())) {
+        errors.email = isAr
+          ? "البريد الإلكتروني غير صحيح"
+          : "Invalid email address";
+      }
+    }
+
+    // companyName: min 2 characters if provided (OPTIONAL)
     if (
       form.company &&
       form.company.trim().length > 0 &&
@@ -314,50 +299,35 @@ export default function QuotePage() {
         : "Company name must be at least 2 characters";
     }
 
-    // serviceId: min 1 character (required)
-    if (!form.serviceType || !form.serviceType.trim()) {
-      errors.serviceType = isAr ? "الخدمة مطلوبة" : "Service is required";
-    }
-
-    // projectDescription: min 10 characters
-    if (!form.projectDesc.trim()) {
-      errors.projectDesc = isAr
-        ? "وصف المشروع مطلوب"
-        : "Project description is required";
-    } else if (form.projectDesc.trim().length < 10) {
+    // projectDescription: min 10 characters if provided (OPTIONAL)
+    if (form.projectDesc.trim() && form.projectDesc.trim().length < 10) {
       errors.projectDesc = isAr
         ? "وصف المشروع يجب أن يكون 10 أحرف على الأقل"
         : "Project description must be at least 10 characters";
     }
 
-    // budget: required
-    if (!form.budgetRange) {
-      errors.budgetRange = isAr
-        ? "نطاق الميزانية مطلوب"
-        : "Budget range is required";
+    // budget: validate if provided (OPTIONAL)
+    if (form.budgetRange) {
+      const budget = budgetOptions.find(
+        (option) => option.value === form.budgetRange
+      );
+      if (!budget) {
+        errors.budgetRange = isAr
+          ? "نطاق الميزانية غير صحيح"
+          : "Invalid budget range";
+      }
     }
 
-    // expectedDuration: required
-    if (!form.duration || !form.duration.trim()) {
-      errors.duration = isAr
-        ? "مدة التنفيذ المتوقعة مطلوبة"
-        : "Expected duration is required";
-    }
-
-    // startDate: valid date
-    if (!form.startDate) {
-      errors.startDate = isAr ? "تاريخ البدء مطلوب" : "Start date is required";
-    } else {
+    // startDate: valid date if provided (OPTIONAL)
+    if (form.startDate) {
       const startDate = new Date(form.startDate);
       if (Number.isNaN(startDate.getTime())) {
         errors.startDate = isAr ? "تاريخ البدء غير صحيح" : "Invalid start date";
       }
     }
 
-    // endDate: valid date, must be after startDate
-    if (!form.endDate) {
-      errors.endDate = isAr ? "تاريخ الانتهاء مطلوب" : "End date is required";
-    } else {
+    // endDate: valid date, must be after startDate if both provided (OPTIONAL)
+    if (form.endDate) {
       const endDate = new Date(form.endDate);
       if (Number.isNaN(endDate.getTime())) {
         errors.endDate = isAr ? "تاريخ الانتهاء غير صحيح" : "Invalid end date";
@@ -369,13 +339,6 @@ export default function QuotePage() {
             : "End date must be after start date";
         }
       }
-    }
-
-    // consent: required
-    if (!form.consent) {
-      errors.consent = isAr
-        ? "يرجى الموافقة على الشروط"
-        : "Please accept the consent";
     }
 
     setFormErrors(errors);
@@ -408,41 +371,50 @@ export default function QuotePage() {
     }
 
     try {
-      const budget = budgetOptions.find(
-        (option) => option.value === form.budgetRange
-      );
-      if (!budget) {
-        throw new Error(
-          locale === "ar"
-            ? "يرجى تحديد نطاق الميزانية."
-            : "Please select a budget range."
+      // Build payload with only required fields and optional fields if provided
+      const payload: any = {
+        fullName: form.fullName.trim(),
+        phone: form.phone.trim(),
+        serviceId: form.serviceType.trim(),
+      };
+
+      // Optional fields
+      if (form.email.trim()) {
+        payload.email = form.email.trim();
+      }
+      if (form.company?.trim()) {
+        payload.companyName = form.company.trim();
+      }
+      if (form.projectDesc.trim()) {
+        payload.projectDescription = form.projectDesc.trim();
+      }
+      if (form.budgetRange) {
+        const budget = budgetOptions.find(
+          (option) => option.value === form.budgetRange
         );
+        if (budget) {
+          payload.budget = {
+            from: budget.from,
+            to: budget.to,
+          };
+        }
+      }
+      if (form.duration) {
+        const durationOption = durationOptions.find(
+          (option) => option.value === form.duration
+        );
+        payload.expectedDuration = durationOption
+          ? durationOption.label[locale as "en" | "ar"]
+          : form.duration;
+      }
+      if (form.startDate) {
+        payload.startDate = form.startDate;
+      }
+      if (form.endDate) {
+        payload.endDate = form.endDate;
       }
 
-      // Get duration value
-      const durationOption = durationOptions.find(
-        (option) => option.value === form.duration
-      );
-      const durationValue = durationOption
-        ? durationOption.label[locale as "en" | "ar"]
-        : form.duration || "unspecified";
-
-      await createQuotationRequestApi({
-        fullName: form.fullName.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        companyName: form.company?.trim() || undefined,
-        serviceId: form.serviceType.trim(),
-        projectDescription: form.projectDesc.trim(),
-        budget: {
-          from: budget.from,
-          to: budget.to,
-        },
-        expectedDuration: durationValue,
-        startDate: form.startDate,
-        endDate: form.endDate,
-        additionalInfo: [form.notes, form.referral].filter(Boolean).join(" — "),
-      });
+      await createQuotationRequestApi(payload);
       setFeedback({
         type: "success",
         message:
@@ -461,9 +433,6 @@ export default function QuotePage() {
         duration: "",
         startDate: "",
         endDate: "",
-        notes: "",
-        referral: "",
-        consent: false,
       });
       setFormErrors({});
     } catch (error) {
@@ -521,7 +490,11 @@ export default function QuotePage() {
               icon={<User className="h-5 w-5 text-primary" />}
             >
               <div className="grid gap-4 md:grid-cols-2">
-                <Field label={copy.labels.fullName} error={formErrors.fullName}>
+                <Field
+                  label={copy.labels.fullName}
+                  error={formErrors.fullName}
+                  required
+                >
                   <Input
                     placeholder={copy.placeholders.fullName}
                     required
@@ -532,21 +505,14 @@ export default function QuotePage() {
                     onChange={(e) => handleChange("fullName", e.target.value)}
                   />
                 </Field>
-                <Field label={copy.labels.email} error={formErrors.email}>
-                  <Input
-                    type="email"
-                    placeholder={copy.placeholders.email}
-                    required
-                    className={`${inputClasses} ${
-                      formErrors.email ? "border-red-400/60" : ""
-                    }`}
-                    value={form.email}
-                    onChange={(e) => handleChange("email", e.target.value)}
-                  />
-                </Field>
-                <Field label={copy.labels.phone} error={formErrors.phone}>
+                <Field
+                  label={copy.labels.phone}
+                  error={formErrors.phone}
+                  required
+                >
                   <Input
                     placeholder={copy.placeholders.phone}
+                    required
                     className={`${inputClasses} ${
                       formErrors.phone ? "border-red-400/60" : ""
                     }`}
@@ -554,7 +520,26 @@ export default function QuotePage() {
                     onChange={(e) => handleChange("phone", e.target.value)}
                   />
                 </Field>
-                <Field label={copy.labels.company} error={formErrors.company}>
+                <Field
+                  label={copy.labels.email}
+                  error={formErrors.email}
+                  optional
+                >
+                  <Input
+                    type="email"
+                    placeholder={copy.placeholders.email}
+                    className={`${inputClasses} ${
+                      formErrors.email ? "border-red-400/60" : ""
+                    }`}
+                    value={form.email}
+                    onChange={(e) => handleChange("email", e.target.value)}
+                  />
+                </Field>
+                <Field
+                  label={copy.labels.company}
+                  error={formErrors.company}
+                  optional
+                >
                   <Input
                     placeholder={copy.placeholders.company}
                     className={`${inputClasses} ${
@@ -575,6 +560,7 @@ export default function QuotePage() {
                 <Field
                   label={copy.labels.serviceType}
                   error={formErrors.serviceType}
+                  required
                 >
                   <select
                     className={`${selectClasses} ${
@@ -585,6 +571,7 @@ export default function QuotePage() {
                       handleChange("serviceType", e.target.value)
                     }
                     disabled={loadingServices}
+                    required
                   >
                     <option value="" className="bg-slate-900 text-white">
                       {copy.select.service}
@@ -603,6 +590,7 @@ export default function QuotePage() {
                 <Field
                   label={copy.labels.projectDesc}
                   error={formErrors.projectDesc}
+                  optional
                 >
                   <Textarea
                     rows={4}
@@ -627,6 +615,7 @@ export default function QuotePage() {
                 <Field
                   label={copy.labels.budgetRange}
                   error={formErrors.budgetRange}
+                  optional
                 >
                   <select
                     className={`${selectClasses} ${
@@ -636,7 +625,6 @@ export default function QuotePage() {
                     onChange={(e) =>
                       handleChange("budgetRange", e.target.value)
                     }
-                    required
                   >
                     <option value="" className="bg-slate-900 text-white">
                       {copy.select.budget}
@@ -652,14 +640,17 @@ export default function QuotePage() {
                     ))}
                   </select>
                 </Field>
-                <Field label={copy.labels.duration} error={formErrors.duration}>
+                <Field
+                  label={copy.labels.duration}
+                  error={formErrors.duration}
+                  optional
+                >
                   <select
                     className={`${selectClasses} ${
                       formErrors.duration ? "border-red-400/60" : ""
                     }`}
                     value={form.duration}
                     onChange={(e) => handleChange("duration", e.target.value)}
-                    required
                   >
                     <option value="" className="bg-slate-900 text-white">
                       {copy.select.duration}
@@ -678,6 +669,7 @@ export default function QuotePage() {
                 <Field
                   label={copy.labels.startDate}
                   error={formErrors.startDate}
+                  optional
                 >
                   <Input
                     type="date"
@@ -686,10 +678,13 @@ export default function QuotePage() {
                     }`}
                     value={form.startDate}
                     onChange={(e) => handleChange("startDate", e.target.value)}
-                    required
                   />
                 </Field>
-                <Field label={copy.labels.endDate} error={formErrors.endDate}>
+                <Field
+                  label={copy.labels.endDate}
+                  error={formErrors.endDate}
+                  optional
+                >
                   <Input
                     type="date"
                     className={`${inputClasses} ${
@@ -697,67 +692,8 @@ export default function QuotePage() {
                     }`}
                     value={form.endDate}
                     onChange={(e) => handleChange("endDate", e.target.value)}
-                    required
                   />
                 </Field>
-              </div>
-            </Section>
-
-            <Section
-              title={copy.sections.additional}
-              icon={<ClipboardCheck className="h-5 w-5 text-primary" />}
-            >
-              <div className="grid gap-4">
-                <Field label={copy.labels.notes}>
-                  <Textarea
-                    rows={4}
-                    placeholder={copy.placeholders.notes}
-                    className={textareaClasses}
-                    value={form.notes}
-                    onChange={(e) => handleChange("notes", e.target.value)}
-                  />
-                </Field>
-
-                <Field label={copy.labels.referral}>
-                  <select
-                    className={selectClasses}
-                    value={form.referral}
-                    onChange={(e) => handleChange("referral", e.target.value)}
-                  >
-                    <option value="">{copy.select.referral}</option>
-                    {referralOptions.map((option) => (
-                      <option
-                        key={option}
-                        value={option}
-                        className="text-black"
-                      >
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-
-                <div>
-                  <label className="flex items-start gap-3 text-xs text-white/80">
-                    <input
-                      type="checkbox"
-                      className={`mt-1 h-4 w-4 rounded border-white/20 bg-transparent text-primary focus:ring-primary ${
-                        formErrors.consent ? "border-red-400/60" : ""
-                      }`}
-                      required
-                      checked={form.consent}
-                      onChange={(e) => {
-                        handleChange("consent", e.target.checked);
-                      }}
-                    />
-                    <span>{copy.labels.consent}</span>
-                  </label>
-                  {formErrors.consent && (
-                    <p className="mt-1 text-xs text-red-300">
-                      {formErrors.consent}
-                    </p>
-                  )}
-                </div>
               </div>
             </Section>
 
@@ -782,7 +718,6 @@ export default function QuotePage() {
                 {copy.submit}
                 <ArrowRight className="h-4 w-4 rtl:rotate-180" />
               </Button>
-              <span className="text-xs text-white/70">{copy.consentNote}</span>
             </div>
           </form>
 
@@ -872,14 +807,36 @@ function Field({
   label,
   children,
   error,
+  required = false,
+  optional = false,
 }: {
   label: string;
   children: React.ReactNode;
   error?: string;
+  required?: boolean;
+  optional?: boolean;
 }) {
+  const { locale } = useLanguage();
+  const copy = useMemo(
+    () => contentMap[locale as "en" | "ar"] || contentMap.en,
+    [locale]
+  );
+
   return (
     <label className="block text-sm text-white/80 space-y-2">
-      <span>{label}</span>
+      <span className="flex items-center gap-2">
+        {label}
+        {required && (
+          <span className="text-xs text-red-400 font-semibold">
+            ({copy.labels.required})
+          </span>
+        )}
+        {optional && (
+          <span className="text-xs text-white/50">
+            ({copy.labels.optional})
+          </span>
+        )}
+      </span>
       {children}
       {error && <p className="text-xs text-red-300 mt-1">{error}</p>}
     </label>

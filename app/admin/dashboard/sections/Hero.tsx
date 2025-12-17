@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { getSections, updateSection, Section } from "@/lib/api/sections";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -303,7 +304,7 @@ export default function HeroSection() {
                   }`}
                 >
                   <Image
-                    src={slide.image || "/images/publicContain.jpg"}
+                    src={normalizeImageUrl(slide.image) || "/images/publicContain.jpg"}
                     alt={`${heroTitle} - Slide ${index + 1}`}
                     fill
                     priority={index === 0}
@@ -470,7 +471,7 @@ export default function HeroSection() {
                                 </span>
                               </div>
                               <img
-                                src={imageUrl}
+                                src={normalizeImageUrl(imageUrl)}
                                 alt={`Upload ${index + 1}`}
                                 className="w-full h-32 object-cover"
                                 onError={(e) => {
