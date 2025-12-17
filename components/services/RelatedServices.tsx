@@ -4,6 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import { normalizeImageUrl } from "@/lib/utils";
 import {
   serviceIconComponents,
   ServiceIconKey,
@@ -70,7 +71,9 @@ export default function RelatedServices({
                 typeof service.description === "string"
                   ? service.description
                   : service.description?.[locale] || "";
-              const image = service.images?.[0] || "/images/publicContain.jpg";
+              const image = service.images?.[0]
+                ? normalizeImageUrl(service.images[0])
+                : "/images/publicContain.jpg";
               const features = service.features || [];
               const IconComponent =
                 features.length > 0 ? getIconComponent(features[0].icon) : null;

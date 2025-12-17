@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect, useMemo } from "react";
 import { getSectionsByPage } from "@/lib/api/sections";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -66,7 +67,7 @@ export default function WhoWeAre({
   // Get section image (first image or fallback)
   const sectionImage = useMemo(() => {
     if (aboutSection?.images && aboutSection.images.length > 0) {
-      return aboutSection.images[0];
+      return normalizeImageUrl(aboutSection.images[0]);
     }
     return "/images/cyber.jpg"; // Fallback image
   }, [aboutSection]);
@@ -186,7 +187,7 @@ export default function WhoWeAre({
           <div className="relative">
             <div className="relative overflow-hidden rounded-3xl shadow-2xl">
               <Image
-                src={sectionImage}
+                src={normalizeImageUrl(sectionImage)}
                 alt={sectionTitle || "About us"}
                 width={640}
                 height={480}

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getSectionsByPage } from "@/lib/api/sections";
 import Image from "next/image";
+import { normalizeImageUrl } from "@/lib/utils";
 import {
   serviceIconComponents,
   ServiceIconKey,
@@ -97,7 +98,7 @@ export default function ContactHero() {
       ? section.description
       : section.description?.[locale] || "";
 
-  const image = section.images?.[0] || "/images/publicContain.jpg";
+  const image = section.images?.[0] ? normalizeImageUrl(section.images[0]) : "/images/publicContain.jpg";
   const features = section.features || [];
 
   // First feature is address, second is phone, rest are social media

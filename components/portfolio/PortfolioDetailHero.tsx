@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/contexts/LanguageContext";
 import Image from "next/image";
+import { normalizeImageUrl } from "@/lib/utils";
 
 export default function PortfolioDetailHero({ portfolio }: { portfolio: any }) {
   const { locale } = useLanguage();
@@ -11,7 +12,9 @@ export default function PortfolioDetailHero({ portfolio }: { portfolio: any }) {
       ? portfolio.title
       : portfolio.title?.[locale] || "";
 
-  const heroImage = portfolio.images?.[0] || "/images/publicContain.jpg";
+  const heroImage = portfolio.images?.[0]
+    ? normalizeImageUrl(portfolio.images[0])
+    : "/images/publicContain.jpg";
 
   return (
     <section className="relative h-[75vh] flex items-center justify-center overflow-hidden">

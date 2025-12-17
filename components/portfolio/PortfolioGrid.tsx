@@ -7,6 +7,7 @@ import PortfolioFilter from "./PortfolioFilter";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import { normalizeImageUrl } from "@/lib/utils";
 
 export default function PortfolioGrid() {
   const { locale } = useLanguage();
@@ -156,7 +157,7 @@ export default function PortfolioGrid() {
                     className="group relative rounded-3xl overflow-hidden bg-gray-100 aspect-[4/3] hover:shadow-2xl transition-all duration-300"
                   >
                     <Image
-                      src={image}
+                      src={normalizeImageUrl(image)}
                       alt={title}
                       fill
                       className="object-cover group-hover:scale-110 transition-all duration-500 grayscale group-hover:grayscale-0"

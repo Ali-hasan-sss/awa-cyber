@@ -3,6 +3,7 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import Image from "next/image";
 import { Check } from "lucide-react";
+import { normalizeImageUrl } from "@/lib/utils";
 
 interface ServiceSection {
   _id: string;
@@ -63,7 +64,7 @@ export default function ServiceSections({ sections }: ServiceSectionsProps) {
                       className="relative aspect-video rounded-2xl overflow-hidden border border-border/60 shadow-sm hover:shadow-lg transition-shadow"
                     >
                       <Image
-                        src={image}
+                        src={normalizeImageUrl(image)}
                         alt={`${section.title} - Image ${index + 1}`}
                         fill
                         className="object-cover"

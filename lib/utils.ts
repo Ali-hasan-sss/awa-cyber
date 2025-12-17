@@ -13,40 +13,62 @@ export function cn(...inputs: ClassValue[]) {
  * @returns The converted HTTPS URL with domain
  */
 export function normalizeImageUrl(url: string | undefined | null): string {
-  if (!url) return "";
+  if (!url || typeof url !== "string") return "";
+
+  const trimmedUrl = url.trim();
 
   // Don't modify local paths that start with /
-  if (url.startsWith("/") && !url.startsWith("//")) {
+  if (trimmedUrl.startsWith("/") && !trimmedUrl.startsWith("//")) {
     // Local image paths like /images/logo.png - return as is
-    if (url.startsWith("/images/") || url.startsWith("/_next/")) {
-      return url;
+    if (
+      trimmedUrl.startsWith("/images/") ||
+      trimmedUrl.startsWith("/_next/") ||
+      trimmedUrl.startsWith("/api/")
+    ) {
+      return trimmedUrl;
     }
   }
 
   // If already a complete URL
   if (
-    url.startsWith("http://") ||
-    url.startsWith("https://") ||
-    url.startsWith("//")
+    trimmedUrl.startsWith("http://") ||
+    trimmedUrl.startsWith("https://") ||
+    trimmedUrl.startsWith("//")
   ) {
+    let processedUrl = trimmedUrl;
+
     // Handle protocol-relative URLs (//example.com)
-    if (url.startsWith("//")) {
-      url = "https:" + url;
+    if (processedUrl.startsWith("//")) {
+      processedUrl = "https:" + processedUrl;
     }
 
-    // Convert HTTP + IP to HTTPS + domain
-    if (url.includes("72.60.208.192")) {
-      return url.replace(/http:\/\/72\.60\.208\.192/g, "https://awacyber.com");
+    // Convert HTTP + IP to HTTPS + domain (handle all variations)
+    if (processedUrl.includes("72.60.208.192")) {
+      processedUrl = processedUrl.replace(
+        /http:\/\/72\.60\.208\.192/g,
+        "https://awacyber.com"
+      );
+      // Also handle without protocol
+      processedUrl = processedUrl.replace(/72\.60\.208\.192/g, "awacyber.com");
     }
+
     // Convert HTTP domain to HTTPS
     if (
-      url.startsWith("http://awacyber.com") ||
-      url.includes("http://awacyber.com")
+      processedUrl.startsWith("http://awacyber.com") ||
+      processedUrl.includes("http://awacyber.com")
     ) {
-      return url.replace(/http:\/\//g, "https://");
+      processedUrl = processedUrl.replace(/http:\/\//g, "https://");
     }
-    // Already HTTPS, return as is
-    return url;
+
+    // Ensure no HTTP remains for IP addresses
+    if (processedUrl.match(/http:\/\/\d+\.\d+\.\d+\.\d+/)) {
+      processedUrl = processedUrl.replace(
+        /http:\/\/(\d+\.\d+\.\d+\.\d+)/g,
+        "https://awacyber.com"
+      );
+    }
+
+    return processedUrl;
   }
 
   // Relative URL - prepend API_BASE_URL
@@ -55,11 +77,20 @@ export function normalizeImageUrl(url: string | undefined | null): string {
   if (typeof window !== "undefined") {
     // In browser, always use HTTPS for production
     baseUrl = baseUrl.replace(/^http:\/\//, "https://");
+    // Replace IP with domain in baseUrl
+    if (baseUrl.includes("72.60.208.192")) {
+      baseUrl = baseUrl.replace(/72\.60\.208\.192/g, "awacyber.com");
+    }
   } else {
     // On server, check if we're in production
     if (process.env.NODE_ENV === "production") {
       baseUrl = baseUrl.replace(/^http:\/\//, "https://");
+      if (baseUrl.includes("72.60.208.192")) {
+        baseUrl = baseUrl.replace(/72\.60\.208\.192/g, "awacyber.com");
+      }
     }
   }
-  return url.startsWith("/") ? `${baseUrl}${url}` : `${baseUrl}/${url}`;
+  return trimmedUrl.startsWith("/")
+    ? `${baseUrl}${trimmedUrl}`
+    : `${baseUrl}/${trimmedUrl}`;
 }

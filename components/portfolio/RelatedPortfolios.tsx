@@ -4,6 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import { normalizeImageUrl } from "@/lib/utils";
 
 export default function RelatedPortfolios({
   currentPortfolioId,
@@ -77,7 +78,7 @@ export default function RelatedPortfolios({
                   ? portfolio.description
                   : portfolio.description?.[locale] || "";
               const image =
-                portfolio.images?.[0] || "/images/publicContain.jpg";
+                portfolio.images?.[0] ? normalizeImageUrl(portfolio.images[0]) : "/images/publicContain.jpg";
 
               return (
                 <Link
