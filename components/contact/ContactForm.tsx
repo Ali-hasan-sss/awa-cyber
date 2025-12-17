@@ -223,7 +223,7 @@ export default function ContactForm() {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder={
-                    locale === "ar" ? "+966 50 123 4567" : "+966 50 123 4567"
+                    locale === "ar" ? "+968 50 123 4567" : "+968 50 123 4567"
                   }
                   className="h-12"
                 />
