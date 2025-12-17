@@ -14,9 +14,12 @@ import {
   User,
   ArrowRight,
   ChevronDown,
+  MapPin,
+  Phone,
 } from "lucide-react";
 import Logo from "../ui/logo";
 import { fetchPublicServices } from "@/lib/actions/serviceActions";
+import { getSectionsByPage } from "@/lib/api/sections";
 
 export default function Navbar() {
   const { locale, setLocale, t } = useLanguage();
@@ -25,7 +28,16 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
   const [services, setServices] = useState<any[]>([]);
+  const [contactInfo, setContactInfo] = useState<{
+    address: string;
+    phone: string;
+    mapLat?: number;
+    mapLng?: number;
+  } | null>(null);
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
   const servicesDropdownRef = useRef<HTMLDivElement>(null);
+  const locationDropdownRef = useRef<HTMLDivElement>(null);
+  const locationButtonRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
 
   const navLinks = [
@@ -64,7 +76,62 @@ export default function Navbar() {
     loadServices();
   }, [locale]);
 
-  // Close dropdown when clicking outside
+  // Load contact information
+  useEffect(() => {
+    const loadContactInfo = async () => {
+      try {
+        const data = await getSectionsByPage("contact", locale);
+        const sections = Array.isArray(data) ? data : (data as any)?.data || [];
+        const firstSection =
+          sections.find((s: any) => s.order === 1) || sections[0];
+
+        if (firstSection) {
+          const features = firstSection.features || [];
+          const addressFeature = features[0];
+          const phoneFeature = features[1];
+          const locationFeature = features[2];
+
+          const address =
+            addressFeature &&
+            (typeof addressFeature.name === "string"
+              ? addressFeature.name
+              : addressFeature.name?.[locale] || "");
+
+          const phone =
+            phoneFeature &&
+            (typeof phoneFeature.name === "string"
+              ? phoneFeature.name
+              : phoneFeature.name?.[locale] || "");
+
+          // Get map coordinates from location feature (third feature)
+          let mapLat: number | undefined;
+          let mapLng: number | undefined;
+          if (locationFeature) {
+            const lat = parseFloat(locationFeature.description || "");
+            const lng = parseFloat(locationFeature.name || "");
+            if (!isNaN(lat) && !isNaN(lng)) {
+              mapLat = lat;
+              mapLng = lng;
+            }
+          }
+
+          if (address || phone || mapLat) {
+            setContactInfo({
+              address: address || "",
+              phone: phone || "",
+              mapLat,
+              mapLng,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error loading contact info:", error);
+      }
+    };
+    loadContactInfo();
+  }, [locale]);
+
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -73,16 +140,24 @@ export default function Navbar() {
       ) {
         setIsServicesDropdownOpen(false);
       }
+      if (
+        locationDropdownRef.current &&
+        locationButtonRef.current &&
+        !locationDropdownRef.current.contains(event.target as Node) &&
+        !locationButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsLocationDropdownOpen(false);
+      }
     };
 
-    if (isServicesDropdownOpen) {
+    if (isServicesDropdownOpen || isLocationDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isServicesDropdownOpen]);
+  }, [isServicesDropdownOpen, isLocationDropdownOpen]);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -213,6 +288,74 @@ export default function Navbar() {
                 <Globe className="h-4 w-4" />
                 <span className="uppercase">{nextLocaleLabel}</span>
               </button>
+
+              {/* Contact Info - Location and Phone */}
+              {contactInfo && (
+                <>
+                  {contactInfo.mapLat && contactInfo.mapLng && (
+                    <div className="relative" ref={locationDropdownRef}>
+                      <button
+                        ref={locationButtonRef}
+                        onClick={() =>
+                          setIsLocationDropdownOpen(!isLocationDropdownOpen)
+                        }
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm transition-colors text-white hover:text-primary relative"
+                        title={
+                          locale === "ar" ? "موقع الشركة" : "Company Location"
+                        }
+                      >
+                        <MapPin className="h-4 w-4" />
+                      </button>
+
+                      {/* Location Dropdown */}
+                      {isLocationDropdownOpen && (
+                        <div
+                          className={`absolute top-full mt-2 w-[400px] max-w-[calc(100vw-2rem)] bg-white shadow-2xl border border-primary/20 overflow-hidden z-50 rounded-xl ${
+                            locale === "ar" ? "right-0" : "left-0"
+                          }`}
+                          style={{
+                            // Ensure dropdown doesn't go off screen
+                            ...(locale === "ar" ? {} : {}),
+                          }}
+                        >
+                          <div className="relative w-full h-[300px]">
+                            <iframe
+                              src={`https://www.google.com/maps?q=${contactInfo.mapLat},${contactInfo.mapLng}&output=embed&z=15`}
+                              width="100%"
+                              height="100%"
+                              style={{ border: 0 }}
+                              allowFullScreen
+                              loading="lazy"
+                              referrerPolicy="no-referrer-when-downgrade"
+                              className="w-full h-full"
+                            />
+                          </div>
+                          {contactInfo.address && (
+                            <div className="p-4 border-t border-gray-200">
+                              <p className="text-sm text-gray-700">
+                                {contactInfo.address}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {contactInfo.phone && (
+                    <a
+                      href={`tel:${contactInfo.phone}`}
+                      className="flex items-center gap-2 px-3 py-1.5 text-sm transition-colors text-white hover:text-primary ltr"
+                      dir="ltr"
+                      title={locale === "ar" ? "اتصل بنا" : "Call Us"}
+                    >
+                      <Phone className="h-4 w-4" />
+                      <span className="hidden lg:inline">
+                        {contactInfo.phone}
+                      </span>
+                    </a>
+                  )}
+                </>
+              )}
 
               {/* User Info or Quote Button */}
               {isLoggedIn ? (
@@ -353,6 +496,45 @@ export default function Navbar() {
                       <LogOut className="h-5 w-5 ltr:mr-2 rtl:ml-2" />
                       {locale === "ar" ? "تسجيل الخروج" : "Logout"}
                     </Button>
+                  </>
+                )}
+
+                {/* Contact Info - Mobile */}
+                {contactInfo && (
+                  <>
+                    <div className="border-t border-border my-4" />
+                    {contactInfo.mapLat && contactInfo.mapLng && (
+                      <div className="space-y-2">
+                        <div className="relative w-full h-[250px] rounded-lg overflow-hidden border border-border">
+                          <iframe
+                            src={`https://www.google.com/maps?q=${contactInfo.mapLat},${contactInfo.mapLng}&output=embed&z=15`}
+                            width="100%"
+                            height="100%"
+                            style={{ border: 0 }}
+                            allowFullScreen
+                            loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
+                            className="w-full h-full"
+                          />
+                        </div>
+                        {contactInfo.address && (
+                          <p className="text-sm text-gray-600">
+                            {contactInfo.address}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {contactInfo.phone && (
+                      <a
+                        href={`tel:${contactInfo.phone}`}
+                        className="flex items-center gap-3 text-lg font-medium text-foreground hover:text-primary transition-colors py-2 ltr"
+                        dir="ltr"
+                        onClick={closeMobileMenu}
+                      >
+                        <Phone className="h-5 w-5" />
+                        <span>{contactInfo.phone}</span>
+                      </a>
+                    )}
                   </>
                 )}
 
