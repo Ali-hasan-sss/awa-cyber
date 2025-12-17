@@ -6,6 +6,7 @@ import { apiClient } from "@/lib/apiClient";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import { normalizeImageUrl } from "@/lib/utils";
 
 interface ServiceFourthSectionProps {
   section: {
@@ -107,8 +108,9 @@ export default function ServiceFourthSection({
                   typeof portfolio.description === "string"
                     ? portfolio.description
                     : portfolio.description?.[locale] || "";
-                const image =
-                  portfolio.images?.[0] || "/images/publicContain.jpg";
+                const image = portfolio.images?.[0]
+                  ? normalizeImageUrl(portfolio.images[0])
+                  : "/images/publicContain.jpg";
 
                 return (
                   <Link

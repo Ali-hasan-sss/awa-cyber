@@ -7,6 +7,7 @@ import { useEffect, useState, useMemo } from "react";
 import { fetchPublicServices } from "@/lib/actions/serviceActions";
 import { getSectionsByPage } from "@/lib/api/sections";
 import { ArrowRight } from "lucide-react";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -227,7 +228,7 @@ export default function SecurityServices({
                 {card.image ? (
                   <div className="relative w-full aspect-video overflow-hidden">
                     <Image
-                      src={card.image}
+                      src={normalizeImageUrl(card.image)}
                       alt={card.title}
                       fill
                       className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"

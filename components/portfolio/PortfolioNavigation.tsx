@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { normalizeImageUrl } from "@/lib/utils";
 
 interface PortfolioNavigationProps {
   prevPortfolio: any | null;
@@ -52,7 +53,9 @@ export default function PortfolioNavigation({
       ? portfolio.title
       : portfolio.title?.[locale] || "";
 
-  const image = portfolio.images?.[0] || "/images/publicContain.jpg";
+  const image = portfolio.images?.[0]
+    ? normalizeImageUrl(portfolio.images[0])
+    : "/images/publicContain.jpg";
   const href = `/portfolio/${portfolio._id}`;
 
   // Hide navigation when lightbox is open

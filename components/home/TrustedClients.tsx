@@ -13,6 +13,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { getSectionsByPage } from "@/lib/api/sections";
 import Image from "next/image";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -426,7 +427,7 @@ export default function TrustedClients({
                       {brand.icon && brand.icon.startsWith("http") ? (
                         <div className="relative w-full h-full">
                           <Image
-                            src={brand.icon}
+                            src={normalizeImageUrl(brand.icon)}
                             alt={brand.name}
                             fill
                             className="object-contain transition-all duration-300"

@@ -16,6 +16,7 @@ import { useState, useEffect, useMemo } from "react";
 import { getSectionsByPage } from "@/lib/api/sections";
 import { serviceIconComponents } from "@/lib/serviceIconOptions";
 import Image from "next/image";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
@@ -328,7 +329,7 @@ export default function SecurityTechnologies({
                   <div className="mx-auto mb-4 flex items-center justify-center">
                     {tool.icon && tool.icon.startsWith("http") ? (
                       <Image
-                        src={tool.icon}
+                        src={normalizeImageUrl(tool.icon)}
                         alt={tool.name}
                         width={80}
                         height={80}
