@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useProjects, AdminProject } from "@/contexts/ProjectContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { addLocaleToPath } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -169,7 +170,11 @@ export default function ProjectsManagementPage() {
         </div>
         {!isEmployee && (
           <Button
-            onClick={() => router.push("/admin/dashboard/projects/new")}
+            onClick={() =>
+              router.push(
+                addLocaleToPath("/admin/dashboard/projects/new", locale)
+              )
+            }
             className="rounded-full bg-primary px-6 py-3 text-black shadow-lg hover:bg-primary/90"
           >
             <div className="flex items-center gap-2">
@@ -245,7 +250,12 @@ export default function ProjectsManagementPage() {
                   key={project._id}
                   className="text-white/90 hover:bg-white/5 cursor-pointer transition"
                   onClick={() =>
-                    router.push(`/admin/dashboard/projects/${project._id}`)
+                    router.push(
+                      addLocaleToPath(
+                        `/admin/dashboard/projects/${project._id}`,
+                        locale
+                      )
+                    )
                   }
                 >
                   <td className="py-4">

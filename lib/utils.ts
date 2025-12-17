@@ -7,6 +7,23 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Adds locale as query parameter to a URL
+ * @param path - The path to add locale to
+ * @param locale - The locale (en | ar)
+ * @returns The path with locale query parameter
+ */
+export function addLocaleToPath(path: string, locale: "en" | "ar"): string {
+  if (!path || path === "#") return path;
+
+  // Check if path already has query parameters
+  const [basePath, existingQuery] = path.split("?");
+  const searchParams = new URLSearchParams(existingQuery || "");
+  searchParams.set("locale", locale);
+
+  return `${basePath}?${searchParams.toString()}`;
+}
+
+/**
  * Normalizes URLs in HTML content (img src, video src, etc.)
  * @param html - HTML string that may contain URLs
  * @returns HTML with normalized URLs

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useProjects } from "@/contexts/ProjectContext";
 import { useUsers } from "@/contexts/UserContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { addLocaleToPath } from "@/lib/utils";
 import { fetchUsersApi } from "@/lib/actions/userActions";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -204,7 +205,7 @@ export default function NewProjectPage() {
         progressType: form.progressType,
         employees: employees.length > 0 ? employees : undefined,
       });
-      router.push("/admin/dashboard/projects");
+      router.push(addLocaleToPath("/admin/dashboard/projects", locale));
     } catch (err) {
       setFormError(typeof err === "string" ? err : copy.createError);
     } finally {
@@ -224,7 +225,9 @@ export default function NewProjectPage() {
         </div>
         <Button
           variant="ghost"
-          onClick={() => router.push("/admin/dashboard/projects")}
+          onClick={() =>
+            router.push(addLocaleToPath("/admin/dashboard/projects", locale))
+          }
           className="text-white/70 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
@@ -665,7 +668,9 @@ export default function NewProjectPage() {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => router.push("/admin/dashboard/projects")}
+            onClick={() =>
+              router.push(addLocaleToPath("/admin/dashboard/projects", locale))
+            }
             className="rounded-full border border-white/20 px-6 text-white/70 hover:bg-white/5"
           >
             {copy.cancel}

@@ -12,6 +12,7 @@ import {
 import { useUsers } from "@/contexts/UserContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { addLocaleToPath } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil, RefreshCw, Plus } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
@@ -794,7 +795,9 @@ export default function ProjectDetailsPage() {
       <div className="flex items-center justify-between">
         <Button
           variant="ghost"
-          onClick={() => router.push("/admin/dashboard/projects")}
+          onClick={() =>
+            router.push(addLocaleToPath("/admin/dashboard/projects", locale))
+          }
           className="text-white/70 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4 ltr:mr-2 rtl:ml-2" />

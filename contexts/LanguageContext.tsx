@@ -28,10 +28,22 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("ar");
   const [isMounted, setIsMounted] = useState(false);
 
-  // Load locale from localStorage on mount
+  // Load locale from URL query parameter first, then localStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // Try to get locale from URL query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLocale = urlParams.get("locale") as Locale;
+
+    if (urlLocale && (urlLocale === "en" || urlLocale === "ar")) {
+      setLocaleState(urlLocale);
+      localStorage.setItem("locale", urlLocale);
+      setIsMounted(true);
+      return;
+    }
+
+    // Fallback to localStorage
     const stored = localStorage.getItem("locale") as Locale;
     if (stored && (stored === "en" || stored === "ar")) {
       setLocaleState(stored);
@@ -57,6 +69,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);
+    // Update URL query parameter when locale changes
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("locale", newLocale);
+      window.history.replaceState({}, "", url.toString());
+    }
   };
 
   // Translation function

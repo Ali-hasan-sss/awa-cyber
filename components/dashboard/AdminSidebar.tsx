@@ -19,7 +19,7 @@ import {
   FileStack,
   BookOpen,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, addLocaleToPath } from "@/lib/utils";
 import Logo from "../ui/logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationContext";
@@ -268,7 +268,7 @@ export function AdminSidebar({
                         return (
                           <Link
                             key={child.href}
-                            href={child.href}
+                            href={addLocaleToPath(child.href, locale)}
                             onClick={onClose}
                             className={cn(
                               "group relative flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-300",
@@ -296,7 +296,7 @@ export function AdminSidebar({
             return (
               <Link
                 key={item.href}
-                href={item.href || "#"}
+                href={item.href ? addLocaleToPath(item.href, locale) : "#"}
                 onClick={onClose}
                 className={cn(
                   "group relative flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300",
