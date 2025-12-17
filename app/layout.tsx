@@ -113,7 +113,7 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   verification: {
-    google: "your-google-verification-code", // يجب استبدالها برمز التحقق من Google Search Console
+    google: "KGyuKsWHrQvGTx40NELaQSKDU7PmU28be4BEx4_Ykic",
   },
 };
 
