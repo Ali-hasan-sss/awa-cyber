@@ -16,6 +16,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { getSections, updateSection, Section } from "@/lib/api/sections";
+import { normalizeImageUrl } from "@/lib/utils";
 import Image from "next/image";
 
 // Helper function to strip HTML tags and convert to plain text
@@ -548,7 +549,7 @@ export default function SecurityTechnologiesSection() {
                           {draftFeature.icon && (
                             <div className="mt-2 relative w-20 h-20 rounded-lg overflow-hidden border border-white/20">
                               <Image
-                                src={draftFeature.icon}
+                                src={normalizeImageUrl(draftFeature.icon)}
                                 alt="Technology"
                                 fill
                                 className="object-contain"
@@ -658,7 +659,7 @@ export default function SecurityTechnologiesSection() {
                               <div className="text-primary relative w-10 h-10 flex items-center justify-center">
                                 {feature.icon ? (
                                   <Image
-                                    src={feature.icon}
+                                    src={normalizeImageUrl(feature.icon)}
                                     alt={feature.nameEn || feature.nameAr}
                                     fill
                                     className="object-contain rounded"
@@ -733,7 +734,7 @@ export default function SecurityTechnologiesSection() {
                                 {feature.icon && (
                                   <div className="mt-2 relative w-20 h-20 rounded-lg overflow-hidden border border-white/20">
                                     <Image
-                                      src={feature.icon}
+                                      src={normalizeImageUrl(feature.icon)}
                                       alt="Technology"
                                       fill
                                       className="object-contain"

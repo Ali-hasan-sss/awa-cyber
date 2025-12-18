@@ -10,6 +10,7 @@ import FileUpload from "@/components/ui/FileUpload";
 import { Pencil, Save, X, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { getSections, updateSection, Section } from "@/lib/api/sections";
+import { normalizeImageUrl } from "@/lib/utils";
 import {
   serviceIconOptions,
   serviceIconComponents,
@@ -358,7 +359,7 @@ export default function AboutHeroSection() {
                   {form.image && (
                     <div className="mt-4 relative rounded-xl overflow-hidden border-2 border-primary/30">
                       <img
-                        src={form.image}
+                        src={normalizeImageUrl(form.image)}
                         alt="Background"
                         className="w-full h-48 object-cover"
                       />

@@ -482,7 +482,7 @@ export default function WhoWeAreSection() {
                       </p>
                       <div className="relative rounded-2xl border-2 border-white/20 bg-white/[0.05] overflow-hidden group">
                         <img
-                          src={form.image}
+                          src={normalizeImageUrl(form.image)}
                           alt="Section image"
                           className="w-full h-64 object-cover"
                           onError={(e) => {

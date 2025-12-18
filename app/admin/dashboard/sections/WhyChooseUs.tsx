@@ -15,6 +15,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { getSections, updateSection, Section } from "@/lib/api/sections";
+import { normalizeImageUrl } from "@/lib/utils";
 import FileUpload from "@/components/ui/FileUpload";
 import Image from "next/image";
 import {
@@ -536,7 +537,7 @@ export default function WhyChooseUsSection() {
                     {form.images.length > 0 && (
                       <div className="mt-4 relative rounded-lg overflow-hidden border border-white/10">
                         <img
-                          src={form.images[0]}
+                          src={normalizeImageUrl(form.images[0])}
                           alt="Section image"
                           className="w-full h-48 object-cover"
                         />
@@ -1039,7 +1040,7 @@ export default function WhyChooseUsSection() {
                 <div className="relative">
                   <div className="relative rounded-[32px] shadow-2xl border border-white/10">
                     <Image
-                      src={sectionImage}
+                      src={normalizeImageUrl(sectionImage)}
                       alt={sectionTitle}
                       width={640}
                       height={480}

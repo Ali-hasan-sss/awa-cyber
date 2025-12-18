@@ -9,6 +9,7 @@ import FileUpload from "@/components/ui/FileUpload";
 import { Pencil, Save, X, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { getSections, updateSection, Section } from "@/lib/api/sections";
+import { normalizeImageUrl } from "@/lib/utils";
 import Link from "next/link";
 
 // Helper function to strip HTML tags
@@ -214,7 +215,7 @@ export default function CallToActionSection() {
               {form.image && (
                 <div className="mt-4 relative rounded-xl overflow-hidden border-2 border-primary/30">
                   <img
-                    src={form.image}
+                    src={normalizeImageUrl(form.image)}
                     alt="Section"
                     className="w-full h-64 object-cover"
                   />
@@ -325,7 +326,7 @@ export default function CallToActionSection() {
             {/* Left Side - Image (Full Height) */}
             <div className="relative order-2 lg:order-1 w-full h-[40vh] sm:h-[50vh] md:h-[60vh] lg:h-full">
               <Image
-                src={sectionImage}
+                src={normalizeImageUrl(sectionImage)}
                 alt={sectionTitle || "Call to Action"}
                 fill
                 className="object-cover"

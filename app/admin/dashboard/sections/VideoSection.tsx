@@ -9,6 +9,7 @@ import FileUpload from "@/components/ui/FileUpload";
 import { Pencil, Save, X, Play } from "lucide-react";
 import Image from "next/image";
 import { getSections, updateSection, Section } from "@/lib/api/sections";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // Helper function to strip HTML tags
 const stripHtml = (html: string): string => {
@@ -401,13 +402,13 @@ export default function VideoSection() {
                 <div className="mt-4 relative rounded-xl overflow-hidden border-2 border-primary/30">
                   {isVideoFile(form.image) ? (
                     <video
-                      src={form.image}
+                      src={normalizeImageUrl(form.image)}
                       className="w-full h-64 object-cover"
                       controls
                     />
                   ) : (
                     <img
-                      src={form.image}
+                      src={normalizeImageUrl(form.image)}
                       alt="Section"
                       className="w-full h-64 object-cover"
                     />
@@ -589,7 +590,7 @@ export default function VideoSection() {
               ) : (
                 <>
                   <Image
-                    src={sectionImage}
+                    src={normalizeImageUrl(sectionImage)}
                     alt={sectionTitle || "Video Section"}
                     fill
                     className="object-cover"

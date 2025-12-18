@@ -16,9 +16,12 @@ import {
   Trash2,
   Download,
   Search,
+  X,
+  AlertTriangle,
 } from "lucide-react";
 import {
   getAllPaymentsApi,
+  deletePaymentApi,
   PaymentPayload,
 } from "@/lib/actions/projectActions";
 import {
@@ -136,6 +139,13 @@ export default function RevenuePage() {
     dueDate: new Date().toISOString().split("T")[0],
     recurring: false,
   });
+
+  // Delete confirmation modal
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteType, setDeleteType] = useState<
+    "expense" | "income" | "payment" | null
+  >(null);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   // Initialize dates - default to current month
   useEffect(() => {
@@ -315,6 +325,11 @@ export default function RevenuePage() {
       deleteIncomeConfirm: isArabic
         ? "هل أنت متأكد من حذف هذه الدفعة الواردة؟"
         : "Are you sure you want to delete this income?",
+      deletePaymentConfirm: isArabic
+        ? "هل أنت متأكد من حذف هذه الدفعة من المشروع؟"
+        : "Are you sure you want to delete this payment?",
+      deletePayment: isArabic ? "حذف دفعة" : "Delete Payment",
+      confirmDelete: isArabic ? "تأكيد الحذف" : "Confirm Delete",
       expenses: isArabic ? "المصاريف" : "Expenses",
       addExpense: isArabic ? "إضافة مصروف" : "Add Expense",
       editExpense: isArabic ? "تعديل مصروف" : "Edit Expense",
@@ -729,16 +744,25 @@ export default function RevenuePage() {
     }
   };
 
-  const handleDeleteExpense = async (id: string) => {
-    if (!confirm(copy.deleteConfirm)) return;
+  const handleDeleteExpense = (id: string) => {
+    setDeleteType("expense");
+    setItemToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDeleteExpense = async () => {
+    if (!itemToDelete) return;
     setLoading(true);
     setError(null);
     try {
       // Extract original expense ID (remove date suffix for recurring expenses)
-      const originalId = id.split("_")[0];
+      const originalId = itemToDelete.split("_")[0];
       await deleteExpenseApi(originalId);
       // Reload all data to ensure both tables are updated
       await loadData();
+      setDeleteModalOpen(false);
+      setItemToDelete(null);
+      setDeleteType(null);
     } catch (err: any) {
       setError(err?.message || "Failed to delete expense");
       console.error("Error deleting expense:", err);
@@ -813,17 +837,51 @@ export default function RevenuePage() {
     }
   };
 
-  const handleDeleteIncome = async (id: string) => {
-    if (!confirm(copy.deleteIncomeConfirm)) return;
+  const handleDeleteIncome = (id: string) => {
+    setDeleteType("income");
+    setItemToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDeleteIncome = async () => {
+    if (!itemToDelete) return;
     setLoading(true);
     setError(null);
     try {
-      await deleteIncomeApi(id);
+      await deleteIncomeApi(itemToDelete);
       // Reload all data to ensure both tables are updated
       await loadData();
+      setDeleteModalOpen(false);
+      setItemToDelete(null);
+      setDeleteType(null);
     } catch (err: any) {
       setError(err?.message || "Failed to delete income");
       console.error("Error deleting income:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeletePayment = (id: string) => {
+    setDeleteType("payment");
+    setItemToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDeletePayment = async () => {
+    if (!itemToDelete) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await deletePaymentApi(itemToDelete);
+      // Reload all data to ensure both tables are updated
+      await loadData();
+      setDeleteModalOpen(false);
+      setItemToDelete(null);
+      setDeleteType(null);
+    } catch (err: any) {
+      setError(err?.message || "Failed to delete payment");
+      console.error("Error deleting payment:", err);
     } finally {
       setLoading(false);
     }
@@ -1415,9 +1473,17 @@ export default function RevenuePage() {
                           </Button>
                         </div>
                       ) : (
-                        <span className="text-xs text-white/50">
-                          {isArabic ? "دفعة مشروع" : "Project Payment"}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeletePayment(payment._id)}
+                            className="h-8 w-8 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                            title={copy.deletePayment}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -1903,6 +1969,73 @@ export default function RevenuePage() {
       {error && (
         <div className="rounded-2xl border border-red-400/40 bg-red-500/10 px-4 py-2 text-sm text-red-200">
           {error}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="rounded-3xl border border-white/10 bg-[#060e1f] p-6 shadow-2xl max-w-md w-full mx-4">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="rounded-full bg-red-500/20 p-3">
+                <AlertTriangle className="h-6 w-6 text-red-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-white mb-2">
+                  {copy.confirmDelete}
+                </h3>
+                <p className="text-white/70 text-sm">
+                  {deleteType === "expense"
+                    ? copy.deleteConfirm
+                    : deleteType === "income"
+                    ? copy.deleteIncomeConfirm
+                    : copy.deletePaymentConfirm}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setItemToDelete(null);
+                  setDeleteType(null);
+                }}
+                className="text-white/50 hover:text-white transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setItemToDelete(null);
+                  setDeleteType(null);
+                }}
+                className="rounded-full border border-white/20 px-6 text-white/70 hover:bg-white/5"
+              >
+                {copy.cancel}
+              </Button>
+              <Button
+                onClick={() => {
+                  if (deleteType === "expense") {
+                    confirmDeleteExpense();
+                  } else if (deleteType === "income") {
+                    confirmDeleteIncome();
+                  } else if (deleteType === "payment") {
+                    confirmDeletePayment();
+                  }
+                }}
+                disabled={loading}
+                className="rounded-full bg-red-500 px-6 text-white shadow-lg hover:bg-red-600 disabled:opacity-50"
+              >
+                {loading
+                  ? copy.loading
+                  : copy.deleteExpense ||
+                    copy.deleteIncome ||
+                    copy.deletePayment}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

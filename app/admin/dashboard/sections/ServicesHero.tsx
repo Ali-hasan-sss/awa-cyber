@@ -9,6 +9,7 @@ import FileUpload from "@/components/ui/FileUpload";
 import { Pencil, Save, X } from "lucide-react";
 import Image from "next/image";
 import { getSections, updateSection, Section } from "@/lib/api/sections";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // Helper function to strip HTML tags
 const stripHtml = (html: string): string => {
@@ -220,7 +221,7 @@ export default function ServicesHeroSection() {
               {form.image && (
                 <div className="mt-4 relative rounded-xl overflow-hidden border-2 border-primary/30">
                   <img
-                    src={form.image}
+                    src={normalizeImageUrl(form.image)}
                     alt="Hero"
                     className="w-full h-64 object-cover"
                   />
