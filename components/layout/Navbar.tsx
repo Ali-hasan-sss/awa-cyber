@@ -131,15 +131,9 @@ export default function Navbar() {
     loadContactInfo();
   }, [locale]);
 
-  // Close dropdowns when clicking outside
+  // Close location dropdown when clicking outside (services uses hover only)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        servicesDropdownRef.current &&
-        !servicesDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsServicesDropdownOpen(false);
-      }
       if (
         locationDropdownRef.current &&
         locationButtonRef.current &&
@@ -150,14 +144,14 @@ export default function Navbar() {
       }
     };
 
-    if (isServicesDropdownOpen || isLocationDropdownOpen) {
+    if (isLocationDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isServicesDropdownOpen, isLocationDropdownOpen]);
+  }, [isLocationDropdownOpen]);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -233,30 +227,34 @@ export default function Navbar() {
                       {/* Services Dropdown */}
                       {isServicesDropdownOpen && services.length > 0 && (
                         <div
-                          className={`absolute top-full mt-2 max-w-[calc(100vw-2rem)] w-[500px] bg-white shadow-2xl border border-primary/20 overflow-hidden z-50 ${
+                          className={`absolute top-full pt-2 max-w-[calc(100vw-2rem)] w-[500px] bg-transparent z-50 ${
                             locale === "ar" ? "right-0" : "left-0"
                           }`}
+                          onMouseEnter={() => setIsServicesDropdownOpen(true)}
+                          onMouseLeave={() => setIsServicesDropdownOpen(false)}
                         >
-                          <div className="p-4">
-                            <div className="grid grid-cols-2 gap-2">
-                              {services.map((service: any) => {
-                                const serviceTitle =
-                                  typeof service.title === "string"
-                                    ? service.title
-                                    : service.title?.[locale] || "";
-                                return (
-                                  <Link
-                                    key={service._id}
-                                    href={`/services/${service._id}`}
-                                    className="block px-4 py-3 text-foreground hover:bg-primary hover:text-white transition-all rounded-lg bg-white border border-gray-200"
-                                    onClick={() =>
-                                      setIsServicesDropdownOpen(false)
-                                    }
-                                  >
-                                    {serviceTitle}
-                                  </Link>
-                                );
-                              })}
+                          <div className="bg-white shadow-2xl border border-primary/20 overflow-hidden rounded-lg">
+                            <div className="p-4">
+                              <div className="grid grid-cols-2 gap-2">
+                                {services.map((service: any) => {
+                                  const serviceTitle =
+                                    typeof service.title === "string"
+                                      ? service.title
+                                      : service.title?.[locale] || "";
+                                  return (
+                                    <Link
+                                      key={service._id}
+                                      href={`/services/${service._id}`}
+                                      className="block px-4 py-3 text-foreground hover:bg-primary hover:text-white transition-all rounded-lg bg-white border border-gray-200"
+                                      onClick={() =>
+                                        setIsServicesDropdownOpen(false)
+                                      }
+                                    >
+                                      {serviceTitle}
+                                    </Link>
+                                  );
+                                })}
+                              </div>
                             </div>
                           </div>
                         </div>

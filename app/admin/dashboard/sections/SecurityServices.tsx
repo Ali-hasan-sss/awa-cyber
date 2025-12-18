@@ -919,7 +919,7 @@ export default function SecurityServicesSection() {
           /* View Mode */
           <div className="p-6 md:p-8 lg:p-12">
             <div className="text-center space-y-4 max-w-3xl mx-auto rtl:text-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 leading-[2]">
                 {sectionTitle}
               </h2>
 
@@ -939,7 +939,7 @@ export default function SecurityServicesSection() {
                 {displayedServices.map((service) => (
                   <div
                     key={service._id}
-                    className="rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden h-full flex flex-col"
+                    className="border border-gray-200 bg-white shadow-sm overflow-hidden h-full flex flex-col"
                   >
                     {service.images && service.images.length > 0 && (
                       <div className="relative w-full aspect-video">
@@ -953,7 +953,7 @@ export default function SecurityServicesSection() {
                       </div>
                     )}
                     <div className="p-6 md:p-8 flex flex-col flex-grow">
-                      <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+                      <h3 className="text-2xl font-semibold text-gray-900 mb-3 leading-relaxed">
                         {service.title?.[locale] || service.title?.en || ""}
                       </h3>
                       {service.description && (

@@ -1198,7 +1198,9 @@ export default function LatestProjectsSection() {
                             latestPortfolio.images.length > 0 && (
                               <div className="mt-2 relative w-full h-20 rounded-lg overflow-hidden">
                                 <Image
-                                  src={normalizeImageUrl(latestPortfolio.images[0])}
+                                  src={normalizeImageUrl(
+                                    latestPortfolio.images[0]
+                                  )}
                                   alt={latestPortfolio.title?.[locale] || ""}
                                   fill
                                   className="object-cover"
@@ -1544,7 +1546,7 @@ export default function LatestProjectsSection() {
                 {isArabic ? "جاري التحميل..." : "Loading project..."}
               </div>
             ) : latestPortfolio ? (
-              <div className="mt-12 rounded-[32px] border border-gray-200 bg-white shadow-2xl overflow-hidden">
+              <div className="mt-12 border border-gray-200 bg-white shadow-2xl overflow-hidden">
                 <div className="flex flex-col lg:flex-row">
                   <div className="relative lg:w-1/2">
                     <Image

@@ -185,7 +185,7 @@ export default function WhoWeAre({
           </div>
 
           <div className="relative">
-            <div className="relative overflow-hidden rounded-3xl shadow-2xl">
+            <div className="relative overflow-hidden">
               <Image
                 src={normalizeImageUrl(sectionImage)}
                 alt={sectionTitle || "About us"}
@@ -198,7 +198,7 @@ export default function WhoWeAre({
               <div className="absolute inset-0 bg-gradient-to-tr from-black/20 via-transparent to-gray-200/20" />
             </div>
             {stats.length > 0 && (
-              <div className="absolute -bottom-6 ltr:-right-6 rtl:-left-6 hidden sm:block rounded-2xl bg-white/90 px-6 py-4 shadow-lg backdrop-blur">
+              <div className="absolute -bottom-6 ltr:-right-6 rtl:-left-6 hidden sm:block bg-white/90 px-6 py-4 shadow-lg backdrop-blur">
                 <p className="text-sm font-semibold text-muted-foreground">
                   {locale === "ar"
                     ? "موثوق به عالمياً"

@@ -142,7 +142,7 @@ export default function Testimonials({
             {/* Testimonials Grid Skeleton */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="p-6 bg-gray-50 rounded-2xl space-y-4">
+                <div key={i} className="p-6 bg-gray-50 space-y-4">
                   {/* Stars Skeleton */}
                   <div className="flex gap-1">
                     {[...Array(5)].map((_, j) => (
@@ -201,7 +201,7 @@ export default function Testimonials({
               return (
                 <div
                   key={`${testimonial.name}-${idx}`}
-                  className="rounded-3xl border border-border/60 bg-gradient-to-br from-white to-primary/5 p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow"
+                  className="border border-border/60 bg-gradient-to-br from-white to-primary/5 p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow"
                 >
                   {/* Stars Rating */}
                   <div className="flex gap-1 mb-4">

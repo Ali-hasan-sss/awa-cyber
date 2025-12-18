@@ -317,7 +317,7 @@ export default function SecurityTechnologies({
           )}
         </div>
 
-        <div className="mt-12 bg-gradient-to-b from-gray-100 to-white rounded-[36px] p-6 md:p-8 shadow-lg border border-gray-200">
+        <div className="mt-12 bg-gradient-to-b from-gray-100 to-white p-6 md:p-8 shadow-lg border border-gray-200">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {tools.map((tool: Tool, idx: number) => {
               // Check if icon is a URL/image path (not an icon name)
@@ -334,7 +334,7 @@ export default function SecurityTechnologies({
               return (
                 <div
                   key={`${tool.name}-${idx}`}
-                  className="group rounded-2xl border border-white/60 bg-white/80 p-5 text-center shadow-sm hover:-translate-y-1 transition-transform"
+                  className="group p-5 text-center hover:-translate-y-1 transition-transform"
                 >
                   <div className="mx-auto mb-4 flex items-center justify-center">
                     {isImageUrl ? (

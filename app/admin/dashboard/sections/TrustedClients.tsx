@@ -842,41 +842,93 @@ export default function TrustedClientsSection() {
               )}
             </div>
 
+            {/* Infinite Scrolling Cards */}
             {brands.length > 0 && (
-              <div className="mt-12 flex flex-wrap justify-center items-center gap-4">
-                {brands.map((brand, idx) => {
-                  return (
-                    <div
-                      key={idx}
-                      className="rounded-2xl border border-gray-200 bg-white/80 p-6 text-center shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg w-[250px] h-[250px] flex flex-col"
-                    >
-                      <div className="mx-auto mb-4 flex items-center justify-center h-32 w-full">
-                        {brand.icon ? (
-                          <div className="relative w-full h-full">
-                            <Image
-                              src={normalizeImageUrl(brand.icon)}
-                              alt={brand.name || ""}
-                              fill
-                              className="object-contain"
-                            />
-                          </div>
-                        ) : (
-                          <div className="h-14 w-14" />
-                        )}
-                      </div>
-                      <div className="flex-1 flex flex-col justify-center">
-                        <p className="font-semibold text-lg text-gray-900 mb-1">
-                          {brand.name}
-                        </p>
-                        {brand.tagline && (
-                          <p className="text-sm text-gray-600">
-                            {brand.tagline}
+              <div className="mt-12 overflow-hidden relative group">
+                <style
+                  dangerouslySetInnerHTML={{
+                    __html: `
+                    @keyframes scroll-trusted-clients {
+                      0% {
+                        transform: translateX(0);
+                      }
+                      100% {
+                        transform: translateX(-50%);
+                      }
+                    }
+                    @keyframes scroll-trusted-clients-rtl {
+                      0% {
+                        transform: translateX(0);
+                      }
+                      100% {
+                        transform: translateX(50%);
+                      }
+                    }
+                    .scrolling-wrapper-trusted-clients-preview {
+                      animation: scroll-trusted-clients 60s linear infinite;
+                      will-change: transform;
+                    }
+                    [dir="rtl"] .scrolling-wrapper-trusted-clients-preview {
+                      animation: scroll-trusted-clients-rtl 60s linear infinite;
+                    }
+                    .group:hover .scrolling-wrapper-trusted-clients-preview {
+                      animation-play-state: paused;
+                    }
+                  `,
+                  }}
+                />
+                <div
+                  className={`scrolling-wrapper-trusted-clients-preview flex gap-4 md:gap-6 w-max select-none ${
+                    locale === "ar" ? "rtl" : ""
+                  }`}
+                  style={{
+                    userSelect: "none",
+                  }}
+                >
+                  {/* Duplicate brands for seamless infinite scroll */}
+                  {[...brands, ...brands].map((brand, idx) => {
+                    // Check if icon is a URL/image path
+                    const isImageUrl =
+                      brand.icon &&
+                      (brand.icon.startsWith("http") ||
+                        brand.icon.startsWith("/") ||
+                        brand.icon.includes(".") ||
+                        brand.icon.includes("72.60.208.192") ||
+                        brand.icon.includes("awacyber.com"));
+                    
+                    return (
+                      <div
+                        key={`${brand.name}-${idx}`}
+                        className="text-center transition-all duration-300 hover:-translate-y-1 w-[250px] h-[250px] flex flex-col flex-shrink-0 grayscale hover:grayscale-0"
+                      >
+                        <div className="mx-auto mb-4 flex items-center justify-center h-32 w-full">
+                          {isImageUrl ? (
+                            <div className="relative w-full h-full">
+                              <Image
+                                src={normalizeImageUrl(brand.icon!)}
+                                alt={brand.name || ""}
+                                fill
+                                className="object-contain transition-all duration-300"
+                              />
+                            </div>
+                          ) : (
+                            <div className="h-14 w-14" />
+                          )}
+                        </div>
+                        <div className="flex-1 flex flex-col justify-center">
+                          <p className="font-semibold text-lg text-gray-900 mb-1">
+                            {brand.name}
                           </p>
-                        )}
+                          {brand.tagline && (
+                            <p className="text-sm text-gray-600">
+                              {brand.tagline}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

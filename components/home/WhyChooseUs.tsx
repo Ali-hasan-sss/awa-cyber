@@ -286,17 +286,17 @@ export default function WhyChooseUs({
       <div className="container mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
           <div className="relative">
-            <div className="relative rounded-[32px]  shadow-2xl border border-white/10">
+            <div className="relative shadow-2xl border border-white/10">
               <Image
                 src={normalizeImageUrl(section.image) ?? fallbackContent.image!}
                 alt={section.imageAlt ?? fallbackContent.imageAlt!}
                 width={640}
                 height={480}
-                className="h-full w-full rounded-2xl object-cover"
+                className="h-full w-full object-cover"
                 sizes="(max-width: 1024px) 100vw, 640px"
               />
               {section.badge && (
-                <div className="absolute -top-4 ltr:-left-4 rtl:-right-4 flex items-center gap-3 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-black shadow-xl z-50">
+                <div className="absolute -top-4 ltr:-left-4 rtl:-right-4 flex items-center gap-3 bg-white px-4 py-2 text-sm font-semibold text-black shadow-xl z-50">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/20 text-primary">
                     {(() => {
                       const BadgeIcon =
@@ -317,7 +317,7 @@ export default function WhyChooseUs({
                 </div>
               )}
               {section.experience && (
-                <div className="absolute -bottom-6 ltr:-right-6 rtl:-left-6 rounded-3xl bg-primary text-black px-6 py-4 text-center shadow-xl z-20">
+                <div className="absolute -bottom-6 ltr:-right-6 rtl:-left-6 bg-primary text-black px-6 py-4 text-center shadow-xl z-20">
                   <p className="text-3xl font-bold">
                     {section.experience.value}
                   </p>

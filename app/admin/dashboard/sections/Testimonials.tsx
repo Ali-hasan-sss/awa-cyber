@@ -855,7 +855,7 @@ export default function TestimonialsSection() {
                 return (
                   <div
                     key={idx}
-                    className="rounded-3xl border border-border/60 bg-gradient-to-br from-white to-primary/5 p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow"
+                    className="border border-border/60 bg-gradient-to-br from-white to-primary/5 p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow"
                   >
                     {/* Stars Rating */}
                     <div className="flex gap-1 mb-4">

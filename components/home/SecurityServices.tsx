@@ -168,21 +168,21 @@ export default function SecurityServices({
         <div className="text-center max-w-3xl mx-auto space-y-4 rtl:text-center">
           {displayTitle ? (
             typeof displayTitle === "object" && "line1" in displayTitle ? (
-              <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-[5]">
                 {displayTitle.line1}{" "}
                 {displayTitle.highlight && (
                   <span className="text-primary">{displayTitle.highlight}</span>
                 )}
               </h2>
             ) : (
-              <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+              <h2 className="text-4xl md:text-3xl font-bold text-foreground leading-[5]">
                 {typeof displayTitle === "string" ? displayTitle : ""}
               </h2>
             )
           ) : fallbackSection.title ? (
             typeof fallbackSection.title === "object" &&
             "line1" in fallbackSection.title ? (
-              <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+              <h2 className="text-4xl md:text-3xl font-bold text-foreground leading-[5]">
                 {fallbackSection.title.line1}{" "}
                 {fallbackSection.title.highlight && (
                   <span className="text-primary">
@@ -191,14 +191,14 @@ export default function SecurityServices({
                 )}
               </h2>
             ) : (
-              <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+              <h2 className="text-4xl md:text-3xl font-bold text-foreground leading-[5]">
                 {typeof fallbackSection.title === "string"
                   ? fallbackSection.title
                   : ""}
               </h2>
             )
           ) : (
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+            <h2 className="text-4xl md:text-3xl font-bold text-foreground leading-[5]">
               Comprehensive Digital{" "}
               <span className="text-primary">Solutions</span>
             </h2>
@@ -223,7 +223,7 @@ export default function SecurityServices({
               <Link
                 key={`${card.title}-${idx}`}
                 href={serviceId ? `/services/${serviceId}` : "/services"}
-                className="group rounded-3xl border border-border/60 bg-white shadow-sm overflow-hidden h-full flex flex-col hover:shadow-xl hover:border-primary/30 transition-all duration-300"
+                className="group border border-border/60 bg-white shadow-sm overflow-hidden h-full flex flex-col hover:shadow-xl hover:border-primary/30 transition-all duration-300"
               >
                 {card.image ? (
                   <div className="relative w-full aspect-video overflow-hidden">
@@ -239,7 +239,7 @@ export default function SecurityServices({
                   <div className="relative w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200" />
                 )}
                 <div className="p-6 md:p-8 flex flex-col flex-grow">
-                  <h3 className="text-2xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
+                  <h3 className="text-2xl font-semibold text-foreground mb-3 leading-relaxed group-hover:text-primary transition-colors">
                     {card.title}
                   </h3>
                   <p className="text-base text-muted-foreground leading-relaxed flex-grow mb-4">

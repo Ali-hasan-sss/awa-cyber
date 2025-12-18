@@ -561,7 +561,7 @@ export default function WhoWeAreSection() {
               </div>
 
               <div className="relative">
-                <div className="relative overflow-hidden rounded-3xl shadow-2xl">
+                <div className="relative overflow-hidden">
                   <Image
                     src={normalizeImageUrl(sectionImage)}
                     alt={sectionTitle || "About us"}
@@ -574,7 +574,7 @@ export default function WhoWeAreSection() {
                   <div className="absolute inset-0 bg-gradient-to-tr from-black/20 via-transparent to-primary/10" />
                 </div>
                 {stats.length > 0 && (
-                  <div className="absolute -bottom-6 ltr:-right-6 rtl:-left-6 hidden sm:block rounded-2xl bg-white px-6 py-4 shadow-lg border border-gray-100">
+                  <div className="absolute -bottom-6 ltr:-right-6 rtl:-left-6 hidden sm:block bg-white px-6 py-4 shadow-lg border border-gray-100">
                     <p className="text-sm font-semibold text-gray-600">
                       {locale === "ar"
                         ? "موثوق به عالمياً"

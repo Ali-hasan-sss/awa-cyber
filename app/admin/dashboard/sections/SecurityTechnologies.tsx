@@ -882,13 +882,13 @@ export default function SecurityTechnologiesSection() {
               </div>
 
               {sortedFeatures.length > 0 && (
-                <div className="mt-12 bg-gradient-to-b from-primary/20 via-white to-white rounded-[36px] p-6 md:p-8 shadow-lg border border-primary/10">
+                <div className="mt-12 bg-gradient-to-b from-primary/20 via-white to-white p-6 md:p-8 shadow-lg border border-primary/10">
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {sortedFeatures.map((tool, idx) => {
                       return (
                         <div
                           key={idx}
-                          className="rounded-2xl border border-white/60 bg-white/80 p-5 text-center shadow-sm hover:-translate-y-1 transition-transform"
+                          className="p-5 text-center hover:-translate-y-1 transition-transform"
                         >
                           <div className="mx-auto mb-4 flex items-center justify-center">
                             {tool.icon ? (

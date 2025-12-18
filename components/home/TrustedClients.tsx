@@ -432,7 +432,7 @@ export default function TrustedClients({
                 return (
                   <div
                     key={`${brand.name}-${idx}`}
-                    className="rounded-2xl border border-border bg-white/80 p-6 text-center shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-lg w-[250px] h-[250px] flex flex-col flex-shrink-0 grayscale hover:grayscale-0"
+                    className="text-center transition-all duration-300 hover:-translate-y-1 w-[250px] h-[250px] flex flex-col flex-shrink-0 grayscale hover:grayscale-0"
                   >
                     <div className="mx-auto mb-4 flex items-center justify-center h-32 w-full">
                       {isImageUrl ? (
@@ -445,7 +445,7 @@ export default function TrustedClients({
                           />
                         </div>
                       ) : (
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                        <div className="flex h-14 w-14 items-center justify-center text-primary">
                           <FallbackIcon className="h-7 w-7" />
                         </div>
                       )}

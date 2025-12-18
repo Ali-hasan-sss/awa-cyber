@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ export default function AddFifthSectionForm({
   const [loading, setLoading] = useState(false);
   const isEditing = !!section;
 
-  const initializeForm = () => {
+  const initialFormData = useMemo(() => {
     if (section) {
       return {
         titleEn:
@@ -52,13 +52,28 @@ export default function AddFifthSectionForm({
       descriptionEn: "",
       descriptionAr: "",
     };
-  };
+  }, [section?._id, section?.title, section?.description]);
 
-  const [form, setForm] = useState(initializeForm);
+  const [form, setForm] = useState(initialFormData);
 
   useEffect(() => {
-    setForm(initializeForm());
-  }, [section?._id]);
+    setForm(initialFormData);
+  }, [initialFormData]);
+
+  // Memoize onChange handlers to prevent infinite loops
+  const handleDescriptionEnChange = useCallback((value: string) => {
+    setForm((prev) => {
+      if (prev.descriptionEn === value) return prev;
+      return { ...prev, descriptionEn: value };
+    });
+  }, []);
+
+  const handleDescriptionArChange = useCallback((value: string) => {
+    setForm((prev) => {
+      if (prev.descriptionAr === value) return prev;
+      return { ...prev, descriptionAr: value };
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,7 +178,7 @@ export default function AddFifthSectionForm({
           </label>
           <RichTextEditor
             value={form.descriptionEn}
-            onChange={(value) => setForm({ ...form, descriptionEn: value })}
+            onChange={handleDescriptionEnChange}
             placeholder={
               isArabic
                 ? "أدخل الوصف بالإنجليزية"
@@ -180,7 +195,7 @@ export default function AddFifthSectionForm({
           </label>
           <RichTextEditor
             value={form.descriptionAr}
-            onChange={(value) => setForm({ ...form, descriptionAr: value })}
+            onChange={handleDescriptionArChange}
             placeholder={
               isArabic ? "أدخل الوصف بالعربية" : "Enter description in Arabic"
             }

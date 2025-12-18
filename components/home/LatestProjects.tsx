@@ -396,7 +396,7 @@ export default function LatestProjects({
 
         <div className="mt-12 relative">
           {/* Carousel container with slide transition */}
-          <div className="relative rounded-[32px] border border-border/40 bg-white shadow-2xl overflow-hidden group">
+          <div className="relative border border-border/40 bg-white shadow-2xl overflow-hidden group">
             {selectedPortfolios.length > 0 ? (
               <div className="relative overflow-hidden">
                 {/* Slider wrapper */}
