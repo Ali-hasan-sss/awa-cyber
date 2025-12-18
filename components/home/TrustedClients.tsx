@@ -418,16 +418,17 @@ export default function TrustedClients({
                 idx: number
               ) => {
                 // Check if icon is a URL/image path (not an icon name)
-                const isImageUrl = brand.icon && (
-                  brand.icon.startsWith("http") ||
-                  brand.icon.startsWith("/") ||
-                  brand.icon.includes(".") ||
-                  brand.icon.includes("72.60.208.192") ||
-                  brand.icon.includes("awacyber.com")
-                );
-                const Icon = !isImageUrl && brand.icon ? iconMap[brand.icon] : null;
+                const isImageUrl =
+                  brand.icon &&
+                  (brand.icon.startsWith("http") ||
+                    brand.icon.startsWith("/") ||
+                    brand.icon.includes(".") ||
+                    brand.icon.includes("72.60.208.192") ||
+                    brand.icon.includes("awacyber.com"));
+                const Icon =
+                  !isImageUrl && brand.icon ? iconMap[brand.icon] : null;
                 const FallbackIcon = Icon || Building2;
-                
+
                 return (
                   <div
                     key={`${brand.name}-${idx}`}

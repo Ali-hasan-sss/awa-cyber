@@ -545,7 +545,7 @@ export default function SecurityTechnologiesSection() {
                             onUploadComplete={(url: string) => {
                               updateDraftFeature("icon", url);
                             }}
-                            />
+                          />
                           {draftFeature.icon && (
                             <div className="mt-2 relative w-20 h-20 rounded-lg overflow-hidden border border-white/20">
                               <Image
@@ -730,7 +730,7 @@ export default function SecurityTechnologiesSection() {
                                   onUploadComplete={(url: string) => {
                                     updateFeature(originalIndex, "icon", url);
                                   }}
-                                  />
+                                />
                                 {feature.icon && (
                                   <div className="mt-2 relative w-20 h-20 rounded-lg overflow-hidden border border-white/20">
                                     <Image
@@ -739,8 +739,8 @@ export default function SecurityTechnologiesSection() {
                                       fill
                                       className="object-contain"
                                     />
-                                      </div>
-                                    )}
+                                  </div>
+                                )}
                                 <p className="text-xs text-white/50 mt-2">
                                   {isArabic
                                     ? "يمكنك رفع صورة للتقنية أو استخدام أيقونة أدناه"
@@ -893,7 +893,7 @@ export default function SecurityTechnologiesSection() {
                           <div className="mx-auto mb-4 flex items-center justify-center">
                             {tool.icon ? (
                               <Image
-                                src={tool.icon}
+                                src={normalizeImageUrl(tool.icon)}
                                 alt={tool.nameEn || tool.nameAr || ""}
                                 width={80}
                                 height={80}

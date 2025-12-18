@@ -854,7 +854,7 @@ export default function TrustedClientsSection() {
                         {brand.icon ? (
                           <div className="relative w-full h-full">
                             <Image
-                              src={brand.icon}
+                              src={normalizeImageUrl(brand.icon)}
                               alt={brand.name || ""}
                               fill
                               className="object-contain"

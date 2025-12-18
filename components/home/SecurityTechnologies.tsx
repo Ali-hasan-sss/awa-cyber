@@ -321,16 +321,16 @@ export default function SecurityTechnologies({
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {tools.map((tool: Tool, idx: number) => {
               // Check if icon is a URL/image path (not an icon name)
-              const isImageUrl = tool.icon && (
-                tool.icon.startsWith("http") ||
-                tool.icon.startsWith("/") ||
-                tool.icon.includes(".") ||
-                tool.icon.includes("72.60.208.192") ||
-                tool.icon.includes("awacyber.com")
-              );
+              const isImageUrl =
+                tool.icon &&
+                (tool.icon.startsWith("http") ||
+                  tool.icon.startsWith("/") ||
+                  tool.icon.includes(".") ||
+                  tool.icon.includes("72.60.208.192") ||
+                  tool.icon.includes("awacyber.com"));
               const Icon = !isImageUrl && tool.icon ? iconMap[tool.icon] : null;
               const FallbackIcon = Icon || Shield;
-              
+
               return (
                 <div
                   key={`${tool.name}-${idx}`}
