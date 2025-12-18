@@ -320,16 +320,26 @@ export default function SecurityTechnologies({
         <div className="mt-12 bg-gradient-to-b from-gray-100 to-white rounded-[36px] p-6 md:p-8 shadow-lg border border-gray-200">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {tools.map((tool: Tool, idx: number) => {
-              const Icon = iconMap[tool.icon ?? "Shield"] ?? Shield;
+              // Check if icon is a URL/image path (not an icon name)
+              const isImageUrl = tool.icon && (
+                tool.icon.startsWith("http") ||
+                tool.icon.startsWith("/") ||
+                tool.icon.includes(".") ||
+                tool.icon.includes("72.60.208.192") ||
+                tool.icon.includes("awacyber.com")
+              );
+              const Icon = !isImageUrl && tool.icon ? iconMap[tool.icon] : null;
+              const FallbackIcon = Icon || Shield;
+              
               return (
                 <div
                   key={`${tool.name}-${idx}`}
                   className="group rounded-2xl border border-white/60 bg-white/80 p-5 text-center shadow-sm hover:-translate-y-1 transition-transform"
                 >
                   <div className="mx-auto mb-4 flex items-center justify-center">
-                    {tool.icon && tool.icon.startsWith("http") ? (
+                    {isImageUrl ? (
                       <Image
-                        src={normalizeImageUrl(tool.icon)}
+                        src={normalizeImageUrl(tool.icon!)}
                         alt={tool.name}
                         width={80}
                         height={80}
@@ -337,7 +347,7 @@ export default function SecurityTechnologies({
                       />
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-                        <Icon className="h-6 w-6" />
+                        <FallbackIcon className="h-6 w-6" />
                       </div>
                     )}
                   </div>

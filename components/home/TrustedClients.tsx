@@ -417,17 +417,27 @@ export default function TrustedClients({
                 brand: { name: string; tagline?: string; icon?: string },
                 idx: number
               ) => {
-                const Icon = iconMap[brand.icon ?? "Building2"] ?? Building2;
+                // Check if icon is a URL/image path (not an icon name)
+                const isImageUrl = brand.icon && (
+                  brand.icon.startsWith("http") ||
+                  brand.icon.startsWith("/") ||
+                  brand.icon.includes(".") ||
+                  brand.icon.includes("72.60.208.192") ||
+                  brand.icon.includes("awacyber.com")
+                );
+                const Icon = !isImageUrl && brand.icon ? iconMap[brand.icon] : null;
+                const FallbackIcon = Icon || Building2;
+                
                 return (
                   <div
                     key={`${brand.name}-${idx}`}
                     className="rounded-2xl border border-border bg-white/80 p-6 text-center shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-lg w-[250px] h-[250px] flex flex-col flex-shrink-0 grayscale hover:grayscale-0"
                   >
                     <div className="mx-auto mb-4 flex items-center justify-center h-32 w-full">
-                      {brand.icon && brand.icon.startsWith("http") ? (
+                      {isImageUrl ? (
                         <div className="relative w-full h-full">
                           <Image
-                            src={normalizeImageUrl(brand.icon)}
+                            src={normalizeImageUrl(brand.icon!)}
                             alt={brand.name}
                             fill
                             className="object-contain transition-all duration-300"
@@ -435,7 +445,7 @@ export default function TrustedClients({
                         </div>
                       ) : (
                         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                          <Icon className="h-7 w-7" />
+                          <FallbackIcon className="h-7 w-7" />
                         </div>
                       )}
                     </div>
