@@ -5,7 +5,15 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import RichTextEditor from "@/components/ui/RichTextEditor";
-import { Pencil, Save, X, Trash2, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Pencil,
+  Save,
+  X,
+  Trash2,
+  Plus,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { getSections, updateSection, Section } from "@/lib/api/sections";
 import {
   serviceIconOptions,
@@ -29,14 +37,19 @@ const stripHtml = (html: string): string => {
 export default function HowItWorksSection() {
   const { locale } = useLanguage();
   const isArabic = locale === "ar";
-  const [howItWorksSection, setHowItWorksSection] =
-    useState<Section | null>(null);
+  const [howItWorksSection, setHowItWorksSection] = useState<Section | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [iconPickerIndex, setIconPickerIndex] = useState<number | string | null>(null);
-  const [activeFeatureIndex, setActiveFeatureIndex] = useState<number | null>(null);
+  const [iconPickerIndex, setIconPickerIndex] = useState<
+    number | string | null
+  >(null);
+  const [activeFeatureIndex, setActiveFeatureIndex] = useState<number | null>(
+    null
+  );
   const [draftFeature, setDraftFeature] = useState<{
     icon: string;
     nameEn: string;
@@ -160,8 +173,7 @@ export default function HowItWorksSection() {
         descriptionEn: howItWorksSection.description?.en || "",
         descriptionAr: howItWorksSection.description?.ar || "",
         features:
-          howItWorksSection.features &&
-          howItWorksSection.features.length > 0
+          howItWorksSection.features && howItWorksSection.features.length > 0
             ? howItWorksSection.features.map((feature) => ({
                 icon: feature.icon || "",
                 nameEn: feature.name?.en || "",
@@ -492,459 +504,456 @@ export default function HowItWorksSection() {
               {/* Right Column - Features Management */}
               <div className="lg:sticky lg:top-6 lg:self-start">
                 <div className="backdrop-blur-md bg-black/60 rounded-2xl p-6 border-2 border-primary/30 shadow-xl">
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                    <span className="text-primary">⭐</span>
-                    {isArabic ? "الخطوات (الميزات)" : "Steps (Features)"}
-                  </h3>
-                  <p className="text-xs text-white/60">
-                    {isArabic
-                      ? "الحد الأقصى 4 خطوات"
-                      : "Maximum 4 steps"}
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  onClick={addFeature}
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full"
-                  disabled={form.features.length >= 4}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                </Button>
-              </div>
-
-              {/* Draft Feature Form */}
-              {draftFeature && (
-                <div className="mb-4 rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-semibold text-cyan-300">
-                      {isArabic ? "إضافة خطوة" : "Add Step"}
-                    </h4>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        onClick={saveDraftFeature}
-                        size="sm"
-                        className="rounded-full bg-cyan-500 text-white hover:bg-cyan-600"
-                      >
-                        {isArabic ? "حفظ" : "Save"}
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={cancelDraftFeature}
-                        size="sm"
-                        variant="ghost"
-                        className="rounded-full"
-                      >
-                        {isArabic ? "إلغاء" : "Cancel"}
-                      </Button>
+                  <div className="mb-4 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                        <span className="text-primary">⭐</span>
+                        {isArabic ? "الخطوات (الميزات)" : "Steps (Features)"}
+                      </h3>
+                      <p className="text-xs text-white/60">
+                        {isArabic ? "الحد الأقصى 4 خطوات" : "Maximum 4 steps"}
+                      </p>
                     </div>
+                    <Button
+                      type="button"
+                      onClick={addFeature}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full"
+                      disabled={form.features.length >= 4}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                    </Button>
                   </div>
 
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs text-white/70 mb-1">
-                        {isArabic ? "الأيقونة" : "Icon"}
-                      </label>
-                      <div className="relative">
-                        <Input
-                          value={draftFeature.icon}
-                          onChange={(e) =>
-                            updateDraftFeature("icon", e.target.value)
-                          }
-                          className={inputStyles}
-                          placeholder="ShieldCheck"
-                        />
-                        {draftFeature.icon &&
-                          getIconComponent(draftFeature.icon) && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
-                              {getIconComponent(draftFeature.icon)}
+                  {/* Draft Feature Form */}
+                  {draftFeature && (
+                    <div className="mb-4 rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-4 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-cyan-300">
+                          {isArabic ? "إضافة خطوة" : "Add Step"}
+                        </h4>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            onClick={saveDraftFeature}
+                            size="sm"
+                            className="rounded-full bg-cyan-500 text-white hover:bg-cyan-600"
+                          >
+                            {isArabic ? "حفظ" : "Save"}
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={cancelDraftFeature}
+                            size="sm"
+                            variant="ghost"
+                            className="rounded-full"
+                          >
+                            {isArabic ? "إلغاء" : "Cancel"}
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs text-white/70 mb-1">
+                            {isArabic ? "الأيقونة" : "Icon"}
+                          </label>
+                          <div className="relative">
+                            <Input
+                              value={draftFeature.icon}
+                              onChange={(e) =>
+                                updateDraftFeature("icon", e.target.value)
+                              }
+                              className={inputStyles}
+                              placeholder="ShieldCheck"
+                            />
+                            {draftFeature.icon &&
+                              getIconComponent(draftFeature.icon) && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
+                                  {getIconComponent(draftFeature.icon)}
+                                </div>
+                              )}
+                          </div>
+                          <Button
+                            type="button"
+                            onClick={() =>
+                              setIconPickerIndex(
+                                iconPickerIndex === "draft" ? null : "draft"
+                              )
+                            }
+                            variant="outline"
+                            size="sm"
+                            className="mt-2 rounded-full w-full"
+                          >
+                            {iconPickerIndex === "draft"
+                              ? isArabic
+                                ? "إغلاق"
+                                : "Close"
+                              : isArabic
+                              ? "اختر الأيقونة"
+                              : "Choose Icon"}
+                          </Button>
+                          {iconPickerIndex === "draft" && (
+                            <div className="mt-2 grid grid-cols-6 gap-2 p-3 rounded-xl border border-white/10 bg-white/[0.02]">
+                              {serviceIconOptions.map((option) => {
+                                const Icon = option.Icon;
+                                return (
+                                  <button
+                                    key={option.value}
+                                    type="button"
+                                    onClick={() => {
+                                      updateDraftFeature("icon", option.value);
+                                      setIconPickerIndex(null);
+                                    }}
+                                    className="p-2 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-white/[0.05] transition"
+                                  >
+                                    <Icon className="h-5 w-5 text-white/70" />
+                                  </button>
+                                );
+                              })}
                             </div>
                           )}
-                      </div>
-                      <Button
-                        type="button"
-                        onClick={() =>
-                          setIconPickerIndex(
-                            iconPickerIndex === "draft" ? null : "draft"
-                          )
-                        }
-                        variant="outline"
-                        size="sm"
-                        className="mt-2 rounded-full w-full"
-                      >
-                        {iconPickerIndex === "draft"
-                          ? isArabic
-                            ? "إغلاق"
-                            : "Close"
-                          : isArabic
-                          ? "اختر الأيقونة"
-                          : "Choose Icon"}
-                      </Button>
-                      {iconPickerIndex === "draft" && (
-                        <div className="mt-2 grid grid-cols-6 gap-2 p-3 rounded-xl border border-white/10 bg-white/[0.02]">
-                          {serviceIconOptions.map((option) => {
-                            const Icon = option.Icon;
-                            return (
-                              <button
-                                key={option.value}
-                                type="button"
-                                onClick={() => {
-                                  updateDraftFeature("icon", option.value);
-                                  setIconPickerIndex(null);
-                                }}
-                                className="p-2 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-white/[0.05] transition"
-                              >
-                                <Icon className="h-5 w-5 text-white/70" />
-                              </button>
-                            );
-                          })}
                         </div>
-                      )}
-                    </div>
 
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <div>
-                        <label className="block text-xs text-white/70 mb-1">
-                          {isArabic ? "الاسم (EN)" : "Name (EN)"}
-                        </label>
-                        <Input
-                          value={draftFeature.nameEn}
-                          onChange={(e) =>
-                            updateDraftFeature("nameEn", e.target.value)
-                          }
-                          className={inputStyles}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-white/70 mb-1">
-                          {isArabic ? "الاسم (AR)" : "Name (AR)"}
-                        </label>
-                        <Input
-                          value={draftFeature.nameAr}
-                          onChange={(e) =>
-                            updateDraftFeature("nameAr", e.target.value)
-                          }
-                          className={inputStyles}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <div>
-                        <label className="block text-xs text-white/70 mb-1">
-                          {isArabic ? "الوصف (EN)" : "Description (EN)"}
-                        </label>
-                        <Input
-                          value={draftFeature.descriptionEn}
-                          onChange={(e) =>
-                            updateDraftFeature(
-                              "descriptionEn",
-                              e.target.value
-                            )
-                          }
-                          className={inputStyles}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-white/70 mb-1">
-                          {isArabic ? "الوصف (AR)" : "Description (AR)"}
-                        </label>
-                        <Input
-                          value={draftFeature.descriptionAr}
-                          onChange={(e) =>
-                            updateDraftFeature(
-                              "descriptionAr",
-                              e.target.value
-                            )
-                          }
-                          className={inputStyles}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs text-white/70 mb-1">
-                        {isArabic ? "الترتيب" : "Order"}
-                      </label>
-                      <Input
-                        type="number"
-                        value={draftFeature.order}
-                        onChange={(e) =>
-                          updateDraftFeature(
-                            "order",
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                        className={inputStyles}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Existing Features */}
-              <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                {form.features.length === 0 && !draftFeature && (
-                  <p className="text-sm text-white/60 text-center py-4">
-                    {isArabic ? "لا توجد خطوات" : "No steps yet"}
-                  </p>
-                )}
-                {sortedFeatures.map((feature, index) => {
-                  const originalIndex = form.features.findIndex(
-                    (f) => f === feature
-                  );
-                  return (
-                    <div
-                      key={index}
-                      className="rounded-2xl border border-white/20 bg-white/[0.05] p-4 space-y-3"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-black font-bold text-lg">
-                            {feature.order || index + 1}
-                          </div>
-                          <div className="text-primary">
-                            {getIconComponent(feature.icon) || (
-                              <div className="h-5 w-5" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-white">
-                              {feature.nameEn || feature.nameAr}
-                            </p>
-                            <p className="text-xs text-white/60">
-                              {isArabic ? "الترتيب" : "Order"}: {feature.order}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            type="button"
-                            onClick={() =>
-                              moveFeature(originalIndex, "up")
-                            }
-                            variant="ghost"
-                            size="sm"
-                            disabled={originalIndex === 0}
-                            className="text-white/60 hover:text-white h-7 w-7 p-0"
-                          >
-                            <ChevronUp className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            type="button"
-                            onClick={() =>
-                              moveFeature(originalIndex, "down")
-                            }
-                            variant="ghost"
-                            size="sm"
-                            disabled={
-                              originalIndex === form.features.length - 1
-                            }
-                            className="text-white/60 hover:text-white h-7 w-7 p-0"
-                          >
-                            <ChevronDown className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            type="button"
-                            onClick={() => removeFeature(originalIndex)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-400 hover:text-red-300 h-7 w-7 p-0"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {activeFeatureIndex === originalIndex && (
-                        <div className="space-y-3 pt-3 border-t border-white/10">
+                        <div className="grid gap-3 md:grid-cols-2">
                           <div>
                             <label className="block text-xs text-white/70 mb-1">
-                              {isArabic ? "الأيقونة" : "Icon"}
-                            </label>
-                            <div className="relative">
-                              <Input
-                                value={feature.icon}
-                                onChange={(e) =>
-                                  updateFeature(
-                                    originalIndex,
-                                    "icon",
-                                    e.target.value
-                                  )
-                                }
-                                className={inputStyles}
-                                placeholder="Icon name"
-                              />
-                              {feature.icon &&
-                                getIconComponent(feature.icon) && (
-                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
-                                    {getIconComponent(feature.icon)}
-                                  </div>
-                                )}
-                            </div>
-                            <Button
-                              type="button"
-                              onClick={() =>
-                                setIconPickerIndex(
-                                  iconPickerIndex === originalIndex
-                                    ? null
-                                    : originalIndex
-                                )
-                              }
-                              variant="outline"
-                              size="sm"
-                              className="mt-2 rounded-full w-full"
-                            >
-                              {iconPickerIndex === originalIndex
-                                ? isArabic
-                                  ? "إغلاق"
-                                  : "Close"
-                                : isArabic
-                                ? "اختر الأيقونة"
-                                : "Choose Icon"}
-                            </Button>
-                            {iconPickerIndex === originalIndex && (
-                              <div className="mt-2 grid grid-cols-6 gap-2 p-3 rounded-xl border border-white/10 bg-white/[0.02]">
-                                {serviceIconOptions.map((option) => {
-                                  const Icon = option.Icon;
-                                  return (
-                                    <button
-                                      key={option.value}
-                                      type="button"
-                                      onClick={() => {
-                                        updateFeature(
-                                          originalIndex,
-                                          "icon",
-                                          option.value
-                                        );
-                                        setIconPickerIndex(null);
-                                      }}
-                                      className="p-2 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-white/[0.05] transition"
-                                    >
-                                      <Icon className="h-5 w-5 text-white/70" />
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="grid gap-3 md:grid-cols-2">
-                            <div>
-                              <label className="block text-xs text-white/70 mb-1">
-                                {isArabic ? "الاسم (EN)" : "Name (EN)"}
-                              </label>
-                              <Input
-                                value={feature.nameEn}
-                                onChange={(e) =>
-                                  updateFeature(
-                                    originalIndex,
-                                    "nameEn",
-                                    e.target.value
-                                  )
-                                }
-                                className={inputStyles}
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-xs text-white/70 mb-1">
-                                {isArabic ? "الاسم (AR)" : "Name (AR)"}
-                              </label>
-                              <Input
-                                value={feature.nameAr}
-                                onChange={(e) =>
-                                  updateFeature(
-                                    originalIndex,
-                                    "nameAr",
-                                    e.target.value
-                                  )
-                                }
-                                className={inputStyles}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid gap-3 md:grid-cols-2">
-                            <div>
-                              <label className="block text-xs text-white/70 mb-1">
-                                {isArabic
-                                  ? "الوصف (EN)"
-                                  : "Description (EN)"}
-                              </label>
-                              <Input
-                                value={feature.descriptionEn}
-                                onChange={(e) =>
-                                  updateFeature(
-                                    originalIndex,
-                                    "descriptionEn",
-                                    e.target.value
-                                  )
-                                }
-                                className={inputStyles}
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-xs text-white/70 mb-1">
-                                {isArabic
-                                  ? "الوصف (AR)"
-                                  : "Description (AR)"}
-                              </label>
-                              <Input
-                                value={feature.descriptionAr}
-                                onChange={(e) =>
-                                  updateFeature(
-                                    originalIndex,
-                                    "descriptionAr",
-                                    e.target.value
-                                  )
-                                }
-                                className={inputStyles}
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-xs text-white/70 mb-1">
-                              {isArabic ? "الترتيب" : "Order"}
+                              {isArabic ? "الاسم (EN)" : "Name (EN)"}
                             </label>
                             <Input
-                              type="number"
-                              value={feature.order}
+                              value={draftFeature.nameEn}
                               onChange={(e) =>
-                                updateFeature(
-                                  originalIndex,
-                                  "order",
-                                  parseInt(e.target.value) || 0
+                                updateDraftFeature("nameEn", e.target.value)
+                              }
+                              className={inputStyles}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-white/70 mb-1">
+                              {isArabic ? "الاسم (AR)" : "Name (AR)"}
+                            </label>
+                            <Input
+                              value={draftFeature.nameAr}
+                              onChange={(e) =>
+                                updateDraftFeature("nameAr", e.target.value)
+                              }
+                              className={inputStyles}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div>
+                            <label className="block text-xs text-white/70 mb-1">
+                              {isArabic ? "الوصف (EN)" : "Description (EN)"}
+                            </label>
+                            <Input
+                              value={draftFeature.descriptionEn}
+                              onChange={(e) =>
+                                updateDraftFeature(
+                                  "descriptionEn",
+                                  e.target.value
+                                )
+                              }
+                              className={inputStyles}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-white/70 mb-1">
+                              {isArabic ? "الوصف (AR)" : "Description (AR)"}
+                            </label>
+                            <Input
+                              value={draftFeature.descriptionAr}
+                              onChange={(e) =>
+                                updateDraftFeature(
+                                  "descriptionAr",
+                                  e.target.value
                                 )
                               }
                               className={inputStyles}
                             />
                           </div>
                         </div>
-                      )}
 
-                      {activeFeatureIndex !== originalIndex && (
-                        <Button
-                          type="button"
-                          onClick={() =>
-                            setActiveFeatureIndex(originalIndex)
-                          }
-                          variant="outline"
-                          size="sm"
-                          className="w-full rounded-full"
-                        >
-                          <Pencil className="h-3 w-3 mr-1" />
-                          {isArabic ? "تعديل" : "Edit"}
-                        </Button>
-                      )}
+                        <div>
+                          <label className="block text-xs text-white/70 mb-1">
+                            {isArabic ? "الترتيب" : "Order"}
+                          </label>
+                          <Input
+                            type="number"
+                            value={draftFeature.order}
+                            onChange={(e) =>
+                              updateDraftFeature(
+                                "order",
+                                parseInt(e.target.value) || 0
+                              )
+                            }
+                            className={inputStyles}
+                          />
+                        </div>
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
+                  )}
+
+                  {/* Existing Features */}
+                  <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                    {form.features.length === 0 && !draftFeature && (
+                      <p className="text-sm text-white/60 text-center py-4">
+                        {isArabic ? "لا توجد خطوات" : "No steps yet"}
+                      </p>
+                    )}
+                    {sortedFeatures.map((feature, index) => {
+                      const originalIndex = form.features.findIndex(
+                        (f) => f === feature
+                      );
+                      return (
+                        <div
+                          key={index}
+                          className="rounded-2xl border border-white/20 bg-white/[0.05] p-4 space-y-3"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-black font-bold text-lg">
+                                {feature.order || index + 1}
+                              </div>
+                              <div className="text-primary">
+                                {getIconComponent(feature.icon) || (
+                                  <div className="h-5 w-5" />
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-white">
+                                  {feature.nameEn || feature.nameAr}
+                                </p>
+                                <p className="text-xs text-white/60">
+                                  {isArabic ? "الترتيب" : "Order"}:{" "}
+                                  {feature.order}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                onClick={() => moveFeature(originalIndex, "up")}
+                                variant="ghost"
+                                size="sm"
+                                disabled={originalIndex === 0}
+                                className="text-white/60 hover:text-white h-7 w-7 p-0"
+                              >
+                                <ChevronUp className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                type="button"
+                                onClick={() =>
+                                  moveFeature(originalIndex, "down")
+                                }
+                                variant="ghost"
+                                size="sm"
+                                disabled={
+                                  originalIndex === form.features.length - 1
+                                }
+                                className="text-white/60 hover:text-white h-7 w-7 p-0"
+                              >
+                                <ChevronDown className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                type="button"
+                                onClick={() => removeFeature(originalIndex)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-400 hover:text-red-300 h-7 w-7 p-0"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+
+                          {activeFeatureIndex === originalIndex && (
+                            <div className="space-y-3 pt-3 border-t border-white/10">
+                              <div>
+                                <label className="block text-xs text-white/70 mb-1">
+                                  {isArabic ? "الأيقونة" : "Icon"}
+                                </label>
+                                <div className="relative">
+                                  <Input
+                                    value={feature.icon}
+                                    onChange={(e) =>
+                                      updateFeature(
+                                        originalIndex,
+                                        "icon",
+                                        e.target.value
+                                      )
+                                    }
+                                    className={inputStyles}
+                                    placeholder="Icon name"
+                                  />
+                                  {feature.icon &&
+                                    getIconComponent(feature.icon) && (
+                                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
+                                        {getIconComponent(feature.icon)}
+                                      </div>
+                                    )}
+                                </div>
+                                <Button
+                                  type="button"
+                                  onClick={() =>
+                                    setIconPickerIndex(
+                                      iconPickerIndex === originalIndex
+                                        ? null
+                                        : originalIndex
+                                    )
+                                  }
+                                  variant="outline"
+                                  size="sm"
+                                  className="mt-2 rounded-full w-full"
+                                >
+                                  {iconPickerIndex === originalIndex
+                                    ? isArabic
+                                      ? "إغلاق"
+                                      : "Close"
+                                    : isArabic
+                                    ? "اختر الأيقونة"
+                                    : "Choose Icon"}
+                                </Button>
+                                {iconPickerIndex === originalIndex && (
+                                  <div className="mt-2 grid grid-cols-6 gap-2 p-3 rounded-xl border border-white/10 bg-white/[0.02]">
+                                    {serviceIconOptions.map((option) => {
+                                      const Icon = option.Icon;
+                                      return (
+                                        <button
+                                          key={option.value}
+                                          type="button"
+                                          onClick={() => {
+                                            updateFeature(
+                                              originalIndex,
+                                              "icon",
+                                              option.value
+                                            );
+                                            setIconPickerIndex(null);
+                                          }}
+                                          className="p-2 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-white/[0.05] transition"
+                                        >
+                                          <Icon className="h-5 w-5 text-white/70" />
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="grid gap-3 md:grid-cols-2">
+                                <div>
+                                  <label className="block text-xs text-white/70 mb-1">
+                                    {isArabic ? "الاسم (EN)" : "Name (EN)"}
+                                  </label>
+                                  <Input
+                                    value={feature.nameEn}
+                                    onChange={(e) =>
+                                      updateFeature(
+                                        originalIndex,
+                                        "nameEn",
+                                        e.target.value
+                                      )
+                                    }
+                                    className={inputStyles}
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs text-white/70 mb-1">
+                                    {isArabic ? "الاسم (AR)" : "Name (AR)"}
+                                  </label>
+                                  <Input
+                                    value={feature.nameAr}
+                                    onChange={(e) =>
+                                      updateFeature(
+                                        originalIndex,
+                                        "nameAr",
+                                        e.target.value
+                                      )
+                                    }
+                                    className={inputStyles}
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="grid gap-3 md:grid-cols-2">
+                                <div>
+                                  <label className="block text-xs text-white/70 mb-1">
+                                    {isArabic
+                                      ? "الوصف (EN)"
+                                      : "Description (EN)"}
+                                  </label>
+                                  <Input
+                                    value={feature.descriptionEn}
+                                    onChange={(e) =>
+                                      updateFeature(
+                                        originalIndex,
+                                        "descriptionEn",
+                                        e.target.value
+                                      )
+                                    }
+                                    className={inputStyles}
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs text-white/70 mb-1">
+                                    {isArabic
+                                      ? "الوصف (AR)"
+                                      : "Description (AR)"}
+                                  </label>
+                                  <Input
+                                    value={feature.descriptionAr}
+                                    onChange={(e) =>
+                                      updateFeature(
+                                        originalIndex,
+                                        "descriptionAr",
+                                        e.target.value
+                                      )
+                                    }
+                                    className={inputStyles}
+                                  />
+                                </div>
+                              </div>
+
+                              <div>
+                                <label className="block text-xs text-white/70 mb-1">
+                                  {isArabic ? "الترتيب" : "Order"}
+                                </label>
+                                <Input
+                                  type="number"
+                                  value={feature.order}
+                                  onChange={(e) =>
+                                    updateFeature(
+                                      originalIndex,
+                                      "order",
+                                      parseInt(e.target.value) || 0
+                                    )
+                                  }
+                                  className={inputStyles}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {activeFeatureIndex !== originalIndex && (
+                            <Button
+                              type="button"
+                              onClick={() =>
+                                setActiveFeatureIndex(originalIndex)
+                              }
+                              variant="outline"
+                              size="sm"
+                              className="w-full rounded-full"
+                            >
+                              <Pencil className="h-3 w-3 mr-1" />
+                              {isArabic ? "تعديل" : "Edit"}
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -977,11 +986,8 @@ export default function HowItWorksSection() {
                   <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     {sortedFeatures.map((step, idx) => {
                       const Icon =
-                        step.icon &&
-                        step.icon in serviceIconComponents
-                          ? serviceIconComponents[
-                              step.icon as ServiceIconKey
-                            ]
+                        step.icon && step.icon in serviceIconComponents
+                          ? serviceIconComponents[step.icon as ServiceIconKey]
                           : serviceIconComponents["ShieldCheck"];
                       const isLast = idx === sortedFeatures.length - 1;
 
@@ -1029,4 +1035,3 @@ export default function HowItWorksSection() {
     </div>
   );
 }
-

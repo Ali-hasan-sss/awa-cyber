@@ -955,10 +955,10 @@ export default function SecurityModalSection() {
 
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               <div className="max-w-2xl mx-auto">
-                <div className="relative bg-gradient-to-b from-primary via-primary to-primary/90 rounded-3xl p-8 md:p-10 shadow-2xl">
+                <div className="relative bg-gradient-to-b from-primary via-primary to-primary/90 p-8 md:p-10 shadow-2xl">
                   {/* Icon */}
                   <div className="flex justify-center mb-6">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white border-4 border-primary/20">
+                    <div className="flex h-16 w-16 items-center justify-center bg-white border-4 border-primary/20">
                       <CheckCircle2 className="h-8 w-8 text-primary" />
                     </div>
                   </div>

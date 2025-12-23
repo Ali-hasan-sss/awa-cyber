@@ -92,7 +92,7 @@ export default function RevenuePage() {
   const { locale } = useLanguage();
   const isArabic = locale === "ar";
   const { projects } = useProjects();
-  const { users, fetchUsers } = useUsers();
+  const { users, fetchUsers, createUser } = useUsers();
 
   const [payments, setPayments] = useState<Payment[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
@@ -138,6 +138,15 @@ export default function RevenuePage() {
     status: "pending",
     dueDate: new Date().toISOString().split("T")[0],
     recurring: false,
+  });
+
+  // Add Client Modal State
+  const [addClientModalOpen, setAddClientModalOpen] = useState(false);
+  const [newClientForm, setNewClientForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    companyName: "",
   });
 
   // Delete confirmation modal
@@ -1759,12 +1768,16 @@ export default function RevenuePage() {
                   </label>
                   <select
                     value={incomeForm.userId}
-                    onChange={(e) =>
-                      setIncomeForm({
-                        ...incomeForm,
-                        userId: e.target.value,
-                      })
-                    }
+                    onChange={(e) => {
+                      if (e.target.value === "__add_new__") {
+                        setAddClientModalOpen(true);
+                      } else {
+                        setIncomeForm({
+                          ...incomeForm,
+                          userId: e.target.value,
+                        });
+                      }
+                    }}
                     className="w-full rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-slate-100"
                   >
                     <option value="">
@@ -1778,6 +1791,12 @@ export default function RevenuePage() {
                           {user.companyName ? `(${user.companyName})` : ""}
                         </option>
                       ))}
+                    <option
+                      value="__add_new__"
+                      className="bg-primary/20 text-primary font-semibold"
+                    >
+                      {isArabic ? "+ إضافة عميل جديد" : "+ Add New Client"}
+                    </option>
                   </select>
                 </div>
                 <div>
@@ -1969,6 +1988,186 @@ export default function RevenuePage() {
       {error && (
         <div className="rounded-2xl border border-red-400/40 bg-red-500/10 px-4 py-2 text-sm text-red-200">
           {error}
+        </div>
+      )}
+
+      {/* Add Client Modal */}
+      {addClientModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl rounded-3xl border border-white/10 bg-[#060e1f] p-6 text-slate-100">
+            <h3 className="mb-6 text-xl font-bold text-white">
+              {isArabic ? "إضافة عميل جديد" : "Add New Client"}
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm text-white/80">
+                  {isArabic ? "الاسم" : "Name"} *
+                </label>
+                <Input
+                  value={newClientForm.name}
+                  onChange={(e) =>
+                    setNewClientForm({
+                      ...newClientForm,
+                      name: e.target.value,
+                    })
+                  }
+                  className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-slate-100"
+                  placeholder={isArabic ? "أدخل الاسم" : "Enter name"}
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm text-white/80">
+                  {isArabic ? "البريد الإلكتروني" : "Email"} *
+                </label>
+                <Input
+                  type="email"
+                  value={newClientForm.email}
+                  onChange={(e) =>
+                    setNewClientForm({
+                      ...newClientForm,
+                      email: e.target.value,
+                    })
+                  }
+                  className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-slate-100"
+                  placeholder={
+                    isArabic ? "أدخل البريد الإلكتروني" : "Enter email"
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm text-white/80">
+                  {isArabic ? "رقم الهاتف" : "Phone"} *
+                </label>
+                <Input
+                  type="tel"
+                  value={newClientForm.phone}
+                  onChange={(e) =>
+                    setNewClientForm({
+                      ...newClientForm,
+                      phone: e.target.value,
+                    })
+                  }
+                  className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-slate-100"
+                  placeholder={isArabic ? "أدخل رقم الهاتف" : "Enter phone"}
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm text-white/80">
+                  {isArabic ? "اسم الشركة" : "Company Name"} *
+                </label>
+                <Input
+                  value={newClientForm.companyName}
+                  onChange={(e) =>
+                    setNewClientForm({
+                      ...newClientForm,
+                      companyName: e.target.value,
+                    })
+                  }
+                  className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-slate-100"
+                  placeholder={
+                    isArabic ? "أدخل اسم الشركة" : "Enter company name"
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setAddClientModalOpen(false);
+                  setNewClientForm({
+                    name: "",
+                    email: "",
+                    phone: "",
+                    companyName: "",
+                  });
+                }}
+                className="rounded-full border border-white/20 px-6 text-white/70 hover:bg-white/5"
+              >
+                {copy.cancel}
+              </Button>
+              <Button
+                onClick={async () => {
+                  if (
+                    !newClientForm.name ||
+                    !newClientForm.email ||
+                    !newClientForm.phone ||
+                    !newClientForm.companyName
+                  ) {
+                    alert(
+                      isArabic
+                        ? "يرجى ملء جميع الحقول المطلوبة"
+                        : "Please fill all required fields"
+                    );
+                    return;
+                  }
+
+                  setLoading(true);
+                  setError(null);
+                  try {
+                    const savedEmail = newClientForm.email;
+                    await createUser({
+                      name: newClientForm.name,
+                      email: newClientForm.email,
+                      phone: newClientForm.phone,
+                      companyName: newClientForm.companyName,
+                      role: "client",
+                    });
+
+                    // Refresh users list - createUser already calls fetchUsers, but we'll call it again to be sure
+                    await fetchUsers();
+
+                    // Wait a bit for state to update, then find and select the new client
+                    setTimeout(() => {
+                      const createdClient = users.find(
+                        (u) => u.email === savedEmail
+                      );
+                      if (createdClient) {
+                        setIncomeForm((prev) => ({
+                          ...prev,
+                          userId: createdClient._id,
+                        }));
+                      }
+                    }, 300);
+
+                    // Close modal and reset form
+                    setAddClientModalOpen(false);
+                    setNewClientForm({
+                      name: "",
+                      email: "",
+                      phone: "",
+                      companyName: "",
+                    });
+                  } catch (err: any) {
+                    setError(
+                      err?.message ||
+                        (isArabic
+                          ? "فشل في إضافة العميل"
+                          : "Failed to add client")
+                    );
+                    console.error("Error creating client:", err);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+                className="rounded-full bg-primary px-6 text-black shadow-lg hover:bg-primary/90"
+              >
+                {loading
+                  ? isArabic
+                    ? "جاري الحفظ..."
+                    : "Saving..."
+                  : isArabic
+                  ? "حفظ"
+                  : "Save"}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 

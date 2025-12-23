@@ -19,6 +19,7 @@ interface AuthState {
     id: string;
     name: string;
     email: string;
+    phone?: string;
     role: "admin" | "client" | "employee";
   } | null;
   user: {
@@ -36,6 +37,7 @@ interface AuthContextValue extends AuthState {
   login: (email: string, password: string) => Promise<void>;
   loginWithCode: (code: string) => Promise<void>;
   logout: () => void;
+  setAdmin: (admin: AuthState["admin"]) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -145,6 +147,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     router.push("/");
   };
 
+  const setAdmin = (admin: AuthState["admin"]) => {
+    if (admin) {
+      const newState = {
+        ...state,
+        admin: {
+          ...admin,
+          role: admin.role as "admin" | "client" | "employee",
+        },
+      };
+      persistState(newState);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -155,6 +170,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         login,
         loginWithCode,
         logout,
+        setAdmin,
       }}
     >
       {children}

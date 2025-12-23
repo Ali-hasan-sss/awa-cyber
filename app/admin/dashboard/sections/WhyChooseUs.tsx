@@ -1049,7 +1049,7 @@ export default function WhyChooseUsSection() {
                     />
                     {badgeFeature && (
                       <div className="absolute -top-4 ltr:-left-4 rtl:-right-4 flex items-center gap-3 bg-white px-4 py-2 text-sm font-semibold text-black shadow-xl z-50">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/20 text-primary">
+                        <div className="flex h-10 w-10 items-center justify-center bg-primary/20 text-primary">
                           {(() => {
                             const Icon =
                               badgeFeature.icon &&
@@ -1118,9 +1118,9 @@ export default function WhyChooseUsSection() {
                         return (
                           <div
                             key={idx}
-                            className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5"
+                            className="flex gap-4 border border-white/10 bg-white/5 p-4 sm:p-5"
                           >
-                            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                            <span className="flex h-12 w-12 items-center justify-center bg-primary/15 text-primary">
                               <Icon className="h-6 w-6" />
                             </span>
                             <div className="space-y-1">

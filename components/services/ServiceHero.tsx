@@ -53,7 +53,7 @@ export default function ServiceHero({ service }: { service: any }) {
     <section className="relative min-h-[70vh] flex items-center overflow-hidden bg-gradient-to-br from-yellow-400 via-amber-300 to-amber-200">
       {/* Content Container */}
       <div className="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="max-w-4xl">
+        <div className="w-full">
           {/* Back to Services Link */}
           <Link
             href="/services"
@@ -66,7 +66,7 @@ export default function ServiceHero({ service }: { service: any }) {
           </Link>
 
           {/* Icon and Title Section */}
-          <div className="flex items-start gap-4 mb-6">
+          <div className="flex items-start gap-4 mb-6 w-full">
             {/* Icon Block */}
             {IconComponent && (
               <div className="flex-shrink-0 h-16 w-16 rounded-2xl bg-white border border-gray-900/20 flex items-center justify-center shadow-lg">
@@ -81,7 +81,7 @@ export default function ServiceHero({ service }: { service: any }) {
 
           {/* Description */}
           {description && (
-            <p className="text-lg md:text-xl text-gray-800 leading-relaxed mb-8 max-w-3xl">
+            <p className="text-lg md:text-xl text-gray-800 leading-relaxed mb-8 w-full">
               {stripHtml(description)}
             </p>
           )}

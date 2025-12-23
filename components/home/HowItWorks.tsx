@@ -290,14 +290,14 @@ export default function HowItWorks({
                   )}
 
                   {/* Step Card */}
-                  <div className="relative rounded-3xl border border-white/10 bg-gray-800/50 p-6 md:p-8 h-full backdrop-blur-sm hover:border-primary/30 transition-colors">
+                  <div className="relative border border-white/10 bg-gray-800/50 p-6 md:p-8 h-full backdrop-blur-sm hover:border-primary/30 transition-colors">
                     {/* Number Badge */}
-                    <div className="absolute -top-4 ltr:-left-4 rtl:-right-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-black font-bold text-lg shadow-lg">
+                    <div className="absolute -top-4 ltr:-left-4 rtl:-right-4 flex h-10 w-10 items-center justify-center bg-primary text-black font-bold text-lg shadow-lg">
                       {step.number}
                     </div>
 
                     {/* Icon */}
-                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                    <div className="mb-6 flex h-16 w-16 items-center justify-center bg-primary/15 text-primary">
                       <Icon className="h-8 w-8" />
                     </div>
 

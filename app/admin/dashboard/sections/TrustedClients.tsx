@@ -896,38 +896,38 @@ export default function TrustedClientsSection() {
                         brand.icon.includes("72.60.208.192") ||
                         brand.icon.includes("awacyber.com"));
                     
-                    return (
-                      <div
+                  return (
+                    <div
                         key={`${brand.name}-${idx}`}
                         className="text-center transition-all duration-300 hover:-translate-y-1 w-[250px] h-[250px] flex flex-col flex-shrink-0 grayscale hover:grayscale-0"
-                      >
-                        <div className="mx-auto mb-4 flex items-center justify-center h-32 w-full">
+                    >
+                      <div className="mx-auto mb-4 flex items-center justify-center h-32 w-full">
                           {isImageUrl ? (
-                            <div className="relative w-full h-full">
-                              <Image
+                          <div className="relative w-full h-full">
+                            <Image
                                 src={normalizeImageUrl(brand.icon!)}
-                                alt={brand.name || ""}
-                                fill
+                              alt={brand.name || ""}
+                              fill
                                 className="object-contain transition-all duration-300"
-                              />
-                            </div>
-                          ) : (
-                            <div className="h-14 w-14" />
-                          )}
-                        </div>
-                        <div className="flex-1 flex flex-col justify-center">
-                          <p className="font-semibold text-lg text-gray-900 mb-1">
-                            {brand.name}
-                          </p>
-                          {brand.tagline && (
-                            <p className="text-sm text-gray-600">
-                              {brand.tagline}
-                            </p>
-                          )}
-                        </div>
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-14 w-14" />
+                        )}
                       </div>
-                    );
-                  })}
+                      <div className="flex-1 flex flex-col justify-center">
+                        <p className="font-semibold text-lg text-gray-900 mb-1">
+                          {brand.name}
+                        </p>
+                        {brand.tagline && (
+                          <p className="text-sm text-gray-600">
+                            {brand.tagline}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
                 </div>
               </div>
             )}

@@ -63,10 +63,10 @@ export default function ServicesList() {
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="rounded-2xl bg-white border border-border/60 shadow-sm p-6 animate-pulse"
+                className="bg-white border border-border/60 shadow-sm p-6 animate-pulse"
               >
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="h-14 w-14 rounded-2xl bg-gray-200" />
+                  <div className="h-14 w-14 bg-gray-200" />
                   <div className="h-8 bg-gray-200 rounded flex-1" />
                 </div>
                 <div className="space-y-2 mb-6">
@@ -126,13 +126,13 @@ export default function ServicesList() {
               <Link
                 key={service._id}
                 href={`/services/${service._id}`}
-                className="group relative rounded-2xl bg-white border border-border/60 shadow-sm hover:shadow-2xl transition-all duration-300 p-6"
+                className="group relative bg-white border border-border/60 shadow-sm hover:shadow-2xl transition-all duration-300 p-6"
               >
                 {/* Icon and Title Section */}
                 <div className="flex items-start gap-4 mb-4">
                   {/* Icon Block */}
                   {IconComponent && (
-                    <div className="flex-shrink-0 h-14 w-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                    <div className="flex-shrink-0 h-14 w-14 bg-primary/10 border border-primary/20 flex items-center justify-center">
                       <IconComponent className="h-6 w-6 text-primary" />
                     </div>
                   )}
