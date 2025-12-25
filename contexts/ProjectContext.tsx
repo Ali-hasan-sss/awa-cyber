@@ -69,6 +69,7 @@ export type AdminModification = {
   extraPaymentAmount?: number;
   costAccepted: boolean;
   attachedFiles?: ModificationFile[];
+  audioMessageUrl?: string; // Voice recording URL as separate field
   createdAt: string;
   updatedAt: string;
 };

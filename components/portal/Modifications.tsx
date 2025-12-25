@@ -19,6 +19,7 @@ import {
   XCircle,
   Menu,
   Download,
+  Mic,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
@@ -29,6 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import VoiceRecorder from "@/components/ui/VoiceRecorder";
 import { apiClient } from "@/lib/apiClient";
 import { API_BASE_URL } from "@/lib/config/api";
 
@@ -103,6 +105,7 @@ export default function Modifications({
     priority: "low" as "low" | "medium" | "high" | "critical",
   });
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [voiceRecording, setVoiceRecording] = useState<Blob | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const t = messages.portalModifications || {};
@@ -221,16 +224,70 @@ export default function Modifications({
         }
       }
 
-      // Create modification with attached files
+      // Upload voice recording if any - send as separate audioMessageUrl field
+      let audioMessageUrl: string | undefined = undefined;
+      if (voiceRecording) {
+        try {
+          // Use consistent naming format for voice recordings
+          const timestamp = Date.now();
+          const voiceFileName = `voice-recording-${timestamp}.webm`;
+          const voiceFileType = "audio/webm";
+
+          const audioFile = new File([voiceRecording], voiceFileName, {
+            type: voiceFileType,
+          });
+          const formData = new FormData();
+          formData.append("file", audioFile);
+
+          const uploadResponse = await apiClient.post(
+            `${API_BASE_URL}/api/upload`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+
+          const fileUrl =
+            uploadResponse.data.url || uploadResponse.data.data?.url;
+          if (fileUrl) {
+            // Store as audioMessageUrl instead of adding to attachedFiles
+            audioMessageUrl = fileUrl;
+            console.log("Voice recording uploaded:", {
+              url: fileUrl,
+              fileName: voiceFileName,
+              fileType: voiceFileType,
+            });
+          } else {
+            console.error("No file URL returned from upload");
+          }
+        } catch (audioErr: any) {
+          console.error("Failed to upload voice recording:", audioErr);
+          alert(
+            isArabic
+              ? "فشل رفع التسجيل الصوتي"
+              : "Failed to upload voice recording"
+          );
+          throw audioErr;
+        }
+      }
+
+      // Create modification with attached files and audio message
       // Don't send userId - backend will get it from project
-      await createModification({
+      const modificationData = {
         title: form.title,
         description: form.description,
         priority: form.priority,
         projectId,
-        status: "pending",
+        status: "pending" as const,
         attachedFiles: fileUrls.length > 0 ? fileUrls : undefined,
-      });
+        audioMessageUrl: audioMessageUrl, // Send voice recording as separate field
+      };
+
+      console.log("Creating modification:", modificationData);
+
+      await createModification(modificationData);
 
       // Reset form
       setForm({
@@ -239,14 +296,13 @@ export default function Modifications({
         priority: "low",
       });
       setAttachedFiles([]);
+      setVoiceRecording(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
 
-      // Reload modifications
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      // Reload modifications without full page reload
+      await loadModifications();
     } catch (err: any) {
       console.error("Failed to create modification:", err);
       alert(
@@ -403,6 +459,19 @@ export default function Modifications({
                     {isArabic ? "حرجة" : "Critical"}
                   </option>
                 </select>
+              </div>
+
+              {/* Voice Recording */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  {isArabic
+                    ? "تسجيل صوتي (اختياري)"
+                    : "Voice Recording (Optional)"}
+                </label>
+                <VoiceRecorder
+                  onRecordingComplete={(blob) => setVoiceRecording(blob)}
+                  onRecordingRemove={() => setVoiceRecording(null)}
+                />
               </div>
 
               {/* File Upload */}
@@ -588,6 +657,11 @@ export default function Modifications({
                                   : `${mod.attachedFiles.length} attachment${
                                       mod.attachedFiles.length > 1 ? "s" : ""
                                     }`}
+                                {mod.attachedFiles.some(
+                                  (f) =>
+                                    f.fileType?.includes("audio") ||
+                                    f.fileName?.includes("voice-recording")
+                                ) && <Mic className="w-3 h-3 text-primary" />}
                               </span>
                             ) : (
                               <span className="flex items-center gap-1">
@@ -612,21 +686,30 @@ export default function Modifications({
                             {isArabic ? "الملفات المرفقة" : "Attached Files"}:
                           </p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {mod.attachedFiles.map((file, fileIndex) => (
-                              <a
-                                key={fileIndex}
-                                href={file.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 rounded-lg p-2 transition"
-                              >
-                                <Paperclip className="w-4 h-4 text-gray-600" />
-                                <span className="text-sm text-gray-700 truncate flex-1">
-                                  {file.fileName}
-                                </span>
-                                <Download className="w-4 h-4 text-primary" />
-                              </a>
-                            ))}
+                            {mod.attachedFiles.map((file, fileIndex) => {
+                              const isAudio =
+                                file.fileType?.includes("audio") ||
+                                file.fileName?.includes("voice-recording");
+                              return (
+                                <a
+                                  key={fileIndex}
+                                  href={file.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 rounded-lg p-2 transition"
+                                >
+                                  {isAudio ? (
+                                    <Mic className="w-4 h-4 text-primary" />
+                                  ) : (
+                                    <Paperclip className="w-4 h-4 text-gray-600" />
+                                  )}
+                                  <span className="text-sm text-gray-700 truncate flex-1">
+                                    {file.fileName}
+                                  </span>
+                                  <Download className="w-4 h-4 text-primary" />
+                                </a>
+                              );
+                            })}
                           </div>
                         </div>
                       )}

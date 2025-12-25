@@ -42,6 +42,7 @@ export type ModificationPayload = {
   extraPaymentAmount?: number;
   costAccepted?: boolean;
   attachedFiles?: ModificationFilePayload[];
+  audioMessageUrl?: string; // Voice recording URL as separate field
 };
 
 export type PhaseStatus = "upcoming" | "in_progress" | "completed";
@@ -111,7 +112,9 @@ export const getAllPaymentsApi = async (params?: {
   page?: number;
   limit?: number;
 }) => {
-  const { data } = await apiClient.get("/api/projects/payments/all", { params });
+  const { data } = await apiClient.get("/api/projects/payments/all", {
+    params,
+  });
   return data;
 };
 

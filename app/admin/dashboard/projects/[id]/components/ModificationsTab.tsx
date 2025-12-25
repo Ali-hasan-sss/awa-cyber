@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Plus,
@@ -9,6 +10,9 @@ import {
   DollarSign,
   FileText,
   Download,
+  Mic,
+  Play,
+  Pause,
 } from "lucide-react";
 import { AdminModification } from "@/contexts/ProjectContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -22,6 +26,97 @@ interface ModificationsTabProps {
   onRequestExtraPayment: (modificationId: string) => void;
   onAcceptExtraPayment: (modificationId: string) => Promise<void>;
   onDeleteModification: (modificationId: string) => Promise<void>;
+}
+
+interface AudioFileItemProps {
+  file: {
+    url: string;
+    fileName: string;
+    fileType?: string;
+  };
+  isAudio: boolean;
+  isArabic: boolean;
+}
+
+function AudioFileItem({ file, isAudio, isArabic }: AudioFileItemProps) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handlePlayPause = () => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio(file.url);
+      audioRef.current.addEventListener("ended", () => setIsPlaying(false));
+      audioRef.current.addEventListener("error", () => {
+        setIsPlaying(false);
+        console.error("Error playing audio:", file.url);
+      });
+    }
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().catch((err) => {
+        console.error("Error playing audio:", err);
+        setIsPlaying(false);
+      });
+      setIsPlaying(true);
+    }
+  };
+
+  if (isAudio) {
+    return (
+      <div className="flex items-center gap-3 rounded-lg bg-white/5 border border-white/10 px-4 py-3">
+        <div className="flex items-center gap-3 flex-1">
+          <div className="bg-primary/20 p-2 rounded-lg">
+            <Mic className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">
+              {isArabic ? "تسجيل صوتي" : "Voice Recording"}
+            </p>
+            <p className="text-xs text-white/60 truncate">{file.fileName}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handlePlayPause}
+            className="h-9 w-9 rounded-full bg-primary/20 text-primary hover:bg-primary/30"
+          >
+            {isPlaying ? (
+              <Pause className="h-4 w-4" />
+            ) : (
+              <Play className="h-4 w-4" />
+            )}
+          </Button>
+          <a
+            href={file.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="h-9 w-9 rounded-full bg-white/10 text-white/80 hover:bg-white/20 flex items-center justify-center transition-colors"
+            title={isArabic ? "تحميل" : "Download"}
+          >
+            <Download className="h-4 w-4" />
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={file.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-xs text-white/80 hover:bg-white/10 transition-colors"
+    >
+      <FileText className="h-4 w-4" />
+      <span className="truncate max-w-[200px]">{file.fileName}</span>
+      <Download className="h-3 w-3" />
+    </a>
+  );
 }
 
 export default function ModificationsTab({
@@ -130,6 +225,27 @@ export default function ModificationsTab({
                     <p className="text-sm text-white/70 mt-1">
                       {modData.description}
                     </p>
+
+                    {/* Audio Message - Display as separate voice message */}
+                    {modData.audioMessageUrl && (
+                      <div className="mt-3">
+                        <p className="text-xs text-white/60 font-semibold mb-2">
+                          {isArabic ? "رسالة صوتية" : "Voice Message"}:
+                        </p>
+                        <AudioFileItem
+                          file={{
+                            url: modData.audioMessageUrl,
+                            fileName: isArabic
+                              ? "رسالة صوتية"
+                              : "Voice Message",
+                            fileType: "audio/webm",
+                          }}
+                          isAudio={true}
+                          isArabic={isArabic}
+                        />
+                      </div>
+                    )}
+
                     {/* Attached Files */}
                     {modData.attachedFiles &&
                       modData.attachedFiles.length > 0 && (
@@ -137,22 +253,81 @@ export default function ModificationsTab({
                           <p className="text-xs text-white/60 font-semibold">
                             {isArabic ? "الملفات المرفقة" : "Attached Files"}:
                           </p>
-                          <div className="flex flex-wrap gap-2">
-                            {modData.attachedFiles.map((file, fileIndex) => (
-                              <a
-                                key={fileIndex}
-                                href={file.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-xs text-white/80 hover:bg-white/10 transition-colors"
-                              >
-                                <FileText className="h-4 w-4" />
-                                <span className="truncate max-w-[200px]">
-                                  {file.fileName}
-                                </span>
-                                <Download className="h-3 w-3" />
-                              </a>
-                            ))}
+                          <div className="space-y-2">
+                            {modData.attachedFiles.map((file, fileIndex) => {
+                              // Get all possible file identifiers
+                              const fileType = file.fileType || "";
+                              const fileName = file.fileName || "";
+                              const fileUrl = file.url || "";
+
+                              // Normalize to lowercase for comparison
+                              const fileTypeLower = fileType.toLowerCase();
+                              const fileNameLower = fileName.toLowerCase();
+                              const urlLower = fileUrl.toLowerCase();
+
+                              // Comprehensive audio file detection - prioritize most common patterns
+                              // Standard format: voice-recording-TIMESTAMP.webm with fileType: audio/webm
+
+                              // First check: file extension in URL or filename (most reliable)
+                              const hasAudioExtension =
+                                !!urlLower.match(
+                                  /\.(webm|wav|mp3|ogg|m4a|aac|flac|opus)(\?|$)/i
+                                ) ||
+                                !!fileNameLower.match(
+                                  /\.(webm|wav|mp3|ogg|m4a|aac|flac|opus)(\?|$)/i
+                                );
+
+                              // Second check: fileType contains audio (standard format: audio/webm)
+                              const hasAudioType =
+                                fileTypeLower.includes("audio") ||
+                                fileTypeLower === "audio/webm" ||
+                                fileTypeLower === "audio/wav" ||
+                                fileTypeLower === "audio/mp3";
+
+                              // Third check: filename matches standard voice recording format
+                              // Format: voice-recording-TIMESTAMP.webm
+                              const matchesStandardFormat =
+                                fileNameLower.startsWith("voice-recording-") ||
+                                fileNameLower.includes("voice-recording") ||
+                                fileNameLower.includes("voice_recording") ||
+                                fileNameLower.includes("voice") ||
+                                fileNameLower.includes("recording") ||
+                                urlLower.includes("voice-recording") ||
+                                urlLower.includes("voice_recording") ||
+                                urlLower.includes("voice") ||
+                                urlLower.includes("recording");
+
+                              // Combine all checks - if any is true, it's audio
+                              const isAudio =
+                                hasAudioExtension ||
+                                hasAudioType ||
+                                matchesStandardFormat;
+
+                              // Debug: Log file detection for voice recordings
+                              if (
+                                fileNameLower.includes("voice") ||
+                                fileNameLower.includes("recording")
+                              ) {
+                                console.log("Voice file detection:", {
+                                  fileType,
+                                  fileName,
+                                  fileUrl,
+                                  hasAudioExtension,
+                                  hasAudioType,
+                                  matchesStandardFormat,
+                                  isAudio,
+                                });
+                              }
+
+                              return (
+                                <AudioFileItem
+                                  key={fileIndex}
+                                  file={file}
+                                  isAudio={isAudio}
+                                  isArabic={isArabic}
+                                />
+                              );
+                            })}
                           </div>
                         </div>
                       )}

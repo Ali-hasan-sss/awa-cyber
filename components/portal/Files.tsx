@@ -14,6 +14,8 @@ import {
   Video,
   Archive,
   Loader2,
+  Link as LinkIcon,
+  X,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProjects } from "@/contexts/ProjectContext";
@@ -64,6 +66,10 @@ export default function PortalFiles({ projectId }: PortalFilesProps) {
   const [companyFiles, setCompanyFiles] = useState<ProjectFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadType, setUploadType] = useState<"client" | "company">("client");
+  const [uploadMode, setUploadMode] = useState<"file" | "link">("file");
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkName, setLinkName] = useState("");
+  const [showLinkForm, setShowLinkForm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const t = messages.portalFiles || {};
@@ -135,6 +141,66 @@ export default function PortalFiles({ projectId }: PortalFilesProps) {
     }
   };
 
+  const validateUrl = (url: string): boolean => {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === "http:" || urlObj.protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
+
+  const handleAddLink = async () => {
+    if (!linkUrl.trim()) {
+      alert(isArabic ? "يرجى إدخال رابط" : "Please enter a link");
+      return;
+    }
+
+    if (!validateUrl(linkUrl)) {
+      alert(
+        isArabic
+          ? "يرجى إدخال رابط صحيح (يبدأ بـ http:// أو https://)"
+          : "Please enter a valid URL (starting with http:// or https://)"
+      );
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // Extract file name from URL or use provided name
+      const fileName =
+        linkName.trim() ||
+        linkUrl.split("/").pop()?.split("?")[0] ||
+        "External Link";
+
+      // Create project file record with the link URL
+      await createProjectFile({
+        projectId,
+        fileUrl: linkUrl.trim(),
+        fileName: fileName,
+        fileType: "application/link",
+        fileSize: 0, // Links don't have a file size
+        uploadedBy: uploadType,
+      });
+
+      // Reset form
+      setLinkUrl("");
+      setLinkName("");
+      setShowLinkForm(false);
+      setUploadMode("file");
+
+      await loadFiles();
+    } catch (err: any) {
+      console.error("Failed to add link:", err);
+      alert(
+        err?.response?.data?.message ||
+          (isArabic ? "فشل إضافة الرابط" : "Failed to add link")
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleDelete = async (fileId: string) => {
     if (
       !confirm(
@@ -194,42 +260,162 @@ export default function PortalFiles({ projectId }: PortalFilesProps) {
               </span>
             </div>
 
-            {/* Upload Area */}
-            <div
-              className={`mb-6 border-2 border-dashed border-primary rounded-xl p-8 text-center cursor-pointer transition-all hover:bg-primary/5 ${
-                isArabic ? "rtl" : "ltr"
-              }`}
-              onClick={() => {
-                setUploadType("client");
-                fileInputRef.current?.click();
-              }}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                className="hidden"
-                onChange={handleFileSelect}
-                disabled={uploading}
-              />
-              <div className="flex flex-col items-center gap-4">
-                <div className="bg-primary/10 p-4 rounded-full">
-                  <Upload className="w-8 h-8 text-primary" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-gray-900 mb-2">
-                    {t.uploadNewFile ||
-                      (isArabic ? "رفع ملف جديد" : "Upload new file")}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {t.dragDrop ||
-                      (isArabic
-                        ? "اسحب وأفلت الملف هنا أو انقر للتصفح"
-                        : "Drag and drop the file here or click to browse")}
-                  </p>
+            {/* Upload Mode Toggle */}
+            <div className="mb-4 flex gap-2">
+              <Button
+                variant={uploadMode === "file" ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setUploadMode("file");
+                  setShowLinkForm(false);
+                  setLinkUrl("");
+                  setLinkName("");
+                }}
+                className="flex-1"
+              >
+                <Upload className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                {isArabic ? "رفع ملف" : "Upload File"}
+              </Button>
+              <Button
+                variant={uploadMode === "link" ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setUploadMode("link");
+                  setShowLinkForm(true);
+                  setUploadType("client");
+                }}
+                className="flex-1"
+              >
+                <LinkIcon className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                {isArabic ? "إضافة رابط" : "Add Link"}
+              </Button>
+            </div>
+
+            {/* Upload File Area */}
+            {uploadMode === "file" && (
+              <div
+                className={`mb-6 border-2 border-dashed border-primary rounded-xl p-8 text-center cursor-pointer transition-all hover:bg-primary/5 ${
+                  isArabic ? "rtl" : "ltr"
+                }`}
+                onClick={() => {
+                  setUploadType("client");
+                  fileInputRef.current?.click();
+                }}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileSelect}
+                  disabled={uploading}
+                />
+                <div className="flex flex-col items-center gap-4">
+                  <div className="bg-primary/10 p-4 rounded-full">
+                    <Upload className="w-8 h-8 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold text-gray-900 mb-2">
+                      {t.uploadNewFile ||
+                        (isArabic ? "رفع ملف جديد" : "Upload new file")}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {t.dragDrop ||
+                        (isArabic
+                          ? "اسحب وأفلت الملف هنا أو انقر للتصفح"
+                          : "Drag and drop the file here or click to browse")}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Add Link Form */}
+            {uploadMode === "link" && showLinkForm && (
+              <div className="mb-6 border-2 border-dashed border-primary rounded-xl p-6 space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <LinkIcon className="w-5 h-5 text-primary" />
+                    <p className="font-semibold text-gray-900">
+                      {isArabic ? "إضافة رابط خارجي" : "Add External Link"}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setShowLinkForm(false);
+                      setLinkUrl("");
+                      setLinkName("");
+                      setUploadMode("file");
+                    }}
+                    className="h-8 w-8"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {isArabic ? "الرابط (مطلوب)" : "Link URL (Required)"}
+                    </label>
+                    <input
+                      type="url"
+                      value={linkUrl}
+                      onChange={(e) => setLinkUrl(e.target.value)}
+                      placeholder={
+                        isArabic
+                          ? "https://drive.google.com/..."
+                          : "https://drive.google.com/..."
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      disabled={uploading}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {isArabic
+                        ? "مثال: رابط Google Drive، Dropbox، OneDrive، إلخ"
+                        : "Example: Google Drive link, Dropbox, OneDrive, etc."}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {isArabic
+                        ? "اسم الملف (اختياري)"
+                        : "File Name (Optional)"}
+                    </label>
+                    <input
+                      type="text"
+                      value={linkName}
+                      onChange={(e) => setLinkName(e.target.value)}
+                      placeholder={
+                        isArabic
+                          ? "اسم الملف أو الوصف"
+                          : "File name or description"
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      disabled={uploading}
+                    />
+                  </div>
+                  <Button
+                    onClick={handleAddLink}
+                    disabled={uploading || !linkUrl.trim()}
+                    className="w-full bg-primary text-white hover:bg-primary/90"
+                  >
+                    {uploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
+                        {isArabic ? "جاري الإضافة..." : "Adding..."}
+                      </>
+                    ) : (
+                      <>
+                        <LinkIcon className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                        {isArabic ? "إضافة الرابط" : "Add Link"}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Client Files List */}
             <div className="space-y-3">
@@ -249,22 +435,48 @@ export default function PortalFiles({ projectId }: PortalFilesProps) {
                         <FileIcon className="w-5 h-5 text-gray-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">
-                          {file.fileName}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-gray-900 truncate">
+                            {file.fileName}
+                          </p>
+                          {file.fileType === "application/link" && (
+                            <LinkIcon className="w-4 h-4 text-primary flex-shrink-0" />
+                          )}
+                        </div>
                         <p className="text-sm text-gray-600">
-                          {formatFileSize(file.fileSize)} •{" "}
-                          {formatDate(file.createdAt, isArabic)}
+                          {file.fileType === "application/link"
+                            ? isArabic
+                              ? "رابط خارجي"
+                              : "External Link"
+                            : formatFileSize(file.fileSize)}{" "}
+                          • {formatDate(file.createdAt, isArabic)}
                         </p>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(file._id)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            handleDownload(file.fileUrl, file.fileName)
+                          }
+                          className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                          title={isArabic ? "فتح الرابط" : "Open Link"}
+                        >
+                          {file.fileType === "application/link" ? (
+                            <LinkIcon className="w-5 h-5" />
+                          ) : (
+                            <Download className="w-5 h-5" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(file._id)}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </Button>
+                      </div>
                     </div>
                   );
                 })
